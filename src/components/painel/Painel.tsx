@@ -442,12 +442,13 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
                   ordem: base?.ordem ?? servicos.length + 1, criadoEm: base?.criadoEm ?? new Date().toISOString(),
                   atualizadoEm: new Date().toISOString(),
                 };
+                if (!slugOriginal && !(await guardar())) return; // a página precisa existir antes do serviço
                 const id = await salvarServico(base ? { ...s, id: base.id } : s);
                 setServicos(base ? servicos.map((x) => (x.id === id ? { ...s, id } : x)) : [...servicos, { ...s, id }]);
                 setEditando(null);
                 if (!admin && perfil.status === 'aprobado') { await marcarParaRevisao(alvo); set('status', 'pendiente'); }
               } catch {
-                setMsg({ tipo: 'erro', t: 'No se pudo guardar el servicio. Primero guarda tu página (botón Guardar).' });
+                setMsg({ tipo: 'erro', t: 'No se pudo guardar el servicio. Revisa tu conexión e inténtalo de nuevo.' });
               }
             }}
           />
@@ -510,12 +511,15 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
           {salvando ? (admin ? 'Publicando…' : 'Enviando…') : admin ? 'Guardar y publicar' : 'Enviar a revisión'}
         </button>
         {msg && <p className={`pn-aviso pn-aviso-${msg.tipo}`} role="status">{msg.t}</p>}
+        <button type="button" className="btn btn-ghost btn-sm pn-guardar" disabled={salvando} onClick={() => guardar()}>
+          {salvando ? 'Guardando…' : admin ? 'Solo guardar (sin publicar)' : 'Guardar sin enviar'}
+        </button>
+        <p className="pn-dica">{admin
+          ? 'Los cambios solo aparecen en la página cuando usas «Guardar y publicar».'
+          : 'Tus cambios solo se publican después de «Enviar a revisión» y de nuestra aprobación.'}</p>
       </Secao>
 
-      <div className="pn-barra">
-        {msg && <p className={`pn-msg pn-msg-${msg.tipo}`} role="status">{msg.t}</p>}
-        <button className="btn btn-primary" disabled={salvando} onClick={() => guardar()}>{salvando ? 'Guardando…' : 'Guardar'}</button>
-      </div>
+      {msg?.tipo === 'erro' && <p className="pn-toast" role="alert" onClick={() => setMsg(null)}>{msg.t}</p>}
     </div>
   );
 }
