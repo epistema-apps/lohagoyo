@@ -22,6 +22,7 @@ const primeiroNome = perfil.nomePublico.split(' ')[0];
 const wa = linkWhatsApp(perfil.contatos, perfil.nomePublico);
 const tel = perfil.contatos.telefone?.replace(/\s/g, '');
 const url = new URL(`/${perfil.slug}/`, Astro.site).href;
+const zona = perfil.comunas.includes('Todo Santiago') ? 'Santiago' : (perfil.comunas[0] ?? 'Santiago');
 
 // Fotos: capa + trabalhos; sem fotos, usa as da categoria.
 const fotoCat = foto(categoria?.foto ?? '')?.src;
@@ -57,7 +58,7 @@ const jsonLd = {
 };
 ---
 <Base
-  titulo={`${marca} · ${perfil.oficio} en ${perfil.comunas[0] ?? 'Santiago'}`}
+  titulo={`${marca} · ${perfil.oficio} en ${zona}`}
   tituloExato
   descricao={`${perfil.lema ?? perfil.oficio}. ${perfil.apresentacao}`}
   imagem={capa}
@@ -200,7 +201,7 @@ const jsonLd = {
     </section>
 
     <footer class="wrap pe">
-      <p>© {marca} · {perfil.comunas[0] ?? 'Santiago'}, Chile</p>
+      <p>© {marca} · {zona}, Chile</p>
       <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo.cl">
         <span>Página creada con</span>
         <img src="/marca/logo.svg" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />

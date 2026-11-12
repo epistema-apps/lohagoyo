@@ -148,7 +148,7 @@ const jsonLd = {
     for (const card of cards) {
       const texto = `${card.dataset.busca ?? ''} ${card.dataset.categorias ?? ''}`;
       const comunas = (card.dataset.comunas ?? '').split('|');
-      const ok = termos.every((t) => texto.includes(t)) && (!c || comunas.includes(c));
+      const ok = termos.every((t) => texto.includes(t)) && (!c || comunas.includes(c) || comunas.includes('todo santiago'));
       card.hidden = !ok;
       if (ok) n++;
     }
