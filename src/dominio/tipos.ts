@@ -92,6 +92,8 @@ export interface Perfil {
   horario?: string;
   tipoPessoa: 'persona_natural' | 'empresa';
   status: StatusPerfil;
+  aprovadoPor?: string;
+  aprovadoEm?: string;
   criadoEm: string;
   atualizadoEm: string;
 }

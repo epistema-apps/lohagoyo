@@ -50,12 +50,24 @@ describe('slugs', () => {
 });
 
 describe('perfis', () => {
+  it('reserva o endereço e cria o perfil na mesma operação', async () => {
+    const { writeBatch } = await import('firebase/firestore');
+    const f = db(ANA); // mesma instância para o lote inteiro
+    const b = writeBatch(f);
+    b.set(doc(f, 'slugs/ana-nueva'), { uid: ANA, criadoEm: 'x' });
+    b.set(doc(f, `perfis/${ANA}`), perfil(ANA, { slug: 'ana-nueva' }));
+    await assertSucceeds(b.commit());
+  });
   it('o dono cria o próprio perfil como pendente', async () => {
     await assertSucceeds(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA)));
   });
   it('ninguém cria perfil já aprovado nem no lugar de outro', async () => {
     await assertFails(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { status: 'aprobado' })));
     await assertFails(setDoc(doc(db(ANA), `perfis/${BETO}`), perfil(BETO)));
+  });
+  it('rascunho pode ser salvo sem categoria; para revisão precisa', async () => {
+    await assertSucceeds(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { status: 'borrador', categoriaIds: [] })));
+    await assertFails(setDoc(doc(db(BETO), `perfis/${BETO}`), perfil(BETO, { categoriaIds: [] })));
   });
   it('sem foto da pessoa só pode ficar como rascunho', async () => {
     await assertFails(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { retrato: '' })));
@@ -95,6 +107,26 @@ describe('perfis', () => {
     await env.withSecurityRulesDisabled(async (c) => { await setDoc(doc(c.firestore(), `perfis/${ANA}`), perfil(ANA)); });
     await assertFails(updateDoc(doc(db(BETO), `perfis/${ANA}`), { lema: 'x' }));
     await assertFails(deleteDoc(doc(db(BETO), `perfis/${ANA}`)));
+  });
+});
+
+describe('cadastro assistido (administrador)', () => {
+  it('o moderador cria perfil, slug, dados privados, serviço e consentimento de outra pessoa', async () => {
+    const m = db(MOD);
+    await assertSucceeds(setDoc(doc(m, 'slugs/carla-pintura'), { uid: 'uid-carla', criadoEm: 'x' }));
+    await assertSucceeds(setDoc(doc(m, 'perfis/uid-carla'), perfil('uid-carla', { slug: 'carla-pintura', status: 'aprobado', aprovadoPor: MOD, aprovadoEm: 'x' })));
+    await assertSucceeds(setDoc(doc(m, 'profissionais/uid-carla'), { nomeCompleto: 'Carla Ejemplo', email: '' }));
+    await assertSucceeds(addDoc(collection(m, 'servicos'), { perfilId: 'uid-carla', nome: 'Pintura', descricao: 'd', incluye: [], preco: { tipo: 'a_cotizar', mostrar: true } }));
+    await assertSucceeds(setDoc(doc(m, 'consentimentos/c-carla'), { uid: 'uid-carla', versao: 'v', texto: 't', criadoEm: 'x', registradoPor: MOD }));
+  });
+  it('quem não é moderador não faz cadastro por outra pessoa', async () => {
+    await assertFails(setDoc(doc(db(BETO), 'slugs/carla-pintura'), { uid: 'uid-carla', criadoEm: 'x' }));
+    await assertFails(setDoc(doc(db(BETO), 'profissionais/uid-carla'), { nomeCompleto: 'X', email: '' }));
+    await assertFails(setDoc(doc(db(BETO), 'consentimentos/c2'), { uid: 'uid-carla', versao: 'v', texto: 't', criadoEm: 'x', registradoPor: BETO }));
+  });
+  it('a permissão de administrador também vale pela claim mod', async () => {
+    const m = env.authenticatedContext('uid-admin2', { mod: true }).firestore();
+    await assertSucceeds(getDoc(doc(m, 'config/moderadores')));
   });
 });
 

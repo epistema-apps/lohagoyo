@@ -5,11 +5,12 @@ service firebase.storage {
   match /b/{bucket}/o {
     match /perfis/{uid}/{arquivo} {
       allow read: if true;
-      allow create, update: if request.auth != null && request.auth.uid == uid
+      // dono ou administrador (claim mod) — cadastro assistido
+      allow create, update: if request.auth != null && (request.auth.uid == uid || request.auth.token.get('mod', false) == true)
         && request.resource.size < 2 * 1024 * 1024
         && request.resource.contentType.matches('image/(jpeg|png|webp)')
         && arquivo.matches('^(capa|retrato|trabajo-[1-4])\\.(jpg|webp|png)$');
-      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow delete: if request.auth != null && (request.auth.uid == uid || request.auth.token.get('mod', false) == true);
     }
   }
 }

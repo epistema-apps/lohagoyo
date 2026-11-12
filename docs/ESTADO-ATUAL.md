@@ -36,7 +36,7 @@ npm run build
 
 ## Painel (Fase 2) — no ar desde 12/11/2026 (Blaze, Auth, Firestore e Storage em Santiago ativos; proteção contra exclusão e backup diário)
 - `/panel/`: cria conta com **qualquer e-mail e senha** (ou Google), recupera senha. Editor em 8 seções: foto pessoal (**obrigatória**), quem é, onde/para quem, contato (+ nome completo privado), serviços (preço opcional, materiais, temporadas, extras), fotos da página (**subir ou escolher do banco**), tarjeta (estrutura/cor, aparece no fim da página pública com Compartir/Descargar), envio com consentimento.
-- `/panel/admin/`: moderação — filtros por estado, foto, dados, serviços, WhatsApp/correo/llamar em um clique, **Aprobar y publicar**, pausar/reativar. Acesso: uid em `config/moderadores.uids` (a tela mostra o uid).
+- `/panel/admin/`: **Editar** qualquer perfil (mesmo editor, inclusive fotos) e **+ Nuevo perfil (asistido)** para cadastrar alguém do zero; administrador = uid em `config/moderadores` **e** claim `mod` no Auth (necessária para fotos). Moderação — filtros por estado, foto, dados, serviços, WhatsApp/correo/llamar em um clique, **Aprobar y publicar**, pausar/reativar. Acesso: uid em `config/moderadores.uids` (a tela mostra o uid).
 - Publicação: `npm run publicar` roda `scripts/sincronizar.mjs` (lê aprovados do Firestore pela leitura pública, baixa fotos para `public/f/`), gera prévias e publica. Regras: `npm run publicar:regras`.
 - Testado de ponta a ponta nos emuladores (conta, foto, serviço, banco, envio, aprovação, sincronização, página gerada).
 - Regras: 18 testes (`npm run test:regras`, Java portátil em `~/.local/jre21`).

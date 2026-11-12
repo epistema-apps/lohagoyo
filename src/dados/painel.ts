@@ -56,13 +56,14 @@ export async function slugDisponivel(slug: string, uid: string): Promise<boolean
 /** Reserva o slug (se preciso) e salva o perfil. Libera o slug antigo ao trocar. */
 export async function salvarPerfil(perfil: Perfil, slugAnterior?: string): Promise<void> {
   const uid = perfil.id;
+  // Reserva do endereço e perfil na MESMA transação: ou grava os dois, ou nenhum.
   await runTransaction(db(), async (t) => {
     const ref = doc(db(), 'slugs', perfil.slug);
     const s = await t.get(ref);
     if (s.exists() && s.data().uid !== uid) throw new Error('slug-ocupado');
     if (!s.exists()) t.set(ref, { uid, criadoEm: agora() });
+    t.set(doc(db(), 'perfis', uid), limpo({ ...perfil, atualizadoEm: agora() }));
   });
-  await setDoc(doc(db(), 'perfis', uid), limpo({ ...perfil, atualizadoEm: agora() }));
   if (slugAnterior && slugAnterior !== perfil.slug) {
     await deleteDoc(doc(db(), 'slugs', slugAnterior)).catch(() => undefined);
   }
@@ -86,8 +87,9 @@ export async function salvarServico(s: Omit<Servico, 'id'> & { id?: string }): P
 export const apagarServico = (id: string) => deleteDoc(doc(db(), 'servicos', id));
 
 /** Registra o consentimento e envia o perfil para revisão. */
-export async function enviarParaRevisao(uid: string, versao: string, texto: string): Promise<void> {
-  await addDoc(collection(db(), 'consentimentos'), { uid, versao, texto, criadoEm: agora() });
+export async function enviarParaRevisao(uid: string, versao: string, texto: string, registradoPor?: string): Promise<void> {
+  await addDoc(collection(db(), 'consentimentos'), { uid, versao, texto, criadoEm: agora(), ...(registradoPor ? { registradoPor } : {}) });
+  if (registradoPor) return; // cadastro assistido: o status já foi definido pelo administrador
   const p = await getDoc(doc(db(), 'perfis', uid));
   if (p.exists() && p.data().status !== 'aprobado') await updateDoc(doc(db(), 'perfis', uid), { status: 'pendiente', atualizadoEm: agora() });
 }
@@ -118,6 +120,9 @@ export async function subirFoto(uid: string, nome: NomeFoto, arquivo: File): Pro
   await uploadBytes(r, blob, { contentType: 'image/jpeg', cacheControl: 'public, max-age=86400' });
   return `${await getDownloadURL(r)}`;
 }
+
+/** Id para um perfil criado pelo administrador (cadastro assistido). */
+export const novoIdAssistido = () => 'lhy' + Array.from(crypto.getRandomValues(new Uint8Array(14)), (b) => b.toString(16).padStart(2, '0')).join('');
 
 // ---------- moderação ----------
 

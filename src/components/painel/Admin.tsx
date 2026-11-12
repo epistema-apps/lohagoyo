@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { observarUsuario, sair, type Usuario } from '../../auth';
-import { listarParaModerar, mudarStatus, souModerador, type Privado } from '../../dados/painel';
+import { listarParaModerar, mudarStatus, novoIdAssistido, souModerador, type Privado } from '../../dados/painel';
 import { textoPreco, textoPublico } from '../../dominio/formato';
 import type { Perfil, Servico } from '../../dominio/tipos';
-import { Entrar } from './Painel';
+import { Editor, Entrar, type PropsPainel } from './Painel';
 
 type Item = { perfil: Perfil; servicos: Servico[]; privado: Privado | null };
 type Filtro = Perfil['status'] | 'todos';
@@ -13,13 +13,14 @@ const FILTROS: { id: Filtro; nome: string }[] = [
   { id: 'borrador', nome: 'Borradores' }, { id: 'pausado', nome: 'Pausados' }, { id: 'todos', nome: 'Todos' },
 ];
 
-export default function Admin() {
+export default function Admin(props: PropsPainel) {
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
   const [mod, setMod] = useState<boolean | null>(null);
   const [itens, setItens] = useState<Item[] | null>(null);
   const [filtro, setFiltro] = useState<Filtro>('pendiente');
   const [aberto, setAberto] = useState<string | null>(null);
   const [aviso, setAviso] = useState('');
+  const [editando, setEditando] = useState<string | null>(null);
 
   useEffect(() => observarUsuario(setUsuario), []);
   useEffect(() => {
@@ -65,6 +66,15 @@ export default function Admin() {
     );
   }
 
+  if (editando) {
+    return (
+      <Editor
+        key={editando} usuario={usuario} uidAlvo={editando} admin {...props}
+        aoVoltar={() => { setEditando(null); carregar(); }}
+      />
+    );
+  }
+
   return (
     <div>
       <header className="pn-topo">
@@ -73,6 +83,7 @@ export default function Admin() {
           <h1>Profesionales<span className="pn-ponto">.</span></h1>
         </div>
         <div className="pn-topo-acoes">
+          <button className="btn btn-primary btn-sm" onClick={() => setEditando(novoIdAssistido())}>+ Nuevo perfil (asistido)</button>
           <button className="btn btn-ghost btn-sm" onClick={carregar}>Actualizar</button>
           <button className="btn btn-ghost btn-sm" onClick={() => sair()}>Salir</button>
         </div>
@@ -112,6 +123,7 @@ export default function Admin() {
                   {wa && <a className="btn btn-ghost btn-sm" href={wa} target="_blank" rel="noopener">WhatsApp</a>}
                   {email && <a className="btn btn-ghost btn-sm" href={`mailto:${email}`}>Correo</a>}
                   {p.contatos.telefone && <a className="btn btn-ghost btn-sm" href={`tel:${p.contatos.telefone.replace(/\s/g, '')}`}>Llamar</a>}
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditando(p.id)}>Editar</button>
                   <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAberto(aberto === p.id ? null : p.id)}>
                     {aberto === p.id ? 'Ocultar' : 'Ver detalles'}
                   </button>

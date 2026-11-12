@@ -14,7 +14,7 @@
     "publicar": "npm run build:prod && firebase deploy --only hosting --project lohagoyo-prod --account hola@lohagoyo.cl",
     "test:regras": "JAVA_HOME=$HOME/.local/jre21/Contents/Home PATH=$HOME/.local/jre21/Contents/Home/bin:$PATH firebase emulators:exec --only firestore,storage --project demo-lohagoyo 'vitest run --config vitest.regras.config.ts'",
     "sincronizar": "node scripts/sincronizar.mjs",
-    "publicar:regras": "firebase deploy --only firestore:rules,storage --project lohagoyo-prod --account hola@lohagoyo.cl"
+    "publicar:regras": "npm run test:regras && firebase deploy --only firestore:rules,storage --project lohagoyo-prod --account hola@lohagoyo.cl"
   },
   "dependencies": {
     "@astrojs/react": "7.1.8",

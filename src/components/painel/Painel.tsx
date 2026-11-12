@@ -9,10 +9,13 @@ import { textoPreco } from '../../dominio/formato';
 import { gerarSlug, slugValido } from '../../dominio/slug';
 import type { Perfil, Publico, Servico, TipoPreco } from '../../dominio/tipos';
 
+export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
 interface Props { categorias: { id: string; nome: string; sugeridos: string[] }[]; comunas: string[]; banco: FotoBanco[] }
 
 const VERSAO_TERMOS = '2026-11';
+const TEXTO_ASISTIDO =
+  'Registro asistido: confirmo que el profesional autorizó a LoHagoYo.cl a publicar estos datos y fotos.';
 const TEXTO_CONSENTIMIENTO =
   'Autorizo a LoHagoYo.cl a publicar en mi página los datos y fotos que ingresé (nombre, servicios, comunas, contacto y fotos). Puedo modificarlos o pedir que se eliminen en cualquier momento.';
 
@@ -129,10 +132,13 @@ const STATUS: Record<Perfil['status'], string> = {
   aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo.cl',
 };
 
-function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usuario }) {
+export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = false, aoVoltar }: Props & {
+  usuario: Usuario; uidAlvo?: string; admin?: boolean; aoVoltar?: () => void;
+}) {
+  const alvo = uidAlvo ?? usuario.uid;
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [slugOriginal, setSlugOriginal] = useState('');
-  const [privado, setPrivado] = useState<Privado>({ nomeCompleto: usuario.nome ?? lerNomeCadastro(), email: usuario.email ?? '' });
+  const [privado, setPrivado] = useState<Privado>(admin ? { nomeCompleto: '', email: '' } : { nomeCompleto: usuario.nome ?? lerNomeCadastro(), email: usuario.email ?? '' });
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'erro'; t: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -141,22 +147,22 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
   const [editando, setEditando] = useState<Servico | 'novo' | null>(null);
 
   useEffect(() => {
-    carregarMeusDados(usuario.uid)
+    carregarMeusDados(alvo)
       .then((d) => {
-        setPerfil(d.perfil ?? perfilVazio(usuario));
+        setPerfil(d.perfil ?? perfilVazio(admin ? { uid: alvo, email: null, nome: null } : usuario));
         setSlugOriginal(d.perfil?.slug ?? '');
         if (d.privado) setPrivado(d.privado);
         setServicos(d.servicos);
       })
       .catch(() => setMsg({ tipo: 'erro', t: 'No pudimos cargar tus datos. Recarga la página.' }));
-  }, [usuario.uid]);
+  }, [alvo]);
 
   // disponibilidade do endereço
   useEffect(() => {
     if (!perfil?.slug || !slugValido(perfil.slug)) { setSlugLivre(null); return; }
-    const t = setTimeout(() => slugDisponivel(perfil.slug, usuario.uid).then(setSlugLivre).catch(() => setSlugLivre(null)), 400);
+    const t = setTimeout(() => slugDisponivel(perfil.slug, alvo).then(setSlugLivre).catch(() => setSlugLivre(null)), 400);
     return () => clearTimeout(t);
-  }, [perfil?.slug, usuario.uid]);
+  }, [perfil?.slug, alvo]);
 
   const pendencias = useMemo(() => {
     if (!perfil) return [];
@@ -174,7 +180,7 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
 
   if (!perfil) return <p className="pn-carregando">{msg?.t ?? 'Cargando tu página…'}</p>;
 
-  const set = <K extends keyof Perfil>(k: K, v: Perfil[K]) => setPerfil({ ...perfil, [k]: v });
+  const set = <K extends keyof Perfil>(k: K, v: Perfil[K]) => setPerfil((p) => (p ? { ...p, [k]: v } : p));
   const alternar = <T,>(lista: T[], v: T) => (lista.includes(v) ? lista.filter((x) => x !== v) : [...lista, v]);
   const categoriaPrincipal = perfil.categoriaIds[0];
 
@@ -185,9 +191,11 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
     try {
       const slug = perfil.slug || gerarSlug(perfil.marca || perfil.nomePublico);
       if (!slugValido(slug)) throw new Error('slug');
-      const novo = { ...perfil, slug, status: status ?? perfil.status };
+      const st = status ?? perfil.status;
+      const novo = { ...perfil, id: alvo, slug, status: st,
+        ...(admin && st === 'aprobado' && !perfil.aprovadoPor ? { aprovadoPor: usuario.uid, aprovadoEm: new Date().toISOString() } : {}) };
       await salvarPerfil(novo, slugOriginal || undefined);
-      await salvarPrivado(usuario.uid, privado);
+      await salvarPrivado(alvo, privado);
       setPerfil(novo);
       setSlugOriginal(slug);
       setMsg({ tipo: 'ok', t: 'Cambios guardados.' });
@@ -205,9 +213,10 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
 
   async function enviar() {
     if (pendencias.length || !aceito) return;
-    if (!(await guardar(perfil!.status === 'aprobado' ? 'aprobado' : 'pendiente'))) return;
+    if (!(await guardar(admin || perfil!.status === 'aprobado' ? 'aprobado' : 'pendiente'))) return;
     try {
-      await enviarParaRevisao(usuario.uid, VERSAO_TERMOS, TEXTO_CONSENTIMIENTO);
+      await enviarParaRevisao(alvo, VERSAO_TERMOS, admin ? TEXTO_ASISTIDO : TEXTO_CONSENTIMIENTO, admin ? usuario.uid : undefined);
+      if (admin) { setMsg({ tipo: 'ok', t: 'Perfil aprobado. Aparecerá en la próxima publicación.' }); return; }
       setMsg({ tipo: 'ok', t: perfil!.status === 'aprobado' ? 'Cambios guardados. Tu página se actualizará pronto.' : '¡Listo! Revisaremos tu página y te avisaremos al publicarla.' });
     } catch {
       setMsg({ tipo: 'erro', t: 'No se pudo enviar. Inténtalo de nuevo.' });
@@ -216,7 +225,7 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
 
   async function foto(nome: NomeFoto, arquivo: File): Promise<string | null> {
     try {
-      return await subirFoto(usuario.uid, nome, arquivo);
+      return await subirFoto(alvo, nome, arquivo);
     } catch {
       setMsg({ tipo: 'erro', t: 'No se pudo subir la foto. Prueba con otra imagen (JPG o PNG).' });
       return null;
@@ -227,19 +236,19 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
     <div className="pn-editor">
       <header className="pn-topo">
         <div>
-          <p className="pn-sobre"><span />Tu página</p>
+          <p className="pn-sobre"><span />{admin ? 'Administración · editando perfil' : 'Tu página'}</p>
           <h1>{perfil.marca || perfil.nomePublico || 'Tu página'}<span className="pn-ponto">.</span></h1>
           <p className={`pn-status pn-status-${perfil.status}`}>{STATUS[perfil.status]}</p>
         </div>
         <div className="pn-topo-acoes">
-          {perfil.status === 'aprobado' && <a className="btn btn-ghost btn-sm" href={`/${perfil.slug}/`} target="_blank" rel="noopener">Ver mi página</a>}
-          {perfil.slug && <a className="btn btn-ghost btn-sm" href={`/tarjeta/${perfil.slug}/`} target="_blank" rel="noopener">Mi tarjeta</a>}
-          <button className="btn btn-ghost btn-sm" onClick={() => sair()}>Salir</button>
+          {admin && aoVoltar && <button className="btn btn-ghost btn-sm" onClick={aoVoltar}>← Volver a la lista</button>}
+          {perfil.status === 'aprobado' && <a className="btn btn-ghost btn-sm" href={`/${perfil.slug}/`} target="_blank" rel="noopener">{admin ? 'Ver página' : 'Ver mi página'}</a>}
+          {!admin && <button className="btn btn-ghost btn-sm" onClick={() => sair()}>Salir</button>}
         </div>
       </header>
 
       {/* 1. Foto */}
-      <Secao n="01" titulo="Tu foto" ajuda="Obligatoria. Que se vea bien tu cara: los clientes confían más cuando saben quién va a su casa.">
+      <Secao n="01" titulo={admin ? 'Foto del profesional' : 'Tu foto'} ajuda="Obligatoria. Que se vea bien la cara: los clientes confían más cuando saben quién va a su casa.">
         <FotoCampo
           rotulo="Foto tuya" valor={perfil.retrato} redonda obrigatoria
           aoSubir={async (f) => { const u = await foto('retrato', f); if (u) set('retrato', u); }}
@@ -361,7 +370,7 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
               try {
                 const base = editando === 'novo' ? null : editando;
                 const s = {
-                  ...dados, perfilId: usuario.uid, categoriaId: categoriaPrincipal ?? 'piscinas', ativo: true,
+                  ...dados, perfilId: alvo, categoriaId: categoriaPrincipal ?? 'piscinas', ativo: true,
                   ordem: base?.ordem ?? servicos.length + 1, criadoEm: base?.criadoEm ?? new Date().toISOString(),
                   atualizadoEm: new Date().toISOString(),
                 };
@@ -416,16 +425,16 @@ function Editor({ usuario, categorias, comunas, banco }: Props & { usuario: Usua
       </Secao>
 
       {/* 8. Enviar */}
-      <Secao n="08" titulo={perfil.status === 'aprobado' ? 'Guardar y publicar cambios' : 'Enviar a revisión'}>
+      <Secao n="08" titulo={admin || perfil.status === 'aprobado' ? 'Guardar y publicar cambios' : 'Enviar a revisión'}>
         {pendencias.length > 0 && (
           <ul className="pn-pendencias">{pendencias.map((p) => <li key={p}>{p}</li>)}</ul>
         )}
         <label className="pn-check">
           <input type="checkbox" checked={aceito} onChange={(e) => setAceito(e.target.checked)} />
-          {TEXTO_CONSENTIMIENTO}
+          {admin ? TEXTO_ASISTIDO : TEXTO_CONSENTIMIENTO}
         </label>
         <button className="btn btn-primary pn-largo" disabled={salvando || pendencias.length > 0 || !aceito} onClick={enviar}>
-          {perfil.status === 'aprobado' ? 'Guardar y publicar' : 'Enviar a revisión'}
+          {admin || perfil.status === 'aprobado' ? 'Guardar y publicar' : 'Enviar a revisión'}
         </button>
       </Secao>
 

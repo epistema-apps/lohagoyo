@@ -9,14 +9,18 @@ service cloud.firestore {
     function logado() { return request.auth != null; }
     function eu(uid) { return logado() && request.auth.uid == uid; }
     function moderador() {
-      return logado() && exists(/databases/$(database)/documents/config/moderadores)
+      return logado() && (request.auth.token.get('mod', false) == true || moderadorLista());
+    }
+    function moderadorLista() {
+      return exists(/databases/$(database)/documents/config/moderadores)
         && request.auth.uid in get(/databases/$(database)/documents/config/moderadores).data.uids;
     }
     function novo() { return request.resource.data; }
     function texto(v, max) { return v is string && v.size() <= max; }
+    // getAfter: o slug pode ser reservado na mesma operação atômica que salva o perfil.
     function slugDono(slug, uid) {
-      return exists(/databases/$(database)/documents/slugs/$(slug))
-        && get(/databases/$(database)/documents/slugs/$(slug)).data.uid == uid;
+      return existsAfter(/databases/$(database)/documents/slugs/$(slug))
+        && getAfter(/databases/$(database)/documents/slugs/$(slug)).data.uid == uid;
     }
     function perfilAprovado(uid) {
       return exists(/databases/$(database)/documents/perfis/$(uid))
@@ -35,7 +39,7 @@ service cloud.firestore {
     match /slugs/{slug} {
       allow read: if true;
       allow create: if logado() && novo().keys().hasOnly(['uid', 'criadoEm'])
-        && novo().uid == request.auth.uid
+        && (novo().uid == request.auth.uid || moderador())
         && slug.matches('^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$');
       allow delete: if eu(resource.data.uid) || moderador();
       allow update: if false;
@@ -44,7 +48,7 @@ service cloud.firestore {
     // Dados privados do profissional.
     match /profissionais/{uid} {
       allow read: if eu(uid) || moderador();
-      allow create, update: if eu(uid)
+      allow create, update: if (eu(uid) || moderador())
         && novo().keys().hasOnly(['nomeCompleto', 'email', 'telefone', 'documento', 'notas', 'criadoEm', 'atualizadoEm'])
         && texto(novo().nomeCompleto, 120);
       allow delete: if eu(uid) || moderador();
@@ -62,15 +66,17 @@ service cloud.firestore {
           && novo().id == uid
           && texto(novo().nomePublico, 80) && texto(novo().oficio, 80) && texto(novo().apresentacao, 1500)
           && novo().fotos is list && novo().fotos.size() <= 4
-          && novo().categoriaIds is list && novo().categoriaIds.size() >= 1 && novo().categoriaIds.size() <= 3
+          && novo().categoriaIds is list && novo().categoriaIds.size() <= 3
+          && (novo().status in ['borrador', 'pausado'] || novo().categoriaIds.size() >= 1)
           && slugDono(novo().slug, uid)
           // foto da pessoa é obrigatória para ir à revisão ou ficar publicado
           && (novo().status in ['borrador', 'pausado'] || (novo().get('retrato', '') is string && novo().get('retrato', '').size() > 0));
       }
 
       // O dono cria como rascunho ou pendente; nunca se aprova.
-      allow create: if eu(uid) && camposValidos() && novo().status in ['borrador', 'pendiente']
-        && !('aprovadoPor' in novo());
+      allow create: if (eu(uid) && camposValidos() && novo().status in ['borrador', 'pendiente']
+        && !('aprovadoPor' in novo()))
+        || (moderador() && camposValidos()); // cadastro assistido
       // O dono edita: não pode mudar para 'aprobado' nem tocar nos campos de aprovação.
       // Se já estava aprovado, pode continuar aprovado (edições seguem publicadas) ou pausar.
       allow update: if (eu(uid) && camposValidos()
@@ -85,7 +91,7 @@ service cloud.firestore {
     match /servicos/{id} {
       allow read: if perfilAprovado(resource.data.perfilId) || eu(resource.data.perfilId) || moderador();
       function servicoValido() {
-        return novo().perfilId == request.auth.uid
+        return (novo().perfilId == request.auth.uid || moderador())
           && texto(novo().nome, 80) && texto(novo().descricao, 1000)
           && novo().incluye is list && novo().incluye.size() <= 12
           && novo().preco is map && novo().preco.tipo in ['fijo', 'desde', 'por_visita', 'por_hora', 'por_m2', 'mensual', 'a_cotizar'];
@@ -97,7 +103,8 @@ service cloud.firestore {
 
     // Consentimentos: só se criam; nunca se alteram.
     match /consentimentos/{id} {
-      allow create: if logado() && novo().uid == request.auth.uid
+      allow create: if logado()
+        && (novo().uid == request.auth.uid || (moderador() && novo().registradoPor == request.auth.uid))
         && novo().keys().hasOnly(['uid', 'versao', 'texto', 'criadoEm', 'registradoPor']);
       allow read: if moderador() || (logado() && resource.data.uid == request.auth.uid);
       allow update, delete: if false;
