@@ -13,7 +13,7 @@ interface Props {
   tituloExato?: boolean;
   corTema?: string;
 }
-const { titulo, descricao, imagem, jsonLd, noindex = false, moldura = true, tituloExato = false, corTema = '#15171c' } = Astro.props;
+const { titulo, descricao, imagem, jsonLd, noindex = false, moldura = true, tituloExato = false, corTema = '#1a1918' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const og = imagem ? new URL(imagem, Astro.site).href : new URL('/og.jpg', Astro.site).href;
 const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${titulo} · LoHagoYo.cl`;

@@ -66,7 +66,7 @@
 .pn-foto-acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .pn-foto-acoes strong { width: 100%; }
 .pn-trabalhos { display: grid; gap: 16px; }
-.pn-modal { position: fixed; inset: 0; z-index: 50; background: rgba(21, 23, 28, .55); display: grid; place-items: center; padding: 16px; }
+.pn-modal { position: fixed; inset: 0; z-index: 50; background: rgba(26, 25, 24, .55); display: grid; place-items: center; padding: 16px; }
 .pn-modal-caixa { background: #fff; border-radius: 14px; width: min(760px, 100%); max-height: 86vh; overflow: auto; padding: 18px; }
 .pn-modal-caixa header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .pn-modal-caixa h3 { margin: 0; }

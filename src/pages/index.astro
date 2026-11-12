@@ -172,7 +172,7 @@ const jsonLd = {
   /* topo com foto e busca */
   .hero { position: relative; color: #fff; background: var(--ink); overflow: hidden; }
   .hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.05); opacity: 0.55; }
-  .hero-filtro { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(21, 23, 28, 0.95) 0%, rgba(21, 23, 28, 0.75) 45%, rgba(21, 23, 28, 0.35) 100%); }
+  .hero-filtro { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(26, 25, 24, 0.95) 0%, rgba(26, 25, 24, 0.75) 45%, rgba(26, 25, 24, 0.35) 100%); }
   .hero-in { position: relative; padding-top: clamp(64px, 12vw, 128px); padding-bottom: clamp(56px, 10vw, 104px); }
   .hero .sobretitulo { color: var(--sol); }
   .hero h1 { font-size: clamp(2.2rem, 6.5vw, 4.2rem); line-height: 1.04; letter-spacing: -0.045em; max-width: 15ch; }
@@ -204,7 +204,7 @@ const jsonLd = {
   @media (max-width: 900px) { .cats { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
   .cat { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--ink); color: #fff; text-decoration: none; }
   .cat img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.7); opacity: 0.9; transition: transform 0.6s ease, opacity 0.3s ease; }
-  .cat::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(21, 23, 28, 0.85)); }
+  .cat::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(26, 25, 24, 0.85)); }
   .cat:hover img { transform: scale(1.05); opacity: 1; }
   .cat-txt { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 1; display: flex; flex-direction: column; }
   .cat-txt strong { font: 700 clamp(0.98rem, 2vw, 1.2rem) var(--font-head); letter-spacing: -0.02em; }
@@ -224,7 +224,7 @@ const jsonLd = {
 
   .sumate { position: relative; margin-top: clamp(64px, 9vw, 104px); background: var(--ink); color: #fff; overflow: hidden; }
   .sumate > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); opacity: 0.35; }
-  .sumate-filtro { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(21, 23, 28, 0.95), rgba(21, 23, 28, 0.55)); }
+  .sumate-filtro { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(26, 25, 24, 0.95), rgba(26, 25, 24, 0.55)); }
   .sumate-in { position: relative; padding-top: 80px; padding-bottom: 80px; }
   .sumate .sobretitulo { color: var(--sol); }
   .sumate h2 { font-size: clamp(1.8rem, 4.5vw, 2.8rem); letter-spacing: -0.04em; }

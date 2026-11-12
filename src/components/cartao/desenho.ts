@@ -1,6 +1,6 @@
 // Desenho da tarjeta como lista de comandos (coordenadas em pontos, origem no canto
 // superior esquerdo da área de corte). O mesmo desenho vira PDF (gerarPdf) e prévia SVG (render-svg).
-// Estilo editorial, igual ao site do profissional: marca com ponto ocre, sobretítulo com traço,
+// Estilo editorial, igual ao site do profissional: marca com ponto tijolo, sobretítulo com traço,
 // muito respiro e o logo LoHagoYo.cl discreto.
 import QRCode from 'qrcode';
 import { LOGO } from '../../marca/logo-dados';
@@ -137,7 +137,7 @@ function qr(url: string, x: number, y: number, tam: number, placa = true): Cmd[]
   const pad = placa ? tam * 0.08 : 0;
   return [
     ...(placa ? [{ t: 'rect' as const, x, y, w: tam, h: tam, cor: '#FFFFFF', r: 4 }] : []),
-    { t: 'path', d, x: x + pad, y: y + pad, escala: (tam - 2 * pad) / n, cor: '#15171C' },
+    { t: 'path', d, x: x + pad, y: y + pad, escala: (tam - 2 * pad) / n, cor: '#1A1918' },
   ];
 }
 
@@ -194,7 +194,7 @@ export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: Da
     const larT = W - 2 * M - lw - 12;
     const contato = [d.telefone, d.email].filter(Boolean).join('   ·   ');
     if (contato) cmds.push({ t: 'texto', x: M, y: H - F + 13.5, txt: contato, fonte: 'nome', tam: caber(medir, 'nome', contato, 7, larT), cor: '#FFFFFF' });
-    cmds.push({ t: 'texto', x: M, y: H - F + 23.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 6.4, larT), cor: '#D9B87A' });
+    cmds.push({ t: 'texto', x: M, y: H - F + 23.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 6.4, larT), cor: '#E28A72' });
     cmds.push(...logo(W - M - lw, H - F / 2 - alturaLogo(lw) / 2, lw, LOGO_ESCURO));
   }
 

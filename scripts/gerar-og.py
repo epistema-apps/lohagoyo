@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 P = lambda *a: os.path.join(R, *a)
 W, H = 1200, 630
-GRAFITO, OCRE, OCRE_SUAVE = (21, 23, 28), (156, 118, 54), (217, 184, 122)
+GRAFITO, TIJOLO, TIJOLO_CLARO = (26, 25, 24), (162, 59, 42), (226, 138, 114)
 F_TIT = P('public/fonts/plus-jakarta-sans-latin-700-normal.woff')
 F_TXT = P('public/fonts/atkinson-hyperlegible-latin-700-normal.woff')
 
@@ -53,20 +53,20 @@ def compor(destino, foto, sobretitulo, titulo, rodape, ponto=True):
     f_sob = fonte(F_TXT, 24)
     d.line([(x, 205), (x + 40, 205)], fill=(200, 200, 205), width=2)
     d.text((x + 56, 192), sobretitulo.upper(), font=f_sob, fill=(220, 220, 225))
-    # título grande com ponto ocre
+    # título grande com ponto tijolo
     f_tit = texto_ajustado(d, titulo + '.', F_TIT, 104, W - 2 * x)
     d.text((x, 240), titulo, font=f_tit, fill=(255, 255, 255))
     if ponto:
-        d.text((x + d.textlength(titulo, font=f_tit) - f_tit.size * 0.04, 240), '.', font=f_tit, fill=OCRE_SUAVE)
+        d.text((x + d.textlength(titulo, font=f_tit) - f_tit.size * 0.04, 240), '.', font=f_tit, fill=TIJOLO_CLARO)
     # rodapé
-    d.text((x, H - 96), rodape, font=fonte(F_TXT, 28), fill=OCRE_SUAVE)
+    d.text((x, H - 96), rodape, font=fonte(F_TXT, 28), fill=TIJOLO_CLARO)
     # assinatura discreta
     f_ass = fonte(F_TIT, 26)
     marca = 'LoHagoYo'
     lx = W - 80 - d.textlength(marca + '.cl', font=f_ass)
     d.text((lx, H - 94), 'LoHago', font=f_ass, fill=(255, 255, 255))
     lx2 = lx + d.textlength('LoHago', font=f_ass)
-    d.text((lx2, H - 94), 'Yo.cl', font=f_ass, fill=OCRE_SUAVE)
+    d.text((lx2, H - 94), 'Yo.cl', font=f_ass, fill=TIJOLO_CLARO)
     os.makedirs(os.path.dirname(destino), exist_ok=True)
     im.save(destino, 'JPEG', quality=84, optimize=True, progressive=True)
 

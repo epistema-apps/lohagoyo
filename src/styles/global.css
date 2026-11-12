@@ -5,20 +5,20 @@
 @font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2'); }
 
 :root {
-  /* Marca: grafito + piedra + un acento ocre discreto */
-  --ink: #15171c; /* grafito */
-  --muted: #6b6e76;
-  --bg: #f4f3f0; /* piedra */
+  /* Marca: grafito + piedra + un acento tijolo (ladrillo) */
+  --ink: #1a1918; /* grafito */
+  --muted: #6f6a64;
+  --bg: #f3f1ee; /* piedra */
   --card: #ffffff;
-  --line: #e3e1dc;
-  --accent: #9c7636; /* ocre */
-  --accent-dark: #7d5d27;
-  --accent-soft: #f3ece0;
-  --sol: #c79b4b; /* ocre claro (el punto del logo) */
+  --line: #e4e0db;
+  --accent: #a23b2a; /* tijolo */
+  --accent-dark: #82301f;
+  --accent-soft: #f5e6e2;
+  --sol: #c4513b; /* tijolo claro (sobre fondo oscuro) */
   --ok: #1f8a4c;
-  --wa: #15171c;
+  --wa: #1a1918;
   --radius: 6px;
-  --shadow: 0 1px 2px rgba(21, 23, 28, 0.04);
+  --shadow: 0 1px 2px rgba(26, 25, 24, 0.04);
   --wrap: 1120px;
   --gutter: clamp(16px, 4vw, 32px);
   --font-head: 'Plus Jakarta Sans', system-ui, sans-serif;
