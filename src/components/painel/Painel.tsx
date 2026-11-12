@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { criarConta, emulador, entrarComGoogle, entrarComSenha, mensagemErro, observarUsuario, recuperarSenha, sair, type Usuario } from '../../auth';
 import {
-  apagarServico, carregarMeusDados, enviarParaRevisao, marcarParaRevisao, minhasAvaliacoes, responderAvaliacao,
+  apagarServico, carregarMeusDados, enviarParaRevisao, marcarParaRevisao, publicarPerfil, minhasAvaliacoes, responderAvaliacao,
   salvarPerfil, salvarPrivado, salvarServico, slugDisponivel, subirFoto, type NomeFoto, type Privado,
 } from '../../dados/painel';
 import Conversa from './Conversa';
@@ -204,7 +204,8 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       await salvarPrivado(alvo, { ...privado, rut: privado.rut && rutValido(privado.rut) ? normalizarRut(privado.rut) : undefined });
       setPerfil(novo);
       setSlugOriginal(slug);
-      setMsg({ tipo: 'ok', t: !admin && perfil.status === 'aprobado' ? 'Cambios guardados. Quedan en revisión; tu página sigue publicada como estaba.' : 'Cambios guardados.' });
+      setMsg({ tipo: 'ok', t: !admin && perfil.status === 'aprobado' ? '✓ Cambios guardados. Quedan en revisión; tu página sigue publicada como estaba.'
+        : admin && !status ? '✓ Cambios guardados (aún no publicados). Para ponerlos en línea usa «Guardar y publicar».' : '✓ Cambios guardados.' });
       return true;
     } catch (e) {
       const m = e instanceof Error && e.message === 'slug-ocupado' ? 'Esa dirección ya está en uso. Elige otra.'
@@ -220,12 +221,19 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
   async function enviar() {
     if (pendencias.length || !aceito) return;
     if (!(await guardar(admin ? 'aprobado' : 'pendiente'))) return;
+    setSalvando(true);
     try {
       await enviarParaRevisao(alvo, VERSAO_TERMOS, admin ? TEXTO_ASISTIDO : TEXTO_CONSENTIMIENTO, admin ? usuario.uid : undefined);
-      if (admin) { setMsg({ tipo: 'ok', t: 'Perfil aprobado. Aparecerá en la próxima publicación.' }); return; }
-      setMsg({ tipo: 'ok', t: '¡Listo! LoHagoYo.cl revisará tu página y la publicará cuando esté aprobada.' });
+      if (admin) {
+        await publicarPerfil(alvo, usuario.uid);
+        setMsg({ tipo: 'ok', t: '✓ Guardado y publicado. La página se está actualizando y estará en línea en unos minutos.' });
+        return;
+      }
+      setMsg({ tipo: 'ok', t: '✓ ¡Listo! LoHagoYo.cl revisará tu página y la publicará cuando esté aprobada.' });
     } catch {
-      setMsg({ tipo: 'erro', t: 'No se pudo enviar. Inténtalo de nuevo.' });
+      setMsg({ tipo: 'erro', t: admin ? 'Se guardó, pero no se pudo publicar. Inténtalo de nuevo.' : 'No se pudo enviar. Inténtalo de nuevo.' });
+    } finally {
+      setSalvando(false);
     }
   }
 
@@ -475,8 +483,9 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         </label>
         <p className="pn-dica">Lee los <a href="/terminos/" target="_blank" rel="noopener">Términos y Condiciones</a> y la <a href="/privacidad/" target="_blank" rel="noopener">Política de Privacidad</a>.</p>
         <button className="btn btn-primary pn-largo" disabled={salvando || pendencias.length > 0 || !aceito} onClick={enviar}>
-          {admin ? 'Guardar y publicar' : 'Enviar a revisión'}
+          {salvando ? (admin ? 'Publicando…' : 'Enviando…') : admin ? 'Guardar y publicar' : 'Enviar a revisión'}
         </button>
+        {msg && <p className={`pn-aviso pn-aviso-${msg.tipo}`} role="status">{msg.t}</p>}
       </Secao>
 
       <div className="pn-barra">
