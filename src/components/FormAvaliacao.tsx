@@ -72,7 +72,7 @@ const css = `
         .fa-notas legend{font-weight:700;font-size:.92rem;margin-bottom:6px}
         .fa-notas button{font-size:1.8rem;line-height:1;background:none;border:0;cursor:pointer;color:#d4d1ca;padding:2px}
         .fa-notas button.on{color:var(--accent)}
-        .fa-enviar{background:var(--ink);color:#fff;justify-self:start}
+        .fa-enviar{background:var(--fundo-escuro);color:#fff;justify-self:start}
         .fa-nota{color:var(--muted);font-size:.84rem;margin:0}
         .fa-erro{color:#a32020;margin:0}
         .fa-ok{background:var(--bg);border-radius:12px;padding:16px}
@@ -87,8 +87,8 @@ const css = `
   .fa-sobre{display:flex;align-items:center;gap:12px;font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin:0 0 14px!important}
   .fa-sobre span{width:28px;height:1px;background:currentColor}
   .fa-ponto{color:var(--accent)}
-  .fa-botao{background:var(--ink);color:#fff;min-height:54px;padding:0 28px;font-size:1.02rem}
+  .fa-botao{background:var(--fundo-escuro);color:#fff;min-height:54px;padding:0 28px;font-size:1.02rem}
   .fa-botao span{color:var(--sol)}
-  .fa-botao:hover{background:#000}
+  .fa-botao:hover{background:var(--fundo-escuro-hover)}
   .fa{background:var(--grafite-claro);border-radius:24px;padding:clamp(24px,5vw,44px)}
 `;

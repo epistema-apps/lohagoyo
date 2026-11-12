@@ -2,7 +2,7 @@
 import type { PapelLogo } from '../../marca/logo-dados';
 
 export const PALETA = {
-  grafito: '#1A1918',
+  grafito: '#2E3033',
   pizarra: '#3B3D40',
   piedra: '#E6E6E4',
   branco: '#FFFFFF',
@@ -32,7 +32,7 @@ export type TemaId = 'grafito' | 'pizarra' | 'blanco' | 'piedra';
 export const TEMAS: Record<TemaId, TemaCartao> = {
   grafito: {
     id: 'grafito', nome: 'Grafito', fundo: PALETA.grafito, texto: '#FFFFFF', suave: '#A39E97',
-    acento: PALETA.tijoloSuave, painel: '#262422', circulo: '#262422', logo: LOGO_ESCURO,
+    acento: PALETA.tijoloSuave, painel: '#3B3D40', circulo: '#262422', logo: LOGO_ESCURO,
   },
   pizarra: {
     id: 'pizarra', nome: 'Grafito medio', fundo: PALETA.pizarra, texto: '#FFFFFF', suave: '#B4B6B9',

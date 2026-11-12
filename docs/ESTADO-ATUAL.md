@@ -46,6 +46,8 @@ npm run build
 - **Endereço completo obrigatório** (calle, número, comuna) e público na página, com link para o mapa.
 - **Avaliações**: visitante deixa nome, e-mail (privado), nota e comentário → confirma pelo e-mail (`/api/confirmar` → função) → "Por revisar" no admin (aba Evaluaciones) → opcional "Enviar al profesional" com **conversa privada** no painel dos dois (aviso por e-mail a cada mensagem) → Publicar / Editar / Rechazar / Eliminar / "+ Agregar evaluación". No site: só primeiro nome, nota, comentário e resposta pública; seção, link e nota média só aparecem a partir da primeira aprovada.
 - Funções: `aoMudarPublicado`, `aoMudarAvaliacao`, `confirmarAvaliacao`, `aoNovaMensagem` (e-mails via SMTP hola@lohagoyo.cl, segredo `SMTP_SENHA`).
+- **Fundos escuros em grafite** `#2E3033` (token `--fundo-escuro`; nunca preto puro). Textos seguem em quase-preto.
+- **Compartilhar** (fim da página do profissional): "Compartir página" (link com prévia OG), "Compartir tarjeta" (PNG gerado no navegador, `src/components/cartao/imagem.ts`, compartilhado pelo menu do celular ou baixado no computador) e "Descargar PDF para imprimir".
 - **Bloqueio automático**: 5 avaliações confirmadas com nota ≤ 2 (não recusadas) → perfil `bloqueado`, sai do site, aba "Bloqueados" no admin ("Desbloquear y publicar"); o dono não edita enquanto bloqueado. Constantes `LIMITE_MAS`/`NOTA_MA` em `functions/index.js`.
 - Após `importar-perfil.mjs`, rodar `node scripts/publicar-snapshot.mjs <slug>` (ou aprovar no admin).
 

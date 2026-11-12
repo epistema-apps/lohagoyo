@@ -83,7 +83,7 @@ writeFileSync('public/marca/logo-negativo.svg', svg(TEMAS_LOGO.escuro));
   const dx = (Q - w * k) / 2, dy = (Q - h * k) / 2 - y.minY * k;
   writeFileSync(
     'public/marca/icone.svg',
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Q} ${Q}" role="img" aria-label="LoHagoYo.cl"><rect width="${Q}" height="${Q}" rx="56" fill="${CORES.grafito}"/><g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) scale(${k.toFixed(4)})"><path fill="${CORES.branco}" d="${y.d}"/><path fill="${CORES.tijoloSuave}" d="${circulo(y.fim + 5 + r, -r, r)}"/></g></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Q} ${Q}" role="img" aria-label="LoHagoYo.cl"><rect width="${Q}" height="${Q}" rx="56" fill="#2E3033"/><g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) scale(${k.toFixed(4)})"><path fill="${CORES.branco}" d="${y.d}"/><path fill="${CORES.tijoloSuave}" d="${circulo(y.fim + 5 + r, -r, r)}"/></g></svg>`,
   );
   writeFileSync('public/favicon.svg', readFileSync('public/marca/icone.svg'));
 }

@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 P = lambda *a: os.path.join(R, *a)
 W, H = 1200, 630
-GRAFITO, TIJOLO, TIJOLO_CLARO = (26, 25, 24), (162, 59, 42), (226, 138, 114)
+GRAFITO, TIJOLO, TIJOLO_CLARO = (46, 48, 51), (162, 59, 42), (226, 138, 114)
 F_TIT = P('public/fonts/plus-jakarta-sans-latin-700-normal.woff')
 F_TXT = P('public/fonts/atkinson-hyperlegible-latin-700-normal.woff')
 
