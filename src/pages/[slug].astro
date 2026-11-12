@@ -60,7 +60,7 @@ const jsonLd = {
 <Base
   titulo={`${marca} · ${perfil.oficio} en ${zona}`}
   tituloExato
-  descricao={`${perfil.lema ?? perfil.oficio}. ${perfil.apresentacao}`}
+  descricao={`${(perfil.lema ?? perfil.oficio).replace(/[.\s]+$/, '')}. ${perfil.apresentacao}`}
   imagem={`/og/${perfil.slug}.jpg`}
   jsonLd={jsonLd}
   moldura={false}
