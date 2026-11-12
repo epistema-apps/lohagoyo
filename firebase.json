@@ -64,6 +64,24 @@
             "value": "public, max-age=604800"
           }
         ]
+      },
+      {
+        "source": "/marca/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/favicon.svg",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300, must-revalidate"
+          }
+        ]
       }
     ],
     "rewrites": [
