@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { observarUsuario, sair, type Usuario } from '../../auth';
+import { atualizarPermissoes, observarUsuario, sair, type Usuario } from '../../auth';
 import { listarParaModerar, mudarStatus, novoIdAssistido, souModerador, type Privado } from '../../dados/painel';
 import { textoPreco, textoPublico } from '../../dominio/formato';
 import type { Perfil, Servico } from '../../dominio/tipos';
@@ -25,7 +25,7 @@ export default function Admin(props: PropsPainel) {
   useEffect(() => observarUsuario(setUsuario), []);
   useEffect(() => {
     if (!usuario) return;
-    souModerador().then((ok) => {
+    atualizarPermissoes().catch(() => false).then(() => souModerador()).then((ok) => {
       setMod(ok);
       if (ok) carregar();
     });

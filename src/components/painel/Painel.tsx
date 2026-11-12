@@ -226,8 +226,12 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
   async function foto(nome: NomeFoto, arquivo: File): Promise<string | null> {
     try {
       return await subirFoto(alvo, nome, arquivo);
-    } catch {
-      setMsg({ tipo: 'erro', t: 'No se pudo subir la foto. Prueba con otra imagen (JPG o PNG).' });
+    } catch (e) {
+      const c = (e as { code?: string })?.code ?? '';
+      setMsg({ tipo: 'erro', t: c.includes('unauthorized') || c.includes('permission')
+        ? 'Sin permiso para subir la foto. Sal y vuelve a entrar e inténtalo de nuevo.'
+        : 'No se pudo subir la foto. Prueba con otra imagen (JPG o PNG).' });
+      console.error(e);
       return null;
     }
   }

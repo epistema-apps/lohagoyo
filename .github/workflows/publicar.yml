@@ -1,0 +1,57 @@
+# Publica o LoHagoYo.cl no Firebase Hosting.
+# Dispara: push na main, aviso do Firebase ao aprovar/editar perfil (repository_dispatch),
+# botão "Run workflow" e uma vez por dia (segurança).
+name: Publicar
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [publicar]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *' # 06:00 em Santiago
+
+concurrency:
+  group: publicar
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Dependências
+        run: |
+          npm ci
+          pip install pillow==13.0.0
+
+      - name: Testes
+        run: npm test
+
+      - name: Dados aprovados (Firestore) e imagens de prévia
+        run: |
+          node scripts/sincronizar.mjs
+          python3 scripts/gerar-og.py
+
+      - name: Build
+        run: npx astro build
+
+      - name: Publicar no Firebase Hosting
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json" npx firebase deploy --only hosting --project lohagoyo-prod --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"

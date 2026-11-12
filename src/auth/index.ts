@@ -64,3 +64,11 @@ export function mensagemErro(e: unknown): string {
 }
 
 export const sair = () => signOut(auth());
+
+/** Renova a credencial para aplicar permissões dadas depois do login (ex.: administrador). */
+export async function atualizarPermissoes(): Promise<boolean> {
+  const u = auth().currentUser;
+  if (!u) return false;
+  const t = await u.getIdTokenResult(true);
+  return t.claims.mod === true;
+}

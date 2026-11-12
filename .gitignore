@@ -28,3 +28,5 @@ public/og/*.jpg
 
 # fotos enviadas pelos profissionais (baixadas na publicação)
 public/f/
+
+functions/node_modules/
