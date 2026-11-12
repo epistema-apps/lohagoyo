@@ -9,10 +9,10 @@ Atualizado em 12/11/2026 · versão 0.1.0 · **Fase 1 concluída (com dados fict
 - Páginas públicas estáticas: home com busca (sem acento) e filtro por comuna; `/servicios/<categoria>/`; perfil `/<slug>/` com **3 layouts** (`foto`, `claro`, `compacto`); `/sumate/`; `/privacidad/` (rascunho); 404; `sitemap.xml`; `robots.txt`.
 - SEO: canonical, Open Graph, JSON-LD (`WebSite`, `BreadcrumbList`, `LocalBusiness` com catálogo de serviços).
 - Serviços com preço opcional (7 tipos), mão de obra × materiais, temporadas, extras, botão "Cotizar por WhatsApp" com mensagem pronta.
-- **Tarjeta de presentación em PDF** no navegador: 3 modelos (Clásico, Color, Mínimo); 9 × 5 cm com sangria 3 mm e marcas de corte; folha A4 com 10.
-- **Marca ¡Lo Hago Yo!**: logo em curvas (`public/marca/`: `logo.svg` horizontal, `logo-negativo.svg`, `logo-sticker.svg`, `icone.svg`); paleta azul cobalto `#2433C8` + amarelo `#FFC61A` + tinta `#0E1230`; títulos em Unbounded, texto em Atkinson Hyperlegible. Gerador em `docs/marca/gerar-logo.mjs` (precisa de `opentype.js` e `@fontsource/unbounded`).
+- **Tarjeta de presentación em PDF** no navegador: **4 estruturas** (Clásica, Dividida, Franja, Punto) × **4 cores da paleta** (Azul, Noche, Blanco, Amarillo); logo discreto no canto; QR vetorial; fontes da marca embutidas; 9 × 5 cm com sangria 3 mm e marcas de corte, ou folha A4 com 10. Prévia instantânea no perfil (mesmo desenho do PDF, `src/components/cartao/desenho.ts`).
+- **Marca LoHagoYo.cl**: logo em curvas, Plus Jakarta Sans 600, `LoHago` tinta + `Yo` cobalto + ponto amarelo + `cl` pequeno (`public/marca/logo.svg`, `logo-negativo.svg`, `icone.svg` "Yo."). Paleta cobalto `#2433C8`, amarelo `#FFC61A`, tinta `#0E1230`. Títulos em Plus Jakarta Sans, texto em Atkinson Hyperlegible, **fontes servidas pelo próprio site**. Gerador: `node docs/marca/gerar-logo.mjs`.
 - Rascunho de `firestore.rules` e `storage.rules`, `firebase.json` (Hosting + emuladores).
-- Testes: `npm test` (10 passando). Build: 11 páginas.
+- Testes: `npm test` (11 passando). Build: 11 páginas.
 
 ## Comandos
 ```
@@ -33,4 +33,4 @@ npm run build
 - Cadastro assistido (equipe cadastra com consentimento registrado).
 - Adaptador Firebase + testes das regras no emulador.
 - Imagem OG em PNG/JPG 1200×630 (hoje `og.svg`; WhatsApp não mostra SVG na prévia).
-- Usar o logo também no PDF da tarjeta (hoje só texto).
+- Guardar no perfil a estrutura/cor de tarjeta preferida (Fase 2, painel).

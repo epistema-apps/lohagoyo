@@ -55,3 +55,20 @@ describe('dados (adaptador local)', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 });
+
+describe('tarjeta', () => {
+  it('gera PDF em todas as estruturas e cores, e a folha A4', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { gerarPdfCartao } = await import('../src/components/cartao/gerarPdf');
+    const { ESTRUTURAS } = await import('../src/components/cartao/desenho');
+    const { TEMAS } = await import('../src/components/cartao/temas');
+    const carregar = async (c: string) => readFileSync('public' + c);
+    const d = { nome: 'Pedro Ejemplo Muñoz', oficio: 'Mantención de piscinas', telefone: '+56 9 0000 0000', email: 'pedro@ejemplo.cl', comunas: 'Ñuñoa · La Reina', url: 'https://lohagoyo.cl/pedro/', urlCurta: 'lohagoyo.cl/pedro' };
+    for (const e of ESTRUTURAS) for (const t of Object.keys(TEMAS)) {
+      const pdf = await gerarPdfCartao(d, e.id, t as never, 'imprenta', carregar);
+      expect(new TextDecoder().decode(pdf.slice(0, 5))).toBe('%PDF-');
+    }
+    const a4 = await gerarPdfCartao(d, 'punto', 'blanco', 'a4', carregar);
+    expect(a4.length).toBeGreaterThan(1000);
+  });
+});
