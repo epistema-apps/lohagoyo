@@ -19,7 +19,6 @@ const capa = foto('general-2')!;
         {PAINEL_ATIVO ? (
           <>
             <a class="btn btn-branco" href="/panel/">Crear mi página</a>
-            <a class="link-ajuda" href={linkCadastro()} target="_blank" rel="noopener">¿Necesitas ayuda? Escríbenos</a>
           </>
         ) : (
           <a class="btn btn-branco" href={linkCadastro()} target="_blank" rel="noopener">{CONTATO.whatsapp ? 'Quiero mi página (WhatsApp)' : 'Quiero mi página'}</a>
@@ -30,11 +29,11 @@ const capa = foto('general-2')!;
 
   <section class="wrap bloco">
     <ol class="passos">
-      <li><span>01</span><h3>Cuéntanos qué haces</h3><p>Tus servicios, cómo trabajas y, si quieres, tus precios y condiciones.</p></li>
+      <li><span>01</span><h3>Escribe qué haces</h3><p>Tus servicios, cómo trabajas y, si quieres, tus precios y condiciones.</p></li>
       <li><span>02</span><h3>Sube tu foto</h3><p>Una foto tuya (obligatoria) y, si quieres, de tus trabajos. Si no tienes, eliges del banco de fotos de tu rubro.</p></li>
-      <li><span>03</span><h3>Revisamos y publicamos</h3><p>Queda en <strong>lohagoyo.cl/tu-nombre</strong>, con tu tarjeta de presentación lista para imprimir.</p></li>
+      <li><span>03</span><h3>Envía y se publica</h3><p>Tu página se verifica y queda en <strong>lohagoyo.cl/tu-nombre</strong>, con tu tarjeta de presentación lista para imprimir.</p></li>
     </ol>
-    <p class="nota">{PAINEL_ATIVO ? 'Lo haces tú mismo desde tu celular en pocos minutos. Revisamos cada página antes de publicarla. Si prefieres, te ayudamos.' : 'Por ahora te ayudamos personalmente a crear tu página. Muy pronto podrás hacerlo tú mismo desde tu celular.'}</p>
+    <p class="nota">Lo haces tú mismo, desde tu celular, en pocos minutos. Cada página se verifica antes de publicarse.</p>
   </section>
 </Base>
 

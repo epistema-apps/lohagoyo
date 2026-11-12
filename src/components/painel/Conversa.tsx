@@ -49,7 +49,7 @@ export default function Conversa({ avaliacaoId, autor, autorUid }: { avaliacaoId
         <button className="btn btn-primary btn-sm" disabled={enviando || !texto.trim()}>{enviando ? 'Enviando…' : 'Enviar'}</button>
       </form>
       {erro && <p className="pn-erro">{erro}</p>}
-      <p className="pn-dica" style={{ margin: 0 }}>{autor === 'admin' ? 'El profesional recibe un aviso por correo y responde en su panel.' : 'LoHagoYo.cl recibe tu respuesta en su panel.'}</p>
+      <p className="pn-dica" style={{ margin: 0 }}>{autor === 'admin' ? 'El profesional recibe un aviso por correo y responde en su panel.' : 'Tu respuesta queda registrada.'}</p>
     </div>
   );
 }

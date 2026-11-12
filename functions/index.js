@@ -76,8 +76,8 @@ export const aoMudarAvaliacao = onDocumentWritten(
     // enviada ao profissional para conversar antes de publicar
     if (depois?.status === 'en_contestacion' && antes?.status !== 'en_contestacion') {
       const { primeiro } = await nomeDoPerfil(depois.perfilId);
-      await email(await emailDoProfissional(depois.perfilId), 'Tienes una opinión para revisar en LoHagoYo.cl',
-        `Hola ${primeiro}:\n\nRecibiste una opinión de un cliente (${depois.nota} de 5). Antes de publicarla queremos conversar contigo.\n\nEntra a tu panel para verla, responder o explicarnos lo que pasó:\n${SITE}/panel/`);
+      await email(await emailDoProfissional(depois.perfilId), 'Tienes una opinión pendiente en LoHagoYo.cl',
+        `Hola ${primeiro}:\n\nRecibiste una opinión de un cliente (${depois.nota} de 5). Antes de que se publique, puedes responderla.\n\nEntra a tu panel para verla y responder:\n${SITE}/panel/`);
     }
 
     // o que aparece no site mudou?
@@ -145,8 +145,8 @@ export const aoNovaMensagem = onDocumentCreated(
     if (!m || !av.exists) return;
     const { nome, primeiro } = await nomeDoPerfil(av.get('perfilId'));
     if (m.autor === 'admin') {
-      await email(await emailDoProfissional(av.get('perfilId')), 'Nuevo mensaje de LoHagoYo.cl',
-        `Hola ${primeiro}:\n\nLoHagoYo.cl te escribió sobre una opinión de un cliente:\n\n"${m.texto}"\n\nResponde en tu panel: ${SITE}/panel/`);
+      await email(await emailDoProfissional(av.get('perfilId')), 'Nuevo mensaje en tu panel de LoHagoYo.cl',
+        `Hola ${primeiro}:\n\nTienes un nuevo mensaje sobre una opinión de un cliente:\n\n"${m.texto}"\n\nResponde en tu panel: ${SITE}/panel/`);
     } else {
       await email(REMETENTE, `Respuesta de ${nome} sobre una opinión`,
         `${nome} respondió:\n\n"${m.texto}"\n\nVer en el panel: ${SITE}/panel/admin/`);

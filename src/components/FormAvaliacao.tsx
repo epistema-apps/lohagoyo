@@ -29,7 +29,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
   if (estado === 'ok') {
     return (
       <div className="fa-ok">
-        <strong>¡Gracias!</strong> Te enviamos un correo a {email}. Abre el enlace del correo para confirmar y publicar tu opinión.
+        <strong>¡Gracias!</strong> Se envió un correo a {email}. Abre el enlace del correo para confirmar y publicar tu opinión.
       </div>
     );
   }
@@ -39,7 +39,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
         <div>
           <p className="fa-sobre"><span />Tu opinión</p>
           <h3>¿Trabajaste con {nomeProfissional}<span className="fa-ponto">?</span></h3>
-          <p>Cuéntanos cómo fue. Tu opinión ayuda a otros vecinos a elegir y a {nomeProfissional} a seguir creciendo.</p>
+          <p>Cuenta cómo fue. Tu opinión ayuda a otros vecinos a elegir y a {nomeProfissional} a seguir creciendo.</p>
         </div>
         <button type="button" className="btn fa-botao" onClick={() => setAbrir(true)}>Dejar mi opinión <span aria-hidden="true">★</span></button>
       </div>
@@ -58,7 +58,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
       <label>Tu comentario<textarea rows={4} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="¿Cómo fue el servicio?" /></label>
       <button className="btn fa-enviar" disabled={!nota || estado === 'enviando'}>{estado === 'enviando' ? 'Enviando…' : 'Enviar opinión'}</button>
       {estado === 'erro' && <p className="fa-erro">No se pudo enviar. Inténtalo de nuevo.</p>}
-      <p className="fa-nota">Recibirás un correo para confirmar tu opinión; al confirmarla se publica. LoHagoYo.cl puede retirar opiniones falsas u ofensivas. Al enviar aceptas los <a href="/terminos/">Términos</a> y la <a href="/privacidad/">Política de Privacidad</a>.</p>
+      <p className="fa-nota">Recibirás un correo para confirmar tu opinión; al confirmarla se publica. Las opiniones falsas u ofensivas se retiran. Al enviar aceptas los <a href="/terminos/">Términos</a> y la <a href="/privacidad/">Política de Privacidad</a>.</p>
     </form>
   );
   }

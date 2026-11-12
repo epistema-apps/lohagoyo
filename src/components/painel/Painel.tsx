@@ -51,7 +51,7 @@ export function Entrar() {
         await criarConta(nome.trim(), email.trim(), senha);
       }
       else if (modo === 'entrar') await entrarComSenha(email.trim(), senha);
-      else { await recuperarSenha(email.trim()); setAviso('Te enviamos un correo para crear una nueva contraseña.'); }
+      else { await recuperarSenha(email.trim()); setAviso('Se envió un correo para crear una nueva contraseña.'); }
     } catch (x) {
       setErro(mensagemErro(x));
     } finally {
@@ -68,8 +68,8 @@ export function Entrar() {
       <p className="pn-sobre"><span />Tu panel</p>
       <h1>{modo === 'criar' ? 'Crea tu página gratis' : modo === 'entrar' ? 'Entra a tu panel' : 'Recupera tu contraseña'}<span className="pn-ponto">.</span></h1>
       <p className="pn-lead">
-        {modo === 'criar' ? 'Usa cualquier correo (no necesita ser Gmail). Ahí te avisaremos cuando tu página esté publicada.'
-          : modo === 'entrar' ? 'Con el correo y la contraseña que creaste.' : 'Escribe tu correo y te enviamos un enlace.'}
+        {modo === 'criar' ? 'Usa cualquier correo (no necesita ser Gmail). Ahí recibirás el aviso cuando tu página esté publicada.'
+          : modo === 'entrar' ? 'Con el correo y la contraseña que creaste.' : 'Escribe tu correo y recibirás un enlace.'}
       </p>
       <div className="pn-abas" role="tablist">
         <button type="button" role="tab" aria-selected={modo === 'criar'} className={modo === 'criar' ? 'ativo' : ''} onClick={() => setModo('criar')}>Crear cuenta</button>
@@ -131,7 +131,7 @@ const PUBLICOS: { id: Publico; nome: string }[] = [
 ];
 const PAGOS = ['Transferencia', 'Efectivo', 'Tarjeta'];
 const STATUS: Record<Perfil['status'], string> = {
-  borrador: 'Borrador: todavía no enviada', pendiente: 'En revisión: LoHagoYo.cl revisará tu página (o tus cambios) antes de publicarla',
+  borrador: 'Borrador: todavía no enviada', pendiente: 'En verificación: tu página (o tus cambios) se publica al completarse la verificación',
   aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo.cl',
   bloqueado: 'Bloqueada por evaluaciones de clientes: escribe a hola@lohagoyo.cl',
 };
@@ -160,7 +160,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         if (d.privado) setPrivado(d.privado);
         setServicos(d.servicos);
       })
-      .catch(() => setMsg({ tipo: 'erro', t: 'No pudimos cargar tus datos. Recarga la página.' }));
+      .catch(() => setMsg({ tipo: 'erro', t: 'No se pudieron cargar tus datos. Recarga la página.' }));
   }, [alvo]);
 
   // disponibilidade do endereço
@@ -208,7 +208,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       await salvarPrivado(alvo, { ...privado, rut: privado.rut && rutValido(privado.rut) ? normalizarRut(privado.rut) : undefined });
       setPerfil(novo);
       setSlugOriginal(slug);
-      setMsg({ tipo: 'ok', t: !admin && perfil.status === 'aprobado' ? '✓ Cambios guardados. Quedan en revisión; tu página sigue publicada como estaba.'
+      setMsg({ tipo: 'ok', t: !admin && perfil.status === 'aprobado' ? '✓ Cambios guardados y enviados a verificación. Tu página sigue publicada como estaba hasta que se publiquen.'
         : admin && !status ? '✓ Cambios guardados (aún no publicados). Para ponerlos en línea usa «Guardar y publicar».' : '✓ Cambios guardados.' });
       return true;
     } catch (e) {
@@ -229,8 +229,8 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
     setBuscandoCp(false);
     if (cp) {
       set('endereco', { ...perfil.endereco, codigoPostal: cp });
-      setCpAviso(`Encontramos ${cp}. Revisa que sea correcto.`);
-    } else setCpAviso('No pudimos encontrarlo automáticamente. Escríbelo tú.');
+      setCpAviso(`Código encontrado: ${cp}. Revisa que sea correcto.`);
+    } else setCpAviso('No se encontró automáticamente. Escríbelo tú.');
   }
 
   async function enviar() {
@@ -244,7 +244,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         setMsg({ tipo: 'ok', t: '✓ Guardado y publicado. La página se está actualizando y estará en línea en unos minutos.' });
         return;
       }
-      setMsg({ tipo: 'ok', t: '✓ ¡Listo! LoHagoYo.cl revisará tu página y la publicará cuando esté aprobada.' });
+      setMsg({ tipo: 'ok', t: '✓ ¡Listo! Tu página está en verificación y se publica al completarse.' });
     } catch {
       setMsg({ tipo: 'erro', t: admin ? 'Se guardó, pero no se pudo publicar. Inténtalo de nuevo.' : 'No se pudo enviar. Inténtalo de nuevo.' });
     } finally {
@@ -328,7 +328,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       </Secao>
 
       {/* 3. Onde e para quem */}
-      <Secao n="03" titulo="Dirección, dónde y para quién" ajuda="La dirección es obligatoria y aparece en tu página: da confianza a los clientes y nos ayuda a evitar fraudes.">
+      <Secao n="03" titulo="Dirección, dónde y para quién" ajuda="La dirección es obligatoria y aparece en tu página: da confianza a los clientes y evita fraudes.">
         <Campo rotulo="Comunas donde atiendes">
           <div className="pn-chips">
             {['Todo Santiago', ...comunas].map((c) => (
@@ -403,7 +403,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
           <input type="checkbox" checked={perfil.emiteBoleta} onChange={(e) => set('emiteBoleta', e.target.checked)} />
           Emito boleta
         </label>
-        <Campo rotulo="Tu nombre completo (privado)" ajuda="Solo lo ve el equipo de LoHagoYo.cl. No aparece en tu página.">
+        <Campo rotulo="Tu nombre completo (privado)" ajuda="Privado: no aparece en tu página.">
           <input value={privado.nomeCompleto} maxLength={120} onChange={(e) => setPrivado({ ...privado, nomeCompleto: e.target.value })} />
         </Campo>
         <Campo rotulo="Tu RUT (privado)" ajuda="Obligatorio. Nunca aparece en tu página. Te identifica como responsable de tu página, tus servicios y los datos que publicas.">
@@ -498,7 +498,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       </Secao>
 
       {/* 8. Enviar */}
-      <Secao n="08" titulo={admin ? 'Guardar y publicar' : 'Enviar a revisión'}>
+      <Secao n="08" titulo={admin ? 'Guardar y publicar' : 'Enviar para publicar'}>
         {pendencias.length > 0 && (
           <ul className="pn-pendencias">{pendencias.map((p) => <li key={p}>{p}</li>)}</ul>
         )}
@@ -508,7 +508,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         </label>
         <p className="pn-dica">Lee los <a href="/terminos/" target="_blank" rel="noopener">Términos y Condiciones</a> y la <a href="/privacidad/" target="_blank" rel="noopener">Política de Privacidad</a>.</p>
         <button className="btn btn-primary pn-largo" disabled={salvando || pendencias.length > 0 || !aceito} onClick={enviar}>
-          {salvando ? (admin ? 'Publicando…' : 'Enviando…') : admin ? 'Guardar y publicar' : 'Enviar a revisión'}
+          {salvando ? (admin ? 'Publicando…' : 'Enviando…') : admin ? 'Guardar y publicar' : 'Enviar para publicar'}
         </button>
         {msg && <p className={`pn-aviso pn-aviso-${msg.tipo}`} role="status">{msg.t}</p>}
         <button type="button" className="btn btn-ghost btn-sm pn-guardar" disabled={salvando} onClick={() => guardar()}>
@@ -516,7 +516,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         </button>
         <p className="pn-dica">{admin
           ? 'Los cambios solo aparecen en la página cuando usas «Guardar y publicar».'
-          : 'Tus cambios solo se publican después de «Enviar a revisión» y de nuestra aprobación.'}</p>
+          : 'Tus cambios solo se publican después de «Enviar para publicar» y de la verificación.'}</p>
       </Secao>
 
       {msg?.tipo === 'erro' && <p className="pn-toast" role="alert" onClick={() => setMsg(null)}>{msg.t}</p>}
@@ -684,7 +684,7 @@ function Opinioes({ uid }: { uid: string }) {
   useEffect(() => { minhasAvaliacoes(uid).then(setLista).catch(() => setLista([])); }, [uid]);
   if (!lista?.length) return null;
   return (
-    <Secao n="★" titulo="Opiniones de tus clientes" ajuda="LoHagoYo.cl revisa cada opinión antes de publicarla. Si te enviamos una para revisar, puedes conversar con nosotros y dejar una respuesta pública.">
+    <Secao n="★" titulo="Opiniones de tus clientes" ajuda="Las opiniones confirmadas por correo se publican en tu página. Si una opinión queda pendiente, puedes responderla aquí y dejar una respuesta pública.">
       <div className="av-lista">
         {lista.map((a) => (
           <article key={a.id} className="av-item">
@@ -693,7 +693,7 @@ function Opinioes({ uid }: { uid: string }) {
               <span className="av-estrelas">{'★'.repeat(a.nota) + '☆'.repeat(5 - a.nota)}</span>
             </div>
             <p className="av-texto">{a.texto}</p>
-            <p className="pn-dica" style={{ margin: 0 }}>{a.status === 'aprobada' ? 'Publicada en tu página' : 'LoHagoYo.cl quiere conversar contigo antes de publicarla'}</p>
+            <p className="pn-dica" style={{ margin: 0 }}>{a.status === 'aprobada' ? 'Publicada en tu página' : 'Pendiente: puedes responder antes de que se publique'}</p>
             {a.status === 'en_contestacion' && (
               <>
                 <Campo rotulo="Respuesta pública (opcional)" ajuda="Si se publica la opinión, tu respuesta aparece debajo.">
