@@ -10,9 +10,9 @@ import { CONTATO } from '../config';
 
     <aside class="destaque" aria-labelledby="regra">
       <p class="destaque-sobre">La regla principal</p>
-      <h2 id="regra">Cada 2 opiniones de 1 o 2 estrellas, la página sale del aire y pasa a una auditoría.</h2>
+      <h2 id="regra">Si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, la página sale del aire y pasa a una auditoría.</h2>
       <ul>
-        <li><strong>Automático:</strong> al confirmarse la segunda opinión negativa, la página sale del aire en ese momento.</li>
+        <li><strong>Automático:</strong> cuando se confirma una opinión de 1 o 2 estrellas y ya hay otra igual entre las últimas 10, la página sale del aire en ese momento.</li>
         <li><strong>Discreto:</strong> en su dirección aparece solo un aviso de «página en verificación», sin el nombre ni el motivo.</li>
         <li><strong>Con derecho a respuesta:</strong> el profesional recibe un correo y puede responder las opiniones desde su panel antes de la decisión.</li>
         <li><strong>Con revisión humana:</strong> es el único paso de la plataforma en que una persona revisa el caso —las opiniones, las respuestas y la información de la página— y decide.</li>
@@ -39,13 +39,13 @@ import { CONTATO } from '../config';
 
     <h2>3. La auditoría, paso a paso</h2>
     <ol>
-      <li>Se confirma la segunda opinión de 1 o 2 estrellas desde la última auditoría (o desde la publicación).</li>
+      <li>Se confirma una opinión y, entre las 10 más recientes, hay 2 de 1 o 2 estrellas. Solo cuentan las opiniones recibidas desde la última auditoría.</li>
       <li>La página sale del aire y queda el aviso neutro «en verificación».</li>
       <li>El profesional recibe un correo y puede responder desde su panel.</li>
       <li>Una persona revisa el caso y decide a la brevedad.</li>
       <li>Resultado posible:
         <ul>
-          <li><strong>Vuelve al aire</strong> y la cuenta de opiniones negativas empieza de cero;</li>
+          <li><strong>Vuelve al aire</strong> y la cuenta empieza de cero: las opiniones anteriores ya no cuentan para una nueva auditoría;</li>
           <li><strong>se pide un ajuste</strong> (por ejemplo, corregir información) antes de volver;</li>
           <li><strong>se retira definitivamente</strong>, si hay fraude, suplantación, datos falsos o incumplimientos graves.</li>
         </ul>

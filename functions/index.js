@@ -102,12 +102,14 @@ export const aoMudarAvaliacao = onDocumentWritten(
 );
 
 // ---------- auditoria automática por avaliações negativas ----------
-// Regra (publicada em /normas/): a cada A_CADA avaliações confirmadas de nota <= NOTA_MA
-// recebidas desde a última auditoria (perfil.auditadoEm), a página sai do ar (fica uma página
+// Regra (publicada em /normas/): se entre as JANELA avaliações confirmadas mais recentes
+// (só as recebidas desde a última auditoria, perfil.auditadoEm) houver LIMITE de nota <= NOTA_MA,
+// a página sai do ar (fica uma página
 // neutra "en verificación"), o profissional é avisado e o caso vai para a aba "Bloqueados".
 // Ao "Desbloquear y publicar", auditadoEm = agora e a contagem recomeça.
 const NOTA_MA = 2;
-const A_CADA = 2;
+const LIMITE = 2;
+const JANELA = 10;
 const CONTAM = ['pendiente', 'en_contestacion', 'aprobada'];
 
 async function verificarBloqueio(perfilId) {
@@ -116,11 +118,14 @@ async function verificarBloqueio(perfilId) {
   if (!p.exists || p.get('status') === 'bloqueado') return;
   const desde = p.get('auditadoEm') ?? '';
   const s = await db().collection('avaliacoes').where('perfilId', '==', perfilId).get();
-  const mas = s.docs.filter((d) => CONTAM.includes(d.get('status')) && Number(d.get('nota')) <= NOTA_MA
-    && String(d.get('criadoEm') ?? '') > desde).length;
-  if (mas < A_CADA) return;
+  const recentes = s.docs
+    .filter((d) => CONTAM.includes(d.get('status')) && String(d.get('criadoEm') ?? '') > desde)
+    .sort((a, b) => String(b.get('criadoEm')).localeCompare(String(a.get('criadoEm'))))
+    .slice(0, JANELA);
+  const mas = recentes.filter((d) => Number(d.get('nota')) <= NOTA_MA).length;
+  if (mas < LIMITE) return;
   const agora = new Date().toISOString();
-  const motivo = `${mas} evaluaciones de ${NOTA_MA} estrellas o menos desde la última auditoría`;
+  const motivo = `${mas} de las últimas ${recentes.length} evaluaciones con ${NOTA_MA} estrellas o menos`;
   const pub = await db().doc(`publicados/${perfilId}`).get();
   const b = db().batch();
   b.update(ref, { status: 'bloqueado', bloqueadoEm: agora, motivoBloqueio: motivo, atualizadoEm: agora });
@@ -137,7 +142,7 @@ async function verificarBloqueio(perfilId) {
   await email(REMETENTE, `Auditoría automática: ${nome}`,
     `${nome} salió del aire automáticamente (${motivo}).\n\nDecide en el panel, pestaña Profesionales > En auditoría:\n${SITE}/panel/admin/`);
   await email(await emailDoProfissional(perfilId), 'Tu página está en verificación',
-    `Hola ${primeiro}:\n\nTu página recibió ${A_CADA} opiniones de ${NOTA_MA} estrellas o menos. Según las Normas de calidad (${SITE}/normas/), quedó fuera del aire mientras se hace una revisión.\n\nPuedes ver las opiniones y responderlas en tu panel:\n${SITE}/panel/\n\nRecibirás un aviso cuando haya una decisión.`);
+    `Hola ${primeiro}:\n\nEntre las últimas opiniones de tu página hay ${mas} de ${NOTA_MA} estrellas o menos. Según las Normas de calidad (${SITE}/normas/), quedó fuera del aire mientras se hace una revisión.\n\nPuedes ver las opiniones y responderlas en tu panel:\n${SITE}/panel/\n\nRecibirás un aviso cuando haya una decisión.`);
 }
 
 // Link do e-mail: confirma a avaliação e ela é PUBLICADA na hora (regra: publicação automática;

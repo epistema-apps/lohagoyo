@@ -16,11 +16,11 @@ export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
 interface Props { categorias: { id: string; nome: string; sugeridos: string[] }[]; comunas: string[]; banco: FotoBanco[] }
 
-const VERSAO_TERMOS = '2026-11-12c';
+const VERSAO_TERMOS = '2026-11-12d';
 const TEXTO_ASISTIDO =
   'Registro asistido: confirmo que el profesional leyó y aceptó los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo.cl, incluida su responsabilidad total por su página y sus servicios, y autorizó a publicar estos datos y fotos.';
 const TEXTO_CONSENTIMIENTO =
-  'Acepto los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo.cl, incluida la auditoría automática: cada 2 opiniones de 1 o 2 estrellas, mi página sale del aire hasta que se revise. Declaro que mis datos y mi RUT son verdaderos y que soy el titular y único responsable de mi página, de los datos personales que en ella se tratan, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo.cl no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo.cl frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
+  'Acepto los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo.cl, incluida la auditoría automática: si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, mi página sale del aire hasta que se revise. Declaro que mis datos y mi RUT son verdaderos y que soy el titular y único responsable de mi página, de los datos personales que en ella se tratan, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo.cl no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo.cl frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
 
 export default function Painel(props: Props) {
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
@@ -133,7 +133,7 @@ const PAGOS = ['Transferencia', 'Efectivo', 'Tarjeta'];
 const STATUS: Record<Perfil['status'], string> = {
   borrador: 'Borrador: todavía no enviada', pendiente: 'En verificación: tu página (o tus cambios) se publica al completarse la verificación',
   aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo.cl',
-  bloqueado: 'En auditoría: tu página recibió 2 opiniones de 1 o 2 estrellas y está fuera del aire hasta que se revise. Responde las opiniones más abajo (ver Normas de calidad).',
+  bloqueado: 'En auditoría: 2 de las últimas 10 opiniones de tu página son de 1 o 2 estrellas y está fuera del aire hasta que se revise. Responde las opiniones más abajo (ver Normas de calidad).',
 };
 
 export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = false, aoVoltar }: Props & {
@@ -684,7 +684,7 @@ function Opinioes({ uid }: { uid: string }) {
   useEffect(() => { minhasAvaliacoes(uid).then(setLista).catch(() => setLista([])); }, [uid]);
   if (!lista?.length) return null;
   return (
-    <Secao n="★" titulo="Opiniones de tus clientes" ajuda="Las opiniones confirmadas por correo se publican en tu página. Si una opinión queda pendiente, puedes responderla aquí y dejar una respuesta pública. Cada 2 opiniones de 1 o 2 estrellas, tu página pasa a una auditoría (ver Normas de calidad).">
+    <Secao n="★" titulo="Opiniones de tus clientes" ajuda="Las opiniones confirmadas por correo se publican en tu página. Si una opinión queda pendiente, puedes responderla aquí y dejar una respuesta pública. Si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, tu página pasa a una auditoría (ver Normas de calidad).">
       <div className="av-lista">
         {lista.map((a) => (
           <article key={a.id} className="av-item">
