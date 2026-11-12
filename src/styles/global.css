@@ -1,0 +1,104 @@
+:root {
+  /* Marca: azul de overol + amarillo de herramienta */
+  --ink: #0e1230;
+  --muted: #545a78;
+  --bg: #f4f5fa;
+  --card: #ffffff;
+  --line: #dfe2ef;
+  --accent: #2433c8; /* cobalto */
+  --accent-dark: #1a2596;
+  --accent-soft: #e4e7fb;
+  --sol: #ffc61a; /* amarillo */
+  --ok: #1f8a4c;
+  --wa: #1fa855;
+  --radius: 14px;
+  --shadow: 0 2px 10px rgba(29, 36, 51, 0.07);
+  --wrap: 1120px;
+  --gutter: clamp(16px, 4vw, 32px);
+  --font-head: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-head);
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: clamp(1.75rem, 5.5vw, 2.9rem); font-weight: 800; }
+h2 { font-size: clamp(1.3rem, 3.5vw, 1.75rem); font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+p { margin: 0 0 1em; }
+a { color: var(--accent-dark); }
+img { max-width: 100%; height: auto; display: block; }
+
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 48px;
+  padding: 0.7em 1.3em;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  font: 700 1rem var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn-wa { background: var(--wa); color: #fff; }
+.btn-wa:hover { background: #17904a; }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 3px 3px 0 var(--ink); }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn-ghost:hover { border-color: var(--ink); }
+
+.chip {
+  display: inline-block;
+  padding: 0.3em 0.8em;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+}
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* destaque tipo marca-texto, como o "Yo" do logo */
+.destaque { background: var(--sol); color: var(--ink); padding: 0 0.15em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

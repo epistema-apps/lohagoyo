@@ -1,0 +1,50 @@
+rules_version = '2';
+// RASCUNHO (Fase 1). Antes de publicar: testes no emulador para cada papel (Fase 3).
+// Papéis: visitante (anônimo), profissional (dono do perfil), moderador (custom claim `mod`).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function logado() { return request.auth != null; }
+    function moderador() { return logado() && request.auth.token.mod == true; }
+    function dono(uid) { return logado() && request.auth.uid == uid; }
+
+    // Público: categorias e regiões (escrita só moderação).
+    match /categorias/{id} { allow read: if true; allow write: if moderador(); }
+    match /regioes/{id}    { allow read: if true; allow write: if moderador(); }
+
+    // Privado: só o próprio e a moderação.
+    match /profissionais/{uid} {
+      allow read, write: if dono(uid) || moderador();
+    }
+
+    // Perfil público: id do documento = uid do dono.
+    // O dono edita, mas nunca aprova a si mesmo (status só 'borrador'/'pendiente'/'pausado').
+    match /perfis/{uid} {
+      allow read: if resource.data.status == 'aprobado' || dono(uid) || moderador();
+      allow create: if dono(uid) && request.resource.data.status in ['borrador', 'pendiente'];
+      allow update: if moderador() ||
+        (dono(uid) && request.resource.data.status in ['borrador', 'pendiente', 'pausado']);
+      allow delete: if dono(uid) || moderador();
+    }
+
+    match /servicos/{id} {
+      allow read: if true; // filtrado no build pelos perfis aprovados
+      allow create: if logado() && request.resource.data.perfilId == request.auth.uid;
+      allow update, delete: if moderador() || (logado() && resource.data.perfilId == request.auth.uid
+        && (request.resource == null || request.resource.data.perfilId == request.auth.uid));
+    }
+
+    // Consentimentos: só se cria; nunca se altera.
+    match /consentimentos/{id} {
+      allow create: if logado() && request.resource.data.uid == request.auth.uid;
+      allow read: if moderador() || (logado() && resource.data.uid == request.auth.uid);
+      allow update, delete: if false;
+    }
+
+    // Denúncias: qualquer pessoa cria; só moderação lê.
+    match /denuncias/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['perfilId', 'motivo', 'criadoEm'])
+        && request.resource.data.motivo is string && request.resource.data.motivo.size() <= 1000;
+      allow read, update, delete: if moderador();
+    }
+  }
+}

@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+import ServicoItem from '../components/ServicoItem.astro';
+import GeradorCartao from '../components/cartao/GeradorCartao';
+import { dados } from '../dados';
+import { linkWhatsApp, textoPublico } from '../dominio/formato';
+import type { Perfil } from '../dominio/tipos';
+
+export async function getStaticPaths() {
+  const perfis = await dados.listarPerfisPublicos();
+  return perfis.map((perfil) => ({ params: { slug: perfil.slug }, props: { perfil } }));
+}
+
+const { perfil } = Astro.props as { perfil: Perfil };
+const servicos = await dados.listarServicosDoPerfil(perfil.id);
+const categorias = (await dados.listarCategorias()).filter((c) => perfil.categoriaIds.includes(c.id));
+const wa = linkWhatsApp(perfil.contatos, perfil.nomePublico);
+const url = new URL(`/${perfil.slug}/`, Astro.site).href;
+const capa = perfil.fotos[0];
+const galeria = perfil.layout === 'foto' ? perfil.fotos.slice(1) : perfil.fotos;
+const cor = perfil.cor ?? '#2433c8';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: `${perfil.nomePublico} · ${perfil.oficio}`,
+  description: perfil.apresentacao,
+  url,
+  ...(perfil.contatos.telefone && { telephone: perfil.contatos.telefone }),
+  ...(capa && { image: new URL(capa, Astro.site).href }),
+  areaServed: perfil.comunas.map((c) => ({ '@type': 'City', name: c })),
+  address: { '@type': 'PostalAddress', addressRegion: 'Región Metropolitana', addressCountry: 'CL' },
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'Servicios',
+    itemListElement: servicos.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.nome, description: s.descricao } })),
+  },
+};
+---
+<Base
+  titulo={`${perfil.nomePublico}, ${perfil.oficio.toLowerCase()}`}
+  descricao={`${perfil.oficio} en ${perfil.comunas.slice(0, 4).join(', ')}. ${perfil.apresentacao}`}
+  imagem={capa}
+  jsonLd={jsonLd}
+>
+  <div class={`perfil layout-${perfil.layout}`} style={`--cor:${cor}`}>
+    <section class="capa" style={perfil.layout === 'foto' && capa ? `background-image:url(${capa})` : ''}>
+      <div class="wrap capa-in">
+        {perfil.layout !== 'foto' && (
+          <div class="avatar" aria-hidden="true">
+            {capa ? <img src={capa} alt="" width="160" height="160" /> : <span>{perfil.nomePublico.charAt(0)}</span>}
+          </div>
+        )}
+        <div class="ident">
+          <p class="oficio">{perfil.oficio}</p>
+          <h1>{perfil.nomePublico}</h1>
+          <p class="local">📍 {perfil.comunas.join(' · ')}</p>
+          <div class="acoes">
+            {wa && <a class="btn btn-wa" href={wa} target="_blank" rel="noopener">WhatsApp</a>}
+            {perfil.contatos.telefone && <a class="btn btn-ghost" href={`tel:${perfil.contatos.telefone.replace(/\s/g, '')}`}>Llamar</a>}
+            {perfil.contatos.email && <a class="btn btn-ghost" href={`mailto:${perfil.contatos.email}`}>Correo</a>}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap sobre">
+      <p class="apresentacao">{perfil.apresentacao}</p>
+      <ul class="fatos">
+        <li><strong>Atiende:</strong> {perfil.publicos.map(textoPublico).join(', ')}</li>
+        {perfil.horario && <li><strong>Horario:</strong> {perfil.horario}</li>}
+        {perfil.pagamentos.length > 0 && <li><strong>Pago:</strong> {perfil.pagamentos.join(', ')}</li>}
+        <li><strong>Boleta:</strong> {perfil.emiteBoleta ? 'Sí, emite boleta' : 'No emite boleta'}</li>
+        <li><strong>Categorías:</strong> {categorias.map((c, i) => <>{i > 0 && ', '}<a href={`/servicios/${c.id}/`}>{c.nome}</a></>)}</li>
+      </ul>
+    </section>
+
+    <section class="wrap">
+      <h2>Servicios</h2>
+      <div class="servicos">
+        {servicos.map((s) => <ServicoItem servico={s} perfil={perfil} />)}
+      </div>
+    </section>
+
+    {galeria.length > 0 && (
+      <section class="wrap">
+        <h2>Trabajos</h2>
+        <div class="galeria">
+          {galeria.map((f, i) => <img src={f} alt={`Trabajo ${i + 1} de ${perfil.nomePublico}`} loading="lazy" width="600" height="400" />)}
+        </div>
+      </section>
+    )}
+
+    <section class="wrap">
+      <div class="cartao-box card">
+        <h2>Tarjeta de presentación</h2>
+        <p>Descarga la tarjeta de {perfil.nomePublico.split(' ')[0]} lista para imprimir.</p>
+        <GeradorCartao
+          client:visible
+          dados={{
+            nome: perfil.nomePublico,
+            oficio: perfil.oficio,
+            telefone: perfil.contatos.telefone ?? (perfil.contatos.whatsapp ? `+${perfil.contatos.whatsapp}` : ''),
+            email: perfil.contatos.email ?? '',
+            comunas: perfil.comunas.slice(0, 3).join(' · '),
+            url,
+            urlCurta: `lohagoyo.cl/${perfil.slug}`,
+            cor,
+          }}
+        />
+      </div>
+    </section>
+
+    {wa && (
+      <a class="wa-fixo btn btn-wa" href={wa} target="_blank" rel="noopener" aria-label={`Escribir a ${perfil.nomePublico} por WhatsApp`}>
+        WhatsApp
+      </a>
+    )}
+  </div>
+</Base>
+
+<style>
+  .capa { padding: 40px 0 32px; }
+  .capa-in { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .avatar { width: 128px; height: 128px; border-radius: 50%; overflow: hidden; flex: none; background: var(--cor); display: grid; place-items: center; border: 4px solid #fff; box-shadow: var(--shadow); }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar span { font: 800 3.4rem var(--font-head); color: #fff; }
+  .oficio { margin: 0 0 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem; color: var(--cor); }
+  h1 { margin-bottom: 0.2em; }
+  .local { color: var(--muted); margin-bottom: 0.8em; }
+  .acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* layout foto: capa grande com a primeira foto */
+  .layout-foto .capa { min-height: 62vh; display: flex; align-items: flex-end; background: var(--cor) center / cover no-repeat; position: relative; color: #fff; }
+  .layout-foto .capa::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.1) 70%); }
+  .layout-foto .capa-in { position: relative; width: 100%; }
+  .layout-foto .oficio { color: #fff; opacity: 0.9; }
+  .layout-foto .local { color: rgba(255, 255, 255, 0.85); }
+  .layout-foto .btn-ghost { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
+
+  /* layout claro: faixa colorida suave */
+  .layout-claro .capa { background: color-mix(in srgb, var(--cor) 10%, var(--bg)); border-bottom: 1px solid var(--line); }
+
+  /* layout compacto: tudo centralizado, estilo cartão */
+  .layout-compacto .capa-in { flex-direction: column; text-align: center; }
+  .layout-compacto .acoes { justify-content: center; }
+  .layout-compacto .sobre, .layout-compacto .servicos { max-width: 720px; margin-left: auto; margin-right: auto; }
+  .layout-compacto .servicos { grid-template-columns: 1fr; }
+
+  section.wrap { margin-top: 36px; }
+  .apresentacao { font-size: 1.2rem; max-width: 60ch; }
+  .fatos { list-style: none; padding: 0; display: grid; gap: 6px; }
+  .servicos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .galeria img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius); }
+  .cartao-box { padding: 24px; }
+  .wa-fixo { position: fixed; right: 16px; bottom: 16px; z-index: 20; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
+  @media (min-width: 900px) { .wa-fixo { display: none; } }
+  @media (max-width: 899px) { :global(.rodape) { padding-bottom: 96px; } }
+  @media (max-width: 480px) { .servicos { grid-template-columns: 1fr; } }
+</style>

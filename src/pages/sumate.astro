@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  titulo="Ofrece tu servicio"
+  descricao="Crea gratis tu página en Lo Hago Yo: tus servicios, fotos, precios si quieres y contacto directo por WhatsApp. Incluye tarjeta de presentación lista para imprimir."
+>
+  <section class="wrap sumate">
+    <h1>Tu página, gratis. <span class="destaque">¡Tú lo haces!</span></h1>
+    <p class="lead">Lo Hago Yo es una plataforma gratuita para profesionales independientes. Sin comisiones y sin intermediarios: los clientes te escriben directo a tu WhatsApp.</p>
+
+    <ol class="passos">
+      <li class="card"><b>1</b><h3>Cuéntanos qué haces</h3><p>Elige tus servicios, descríbelos y, si quieres, pon tus precios y condiciones.</p></li>
+      <li class="card"><b>2</b><h3>Sube 2 o 3 fotos</h3><p>De tus trabajos. Elige el diseño de tu página.</p></li>
+      <li class="card"><b>3</b><h3>Revisamos y publicamos</h3><p>Tu página queda en <strong>lohagoyo.cl/tu-nombre</strong> y descargas tu tarjeta para imprimir.</p></li>
+    </ol>
+
+    <div class="aviso card">
+      <h2>Muy pronto</h2>
+      <p>Estamos preparando el registro en línea. Mientras tanto, si quieres aparecer, escríbenos y te ayudamos a crear tu página.</p>
+      <a class="btn btn-primary" href="mailto:hola@lohagoyo.cl?subject=Quiero%20mi%20p%C3%A1gina%20en%20Lo%20Hago%20Yo">Escribir a hola@lohagoyo.cl</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sumate { padding-top: 48px; }
+  .lead { font-size: 1.2rem; color: var(--muted); max-width: 56ch; }
+  .passos { list-style: none; padding: 0; margin: 32px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .passos li { padding: 22px; }
+  .passos b { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; font: 800 1.2rem var(--font-head); margin-bottom: 10px; }
+  .aviso { padding: 28px; background: var(--accent-soft); border-color: transparent; }
+</style>

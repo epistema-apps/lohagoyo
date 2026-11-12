@@ -1,0 +1,20 @@
+# build
+dist/
+.astro/
+node_modules/
+
+# dados pessoais, backups e logs — nunca no git
+data/
+backups/
+*.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# segredos
+.env
+.env.*
+!.env.example
+*-service-account*.json
+
+.DS_Store

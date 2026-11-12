@@ -1,0 +1,47 @@
+---
+import type { Perfil, Servico, Categoria } from '../dominio/tipos';
+import { textoPreco, normalizar } from '../dominio/formato';
+
+interface Props {
+  perfil: Perfil;
+  servicos: Servico[];
+  categorias: Categoria[];
+}
+const { perfil, servicos, categorias } = Astro.props;
+const cats = categorias.filter((c) => perfil.categoriaIds.includes(c.id));
+const principal = servicos[0];
+const busca = normalizar(
+  [perfil.nomePublico, perfil.oficio, ...perfil.comunas, ...servicos.map((s) => s.nome), ...cats.map((c) => c.nome)].join(' '),
+);
+const inicial = perfil.nomePublico.charAt(0);
+---
+<a
+  href={`/${perfil.slug}/`}
+  class="tarjeta card"
+  data-busca={busca}
+  data-categorias={perfil.categoriaIds.join(' ')}
+  data-comunas={perfil.comunas.map(normalizar).join('|')}
+>
+  <div class="foto" style={perfil.cor ? `--c:${perfil.cor}` : ''}>
+    {perfil.fotos[0] ? <img src={perfil.fotos[0]} alt="" loading="lazy" width="400" height="260" /> : <span class="inicial">{inicial}</span>}
+  </div>
+  <div class="corpo">
+    <p class="oficio">{perfil.oficio}</p>
+    <h3>{perfil.nomePublico}</h3>
+    <p class="comunas">{perfil.comunas.slice(0, 3).join(', ')}{perfil.comunas.length > 3 && ` y ${perfil.comunas.length - 3} más`}</p>
+    {principal && <p class="preco">{principal.nome}: <strong>{textoPreco(principal.preco)}</strong></p>}
+  </div>
+</a>
+
+<style>
+  .tarjeta { display: flex; flex-direction: column; overflow: hidden; text-decoration: none; color: var(--ink); transition: transform 0.15s ease; }
+  .tarjeta:hover { transform: translateY(-3px); }
+  .foto { aspect-ratio: 400 / 260; background: var(--c, var(--accent)); display: grid; place-items: center; }
+  .foto img { width: 100%; height: 100%; object-fit: cover; }
+  .inicial { font: 800 4rem var(--font-head); color: rgba(255, 255, 255, 0.9); }
+  .corpo { padding: 16px 18px 18px; }
+  .oficio { margin: 0 0 4px; color: var(--accent-dark); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  h3 { margin: 0 0 6px; }
+  .comunas { margin: 0 0 8px; color: var(--muted); font-size: 0.95rem; }
+  .preco { margin: 0; font-size: 0.95rem; }
+</style>

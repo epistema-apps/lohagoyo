@@ -1,0 +1,63 @@
+---
+import Base from '../../layouts/Base.astro';
+import TarjetaPerfil from '../../components/TarjetaPerfil.astro';
+import { dados } from '../../dados';
+import type { Categoria } from '../../dominio/tipos';
+
+export async function getStaticPaths() {
+  const categorias = await dados.listarCategorias();
+  return categorias.map((categoria) => ({ params: { categoria: categoria.id }, props: { categoria } }));
+}
+
+const { categoria } = Astro.props as { categoria: Categoria };
+const categorias = await dados.listarCategorias();
+const perfis = (await dados.listarPerfisPublicos()).filter((p) => p.categoriaIds.includes(categoria.id));
+const itens = await Promise.all(
+  perfis.map(async (perfil) => ({ perfil, servicos: await dados.listarServicosDoPerfil(perfil.id) })),
+);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://lohagoyo.cl/' },
+    { '@type': 'ListItem', position: 2, name: categoria.nome, item: `https://lohagoyo.cl/servicios/${categoria.id}/` },
+  ],
+};
+---
+<Base
+  titulo={`${categoria.nome} en Santiago`}
+  descricao={`${categoria.descricao} Profesionales independientes en Santiago con contacto directo por WhatsApp.`}
+  jsonLd={jsonLd}
+>
+  <section class="wrap cab">
+    <a href="/" class="volta">← Todos los servicios</a>
+    <h1>{categoria.nome} en Santiago</h1>
+    <p class="lead">{categoria.descricao}</p>
+    <nav class="cats" aria-label="Otras categorías">
+      {categorias.map((c) => <a class="chip" href={`/servicios/${c.id}/`} aria-current={c.id === categoria.id ? 'page' : undefined}>{c.nome}</a>)}
+    </nav>
+  </section>
+  <section class="wrap">
+    {itens.length ? (
+      <div class="grade">
+        {itens.map(({ perfil, servicos }) => <TarjetaPerfil perfil={perfil} servicos={servicos} categorias={categorias} />)}
+      </div>
+    ) : (
+      <div class="vazio card">
+        <p>Todavía no hay profesionales de {categoria.nome.toLowerCase()} publicados.</p>
+        <a class="btn btn-primary" href="/sumate/">¿Lo haces tú? Crea tu página gratis</a>
+      </div>
+    )}
+  </section>
+</Base>
+
+<style>
+  .cab { padding: 40px var(--gutter) 24px; }
+  .volta { display: inline-block; margin-bottom: 16px; font-weight: 700; text-decoration: none; }
+  .lead { color: var(--muted); font-size: 1.15rem; }
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cats [aria-current] { background: var(--accent); color: #fff; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .vazio { padding: 32px; text-align: center; }
+</style>

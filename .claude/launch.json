@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lohagoyo-dev",
+      "runtimeExecutable": "/Users/jefersonlorenz/.local/node-v24.22.2-darwin-arm64/bin/node",
+      "runtimeArgs": ["node_modules/astro/bin/astro.mjs", "dev", "--port", "4321"],
+      "port": 4321
+    }
+  ]
+}
