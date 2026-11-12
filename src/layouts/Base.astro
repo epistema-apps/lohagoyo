@@ -55,7 +55,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
       </div>
     </header>
     )}
-    <main><slot /></main>
+    <main class:list={[{ 'com-moldura': moldura }]}><slot /></main>
     {moldura && (
     <footer class="rodape">
       <div class="wrap">
@@ -88,8 +88,8 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
   @media (max-width: 480px) {
     .nav > a:not(.btn) { display: none; }
   }
-  main { padding-bottom: 64px; }
-  main:has(> .sumate:last-child) { padding-bottom: 0; }
+  main.com-moldura { padding-bottom: 64px; }
+  main.com-moldura:has(> .sumate:last-child) { padding-bottom: 0; }
   .rodape { padding: 40px 0; background: var(--ink); color: #b9bcc3; border-top: 1px solid rgba(255,255,255,.08); }
   .rodape a { color: #fff; }
   .rodape-marca { margin-bottom: 0.8em; line-height: 0; }

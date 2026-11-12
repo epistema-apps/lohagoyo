@@ -1,10 +1,12 @@
 ---
 // Site próprio de cada profissional: parece a página dele na internet.
+// Referências: editorial claro, tipografia grande com ponto final, colagem de fotos
+// com cantos arredondados, faixa de dados e serviços numerados.
 // O portal LoHagoYo.cl aparece só, discreto, no rodapé.
 import Base from '../layouts/Base.astro';
-import ServicoItem from '../components/ServicoItem.astro';
 import { dados } from '../dados';
-import { linkWhatsApp, textoPublico } from '../dominio/formato';
+import { foto } from '../dados/fotos';
+import { linkWhatsApp, textoMateriais, textoPreco, textoPublico } from '../dominio/formato';
 import type { Perfil } from '../dominio/tipos';
 
 export async function getStaticPaths() {
@@ -14,16 +16,28 @@ export async function getStaticPaths() {
 
 const { perfil } = Astro.props as { perfil: Perfil };
 const servicos = await dados.listarServicosDoPerfil(perfil.id);
+const categoria = (await dados.listarCategorias()).find((c) => perfil.categoriaIds.includes(c.id));
 const marca = perfil.marca ?? perfil.nomePublico;
 const primeiroNome = perfil.nomePublico.split(' ')[0];
 const wa = linkWhatsApp(perfil.contatos, perfil.nomePublico);
 const tel = perfil.contatos.telefone?.replace(/\s/g, '');
 const url = new URL(`/${perfil.slug}/`, Astro.site).href;
-const capa = perfil.capa ?? perfil.fotos[0];
-const cor = perfil.cor ?? '#9C7636';
-const comunasTxt = perfil.comunas.length > 3
-  ? `${perfil.comunas.slice(0, 3).join(', ')} y más`
-  : perfil.comunas.join(', ');
+
+// Fotos: capa + trabalhos; sem fotos, usa as da categoria.
+const fotoCat = foto(categoria?.foto ?? '')?.src;
+const capa = perfil.capa ?? perfil.fotos[0] ?? fotoCat;
+const extras = perfil.fotos.filter((f) => f !== capa);
+const fotoSec = extras[0];
+const n2 = (i: number) => String(i + 1).padStart(2, '0');
+
+const fatos = [
+  { valor: String(servicos.length), rotulo: servicos.length === 1 ? 'servicio' : 'servicios' },
+  perfil.comunas.length === 1
+    ? { valor: perfil.comunas[0], rotulo: 'zona de atención' }
+    : { valor: String(perfil.comunas.length), rotulo: 'comunas' },
+  { valor: textoPublico(perfil.publicos[0] ?? 'casas').split(' ')[0], rotulo: 'atiendo principalmente' },
+  { valor: perfil.emiteBoleta ? 'Sí' : 'No', rotulo: 'emito boleta' },
+];
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -49,190 +63,278 @@ const jsonLd = {
   imagem={capa}
   jsonLd={jsonLd}
   moldura={false}
-  corTema="#15171C"
 >
-  <div class="sitio" style={`--cor:${cor}`}>
-    <header class="cab" id="cab">
+  <div class="sitio">
+    <header class="cab">
       <div class="wrap cab-in">
-        <a href="#inicio" class="marca">
-          <span class="mono" aria-hidden="true">{marca.charAt(0)}</span>
-          <span>{marca}</span>
-        </a>
+        <a href="#inicio" class="marca">{marca}<span class="ponto">.</span></a>
         <nav class="menu" aria-label="Secciones">
           <a href="#servicios">Servicios</a>
+          {extras.length > 0 && <a href="#trabajos">Trabajos</a>}
           <a href="#sobre">Sobre mí</a>
-          {perfil.fotos.length > 0 && <a href="#trabajos">Trabajos</a>}
           <a href="#contacto">Contacto</a>
         </nav>
-        {wa && <a class="btn btn-wa btn-sm" href={wa} target="_blank" rel="noopener">WhatsApp</a>}
+        {wa ? <a class="btn btn-escuro btn-sm" href={wa} target="_blank" rel="noopener">WhatsApp</a>
+            : <a class="btn btn-escuro btn-sm sem-wa" href="#contacto">Contacto</a>}
       </div>
     </header>
 
-    <section class={`portada${capa ? '' : ' sem-foto'}`} id="inicio">
-      {capa && <img class="portada-img" src={capa} alt="" fetchpriority="high" />}
-      <div class="portada-filtro" aria-hidden="true"></div>
-      <div class="wrap portada-in">
-        <p class="sobretitulo">{perfil.oficio} · {comunasTxt}</p>
-        <h1>{marca}</h1>
-        {perfil.lema && <p class="lema">{perfil.lema}</p>}
-        <div class="acoes">
-          {wa && <a class="btn btn-wa" href={wa} target="_blank" rel="noopener">Escríbeme por WhatsApp</a>}
-          <a class="btn btn-claro" href="#servicios">Ver servicios</a>
+    <!-- Portada -->
+    <section class="hero" id="inicio">
+      <div class="wrap hero-in">
+        <div class="hero-txt">
+          <p class="sobretitulo"><span class="traco"></span>{perfil.oficio}</p>
+          <h1>{marca}<span class="ponto">.</span></h1>
+          {perfil.lema && <p class="lema">{perfil.lema}</p>}
+          <div class="acoes">
+            {wa && <a class="btn btn-escuro" href={wa} target="_blank" rel="noopener">Escríbeme por WhatsApp</a>}
+            <a class="link-seta" href="#servicios"><span aria-hidden="true">→</span> Ver servicios</a>
+          </div>
+          <p class="zona">{perfil.comunas.join(' · ')}</p>
+        </div>
+        <div class="colagem" aria-hidden={capa ? undefined : 'true'}>
+          {capa && <img class="f-principal" src={capa} alt={`${perfil.oficio}, ${marca}`} fetchpriority="high" width="900" height="1100" />}
+          {fotoSec && <img class="f-sec" src={fotoSec} alt="" loading="lazy" width="500" height="500" />}
+          <div class="selo">
+            <span>Atiendo</span>
+            <strong>{perfil.publicos.map(textoPublico).join(', ')}</strong>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="fatos">
-      <div class="wrap fatos-in">
-        <div><span>Atiendo</span><strong>{perfil.publicos.map(textoPublico).join(', ')}</strong></div>
-        <div><span>Comunas</span><strong>{perfil.comunas.join(', ')}</strong></div>
-        {perfil.horario && <div><span>Horario</span><strong>{perfil.horario}</strong></div>}
-      </div>
+    <!-- Faixa de dados -->
+    <section class="wrap">
+      <dl class="fatos">
+        {fatos.map((f) => <div><dt>{f.rotulo}</dt><dd>{f.valor}</dd></div>)}
+      </dl>
     </section>
 
+    <!-- Serviços -->
     <section class="wrap bloco" id="servicios">
-      <p class="sobretitulo">Lo que hago</p>
-      <h2>Servicios</h2>
-      <div class="servicos">
-        {servicos.map((s) => <ServicoItem servico={s} perfil={perfil} />)}
+      <div class="titulo">
+        <p class="sobretitulo"><span class="traco"></span>Servicios</p>
+        <h2>Lo que hago<span class="ponto">.</span></h2>
       </div>
+      <ol class="servicos">
+        {servicos.map((s, i) => {
+          const mat = textoMateriais(s.preco);
+          const waS = linkWhatsApp(perfil.contatos, perfil.nomePublico, s.nome);
+          return (
+            <li class="servico">
+              <span class="num">{n2(i)}</span>
+              <div class="s-corpo">
+                <h3>{s.nome}</h3>
+                <p class="s-desc">{s.descricao}</p>
+                <div class="s-detalhes">
+                  {s.incluye.length > 0 && (
+                    <div><h4>Incluye</h4><ul class="inclui">{s.incluye.map((x) => <li>{x}</li>)}</ul></div>
+                  )}
+                  {s.temporadas.length > 0 && (
+                    <div><h4>Frecuencia</h4><ul>{s.temporadas.map((t) => <li><strong>{t.frequencia}</strong><br /><span>{t.nome}</span></li>)}</ul></div>
+                  )}
+                  {s.extras.length > 0 && (
+                    <div><h4>Adicionales</h4><ul>{s.extras.map((e) => <li>{e.nome} <span>({e.nota})</span></li>)}</ul></div>
+                  )}
+                </div>
+              </div>
+              <div class="s-lado">
+                <p class="s-preco">{textoPreco(s.preco)}</p>
+                {mat && <p class="s-mat">{mat}</p>}
+                {waS && <a class="link-seta" href={waS} target="_blank" rel="noopener"><span aria-hidden="true">→</span> Cotizar</a>}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
     </section>
 
-    <section class="wrap bloco sobre" id="sobre">
-      {perfil.retrato && <img class="retrato" src={perfil.retrato} alt={`Foto de ${perfil.nomePublico}`} width="400" height="400" loading="lazy" />}
-      <div>
-        <p class="sobretitulo">Sobre mí</p>
-        <h2>Hola, soy {primeiroNome}</h2>
-        <p class="apres">{perfil.apresentacao}</p>
-        <ul class="detalhes">
-          {perfil.pagamentos.length > 0 && <li><span>Formas de pago</span>{perfil.pagamentos.join(', ')}</li>}
-          <li><span>Boleta</span>{perfil.emiteBoleta ? 'Sí, emito boleta' : 'No emito boleta'}</li>
-        </ul>
-      </div>
-    </section>
-
-    {perfil.fotos.length > 0 && (
+    <!-- Trabalhos -->
+    {extras.length > 0 && (
       <section class="wrap bloco" id="trabajos">
-        <p class="sobretitulo">Trabajos</p>
-        <h2>Algunos trabajos</h2>
-        <div class="galeria">
-          {perfil.fotos.map((f, i) => <img src={f} alt={`Trabajo ${i + 1} de ${marca}`} loading="lazy" width="600" height="400" />)}
+        <div class="titulo">
+          <p class="sobretitulo"><span class="traco"></span>Trabajos</p>
+          <h2>Algunos trabajos<span class="ponto">.</span></h2>
+        </div>
+        <div class={`galeria g${Math.min(extras.length, 4)}`}>
+          {extras.slice(0, 4).map((f, i) => <img src={f} alt={`Trabajo ${i + 1} de ${marca}`} loading="lazy" width="800" height="600" />)}
         </div>
       </section>
     )}
 
-    <section class="contacto" id="contacto">
-      <div class="wrap contacto-in">
+    <!-- Sobre mim -->
+    <section class="wrap bloco sobre" id="sobre">
+      <div class="sobre-esq">
+        {perfil.retrato
+          ? <img class="retrato" src={perfil.retrato} alt={`Foto de ${perfil.nomePublico}`} width="480" height="600" loading="lazy" />
+          : <p class="sobretitulo"><span class="traco"></span>Sobre mí</p>}
+        <h2>Hola, soy {primeiroNome}<span class="ponto">.</span></h2>
+      </div>
+      <div class="sobre-dir">
+        <p class="apres">{perfil.apresentacao}</p>
+        <dl class="detalhes">
+          <div><dt>Atiendo</dt><dd>{perfil.publicos.map(textoPublico).join(', ')}</dd></div>
+          <div><dt>Comunas</dt><dd>{perfil.comunas.join(', ')}</dd></div>
+          {perfil.horario && <div><dt>Horario</dt><dd>{perfil.horario}</dd></div>}
+          {perfil.pagamentos.length > 0 && <div><dt>Formas de pago</dt><dd>{perfil.pagamentos.join(', ')}</dd></div>}
+          <div><dt>Boleta</dt><dd>{perfil.emiteBoleta ? 'Sí, emito boleta' : 'No emito boleta'}</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Contato -->
+    <section class="wrap bloco" id="contacto">
+      <div class="contacto">
         <div>
-          <p class="sobretitulo">Contacto</p>
-          <h2>¿Conversamos?</h2>
+          <p class="sobretitulo claro"><span class="traco"></span>Contacto</p>
+          <h2>¿Conversamos<span class="ponto">?</span></h2>
           <p>Cuéntame qué necesitas y te respondo lo antes posible.</p>
         </div>
         <div class="contacto-acoes">
-          {wa && <a class="btn btn-wa" href={wa} target="_blank" rel="noopener">WhatsApp</a>}
-          {tel && <a class="btn btn-claro" href={`tel:${tel}`}>Llamar {perfil.contatos.telefone}</a>}
-          {perfil.contatos.email && <a class="btn btn-claro" href={`mailto:${perfil.contatos.email}`}>{perfil.contatos.email}</a>}
+          {wa && <a class="btn btn-branco" href={wa} target="_blank" rel="noopener">Escríbeme por WhatsApp</a>}
+          {tel && <a class="btn btn-contorno" href={`tel:${tel}`}>Llamar {perfil.contatos.telefone}</a>}
+          {perfil.contatos.email && <a class="btn btn-contorno" href={`mailto:${perfil.contatos.email}`}>{perfil.contatos.email}</a>}
+          {!wa && !tel && !perfil.contatos.email && <p class="sem-contato">Datos de contacto próximamente.</p>}
         </div>
       </div>
     </section>
 
-    <footer class="pe">
-      <div class="wrap pe-in">
-        <p>© {marca} · {perfil.comunas[0] ?? 'Santiago'}, Chile</p>
-        <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo.cl">
-          <span>Página creada con</span>
-          <img src="/marca/logo-negativo.svg" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
-        </a>
-      </div>
+    <footer class="wrap pe">
+      <p>© {marca} · {perfil.comunas[0] ?? 'Santiago'}, Chile</p>
+      <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo.cl">
+        <span>Página creada con</span>
+        <img src="/marca/logo.svg" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
+      </a>
     </footer>
 
-    {wa && (
-      <a class="wa-fixo btn btn-wa" href={wa} target="_blank" rel="noopener" aria-label={`Escribir a ${marca} por WhatsApp`}>WhatsApp</a>
-    )}
+    {wa && <a class="wa-fixo btn btn-escuro" href={wa} target="_blank" rel="noopener" aria-label={`Escribir a ${marca} por WhatsApp`}>WhatsApp</a>}
   </div>
 </Base>
 
-<script>
-  const cab = document.getElementById('cab');
-  const portada = document.getElementById('inicio');
-  if (cab && portada) {
-    new IntersectionObserver(([e]) => cab.classList.toggle('solido', !e.isIntersecting), { rootMargin: '-72px 0px 0px 0px' }).observe(portada);
-  }
-</script>
-
 <style>
-  .sitio { --accent: var(--cor); --accent-dark: color-mix(in srgb, var(--cor) 85%, #000); --accent-soft: color-mix(in srgb, var(--cor) 10%, #fff); background: #fff; }
-  .sobretitulo { margin: 0 0 0.6em; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-dark); }
-  .btn-sm { min-height: 40px; padding: 0.45em 1.1em; font-size: 0.9rem; }
-  .btn-claro { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.5); }
-  .btn-claro:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; }
+  .sitio { background: #fff; color: var(--ink); }
+  .ponto { color: var(--accent); }
+  .sobretitulo { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .traco { width: 28px; height: 1px; background: currentColor; }
+  .sobretitulo.claro { color: rgba(255, 255, 255, 0.6); }
 
-  /* cabeçalho próprio: transparente sobre a portada, sólido ao rolar */
-  .cab { position: fixed; inset: 0 0 auto; z-index: 30; transition: background 0.25s ease, box-shadow 0.25s ease; }
-  .cab-in { display: flex; align-items: center; gap: 24px; min-height: 72px; }
-  .marca { display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; font: 700 1.1rem var(--font-head); letter-spacing: -0.02em; margin-right: auto; }
-  .mono { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor; font-size: 0.95rem; }
-  .menu { display: flex; gap: 28px; }
-  .menu a { color: rgba(255, 255, 255, 0.85); text-decoration: none; font-weight: 700; font-size: 0.9rem; }
-  .menu a:hover { color: #fff; }
-  .cab.solido { background: rgba(255, 255, 255, 0.97); box-shadow: 0 1px 0 var(--line); }
-  .cab.solido .marca, .cab.solido .menu a { color: var(--ink); }
-  @media (max-width: 760px) { .menu { display: none; } }
+  .btn-escuro { background: var(--ink); color: #fff; }
+  .btn-escuro:hover { background: #000; }
+  .btn-escuro:not(.sem-wa)::before, .btn-branco::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #25d366; }
+  .btn-branco { background: #fff; color: var(--ink); }
+  .btn-branco:hover { background: var(--bg); }
+  .btn-contorno { color: #fff; border-color: rgba(255, 255, 255, 0.35); background: transparent; }
+  .btn-contorno:hover { border-color: #fff; }
+  .btn-sm { min-height: 40px; padding: 0.4em 1.1em; font-size: 0.88rem; }
+  .link-seta { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 700; text-decoration: none; }
+  .link-seta span { transition: transform 0.2s ease; }
+  .link-seta:hover span { transform: translateX(4px); }
 
-  /* portada com a foto escolhida + filtro escuro e levemente dessaturado */
-  .portada { position: relative; min-height: 88svh; display: flex; align-items: flex-end; color: #fff; overflow: hidden; background: var(--ink); }
-  .portada-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.6) contrast(1.05) brightness(0.95); }
-  .portada-filtro { position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(21, 23, 28, 0.55) 0%, rgba(21, 23, 28, 0.2) 32%, rgba(21, 23, 28, 0.6) 66%, rgba(21, 23, 28, 0.92) 100%);
+  /* cabeçalho */
+  .cab { position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid transparent; }
+  .cab-in { display: flex; align-items: center; gap: 24px; min-height: 76px; }
+  .marca { margin-right: auto; color: var(--ink); text-decoration: none; font: 700 1.2rem var(--font-head); letter-spacing: -0.03em; }
+  .menu { display: flex; align-items: center; gap: 30px; }
+  .menu a { position: relative; color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 700; }
+  .menu a + a::before { content: ''; position: absolute; left: -17px; top: 50%; width: 4px; height: 4px; border-radius: 50%; background: var(--line); }
+  .menu a:hover { color: var(--ink); }
+  @media (max-width: 820px) { .menu { display: none; } }
+
+  /* portada */
+  .hero { background: linear-gradient(180deg, #fff 0%, var(--bg) 100%); overflow: hidden; }
+  .hero-in { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: center; padding-top: clamp(40px, 7vw, 88px); padding-bottom: clamp(64px, 9vw, 120px); }
+  .hero h1 { font-size: clamp(3rem, 8.5vw, 6.4rem); line-height: 0.95; letter-spacing: -0.055em; margin: 0 0 0.3em; }
+  .lema { font-size: clamp(1.1rem, 2vw, 1.3rem); color: var(--muted); max-width: 32ch; margin-bottom: 2em; }
+  .acoes { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+  .zona { margin: 36px 0 0; font-size: 0.86rem; color: var(--muted); letter-spacing: 0.02em; }
+
+  .colagem { position: relative; aspect-ratio: 4 / 4.6; max-width: 560px; justify-self: end; width: 100%; }
+  .f-principal { position: absolute; right: 0; top: 0; width: 82%; height: 88%; object-fit: cover; border-radius: 28px 28px 28px 120px; filter: saturate(0.8); }
+  .f-sec { position: absolute; left: 0; bottom: 0; width: 42%; aspect-ratio: 1; object-fit: cover; border-radius: 24px; border: 8px solid #fff; filter: saturate(0.8); box-shadow: 0 24px 48px rgba(21, 23, 28, 0.12); }
+  .selo { position: absolute; left: 4%; top: 10%; background: #fff; border-radius: 16px; padding: 14px 18px; box-shadow: 0 16px 40px rgba(21, 23, 28, 0.1); display: flex; flex-direction: column; max-width: 60%; }
+  .selo span { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .selo strong { font: 700 1rem var(--font-head); letter-spacing: -0.02em; }
+  @media (max-width: 860px) {
+    .hero-in { grid-template-columns: 1fr; }
+    .colagem { justify-self: stretch; max-width: none; aspect-ratio: 4 / 3.6; }
+    .f-principal { width: 86%; height: 90%; border-radius: 22px 22px 22px 80px; }
   }
-  .sem-foto { background: radial-gradient(110% 80% at 85% 0%, #3a3e47 0%, var(--ink) 60%); }
-  .portada-in { position: relative; padding-top: 120px; padding-bottom: clamp(44px, 9vh, 88px); }
-  .portada .sobretitulo { color: rgba(255, 255, 255, 0.75); }
-  .portada h1 { font-size: clamp(2.6rem, 9vw, 5.5rem); line-height: 1; letter-spacing: -0.045em; margin-bottom: 0.3em; max-width: 14ch; }
-  .lema { font-size: clamp(1.1rem, 2.6vw, 1.4rem); max-width: 34ch; color: rgba(255, 255, 255, 0.88); margin-bottom: 1.5em; }
-  .acoes { display: flex; gap: 12px; flex-wrap: wrap; }
 
-  .fatos { background: var(--bg); border-bottom: 1px solid var(--line); }
-  .fatos-in { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 40px; padding-top: 26px; padding-bottom: 26px; }
-  .fatos span, .detalhes span { display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
-  .fatos strong { font-weight: 700; }
+  /* faixa de dados */
+  .fatos { position: relative; margin: -48px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 60px rgba(21, 23, 28, 0.06); }
+  .fatos div { padding: 26px 28px; }
+  .fatos div + div { border-left: 1px solid var(--line); }
+  .fatos dt { font-size: 0.82rem; color: var(--muted); order: 2; }
+  .fatos div { display: flex; flex-direction: column-reverse; gap: 4px; }
+  .fatos dd { margin: 0; font: 700 clamp(1.5rem, 3.4vw, 2.3rem) var(--font-head); letter-spacing: -0.04em; color: var(--accent); line-height: 1.1; }
+  @media (max-width: 760px) {
+    .fatos { grid-template-columns: 1fr 1fr; }
+    .fatos div:nth-child(3) { border-left: 0; }
+    .fatos div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+    .fatos div { padding: 20px; }
+  }
 
-  .bloco { padding-top: clamp(64px, 10vw, 112px); }
-  .bloco h2 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); margin-bottom: 0.9em; letter-spacing: -0.035em; }
-  .servicos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-  .servicos :global(.servico) { box-shadow: none; }
+  .bloco { padding-top: clamp(80px, 11vw, 140px); scroll-margin-top: 60px; }
+  .titulo h2, .sobre h2, .contacto h2 { font-size: clamp(2.2rem, 5.5vw, 3.6rem); line-height: 1; letter-spacing: -0.05em; margin: 0 0 0.6em; }
 
-  .sobre { display: grid; grid-template-columns: minmax(0, 340px) 1fr; gap: clamp(24px, 6vw, 80px); align-items: center; }
-  .sobre:not(:has(.retrato)) { grid-template-columns: 1fr; }
-  .retrato { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 4px; filter: saturate(0.85); }
-  .apres { font-size: 1.15rem; max-width: 56ch; }
-  .detalhes { list-style: none; padding: 0; margin: 0; display: flex; gap: 32px; flex-wrap: wrap; }
-  @media (max-width: 720px) { .sobre { grid-template-columns: 1fr; } .retrato { max-width: 280px; } }
+  /* serviços numerados */
+  .servicos { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--ink); }
+  .servico { display: grid; grid-template-columns: 72px 1fr 220px; gap: 24px; padding: 36px 0; border-bottom: 1px solid var(--line); }
+  .num { font: 700 0.95rem var(--font-head); color: var(--accent); padding-top: 6px; }
+  .servico h3 { font-size: clamp(1.35rem, 2.6vw, 1.75rem); letter-spacing: -0.03em; margin: 0 0 8px; }
+  .s-desc { color: var(--muted); max-width: 60ch; }
+  .s-detalhes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px 32px; margin-top: 18px; }
+  .s-detalhes h4 { margin: 0 0 8px; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .s-detalhes ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 0.95rem; }
+  .s-detalhes span { color: var(--muted); font-size: 0.88rem; }
+  .inclui li { padding-left: 18px; position: relative; }
+  .inclui li::before { content: ''; position: absolute; left: 0; top: 0.65em; width: 8px; height: 1.5px; background: var(--accent); }
+  .s-lado { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .s-preco { margin: 0; font: 700 1.35rem var(--font-head); letter-spacing: -0.03em; }
+  .s-mat { margin: 0 0 10px; font-size: 0.85rem; color: var(--muted); }
+  @media (max-width: 760px) {
+    .servico { grid-template-columns: 1fr; gap: 10px; padding: 28px 0; }
+    .s-lado { text-align: left; align-items: flex-start; }
+  }
 
-  .galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-  .galeria img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 4px; }
+  /* trabalhos */
+  .galeria { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); grid-auto-rows: clamp(140px, 18vw, 240px); }
+  .galeria img { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; filter: saturate(0.8); }
+  .g1 { grid-template-columns: 1fr; grid-auto-rows: clamp(220px, 40vw, 460px); }
+  .g2 { grid-template-columns: 1.4fr 1fr; grid-auto-rows: clamp(200px, 30vw, 380px); }
+  .g3 img:first-child, .g4 img:first-child { grid-row: span 2; }
+  .g4 img:last-child { grid-column: 2 / span 2; }
+  @media (max-width: 640px) {
+    .galeria, .g2 { grid-template-columns: 1fr 1fr; grid-auto-rows: 150px; }
+    .g1 { grid-template-columns: 1fr; }
+    .g3 img:first-child, .g4 img:first-child { grid-row: auto; grid-column: span 2; }
+    .g4 img:last-child { grid-column: auto; }
+  }
 
-  .contacto { margin-top: clamp(64px, 10vw, 112px); background: var(--ink); color: #fff; }
-  .contacto-in { display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; padding-top: 64px; padding-bottom: 64px; }
-  .contacto .sobretitulo { color: color-mix(in srgb, var(--cor) 60%, #fff); }
-  .contacto h2 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); margin-bottom: 0.3em; }
-  .contacto p { color: rgba(255, 255, 255, 0.75); margin: 0; }
-  .contacto-acoes { display: flex; gap: 12px; flex-wrap: wrap; }
+  /* sobre mim */
+  .sobre { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(32px, 7vw, 112px); align-items: start; }
+  .retrato { width: 100%; max-width: 360px; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 24px 24px 24px 96px; margin-bottom: 28px; }
+  .apres { font-size: clamp(1.15rem, 2vw, 1.35rem); line-height: 1.6; margin-bottom: 32px; }
+  .detalhes { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px 32px; border-top: 1px solid var(--line); padding-top: 24px; }
+  .detalhes dt { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+  .detalhes dd { margin: 0; }
+  @media (max-width: 760px) { .sobre { grid-template-columns: 1fr; } .detalhes { grid-template-columns: 1fr; } }
 
-  .pe { background: var(--ink); color: rgba(255, 255, 255, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.82rem; }
-  .pe-in { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 20px; padding-bottom: 20px; }
+  /* contato */
+  .contacto { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: end; background: var(--ink); color: #fff; border-radius: 28px; padding: clamp(36px, 6vw, 72px); }
+  .contacto p { color: rgba(255, 255, 255, 0.7); margin: 0; }
+  .contacto-acoes { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .sem-contato { font-style: italic; }
+  @media (max-width: 760px) { .contacto { grid-template-columns: 1fr; border-radius: 22px; } }
+
+  .pe { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 40px; padding-bottom: 40px; font-size: 0.82rem; color: var(--muted); }
   .pe p { margin: 0; }
-  .plataforma { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; opacity: 0.75; }
+  .plataforma { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; opacity: 0.8; }
   .plataforma:hover { opacity: 1; }
   .plataforma img { width: 84px; height: auto; }
 
-  /* sobre fundo escuro, o botão principal fica claro */
-  .portada .btn-wa, .contacto .btn-wa { background: #fff; color: var(--ink); }
-  .portada .btn-wa:hover, .contacto .btn-wa:hover { background: var(--bg); }
-  .bloco, .contacto { scroll-margin-top: 72px; }
-  .wa-fixo { border: 1px solid rgba(255, 255, 255, 0.25); }
-  .wa-fixo { position: fixed; right: 16px; bottom: 16px; z-index: 20; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
+  .wa-fixo { position: fixed; right: 16px; bottom: 16px; z-index: 20; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22); }
   @media (min-width: 900px) { .wa-fixo { display: none; } }
-  @media (max-width: 899px) { .pe { padding-bottom: 80px; } }
-  @media (max-width: 480px) { .cab .btn-sm { display: none; } .servicos { grid-template-columns: 1fr; } }
+  @media (max-width: 899px) { .pe { padding-bottom: 96px; } }
+  @media (max-width: 480px) { .cab .btn-sm { display: none; } }
 </style>

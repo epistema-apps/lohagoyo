@@ -7,7 +7,8 @@ Atualizado em 12/11/2026 · versão 0.1.0 · **Fase 1 concluída (com dados fict
 - Decisões registradas em `docs/DECISOES.md`.
 - Tipos do domínio (`src/dominio/`), contrato de dados e adaptador local com semilla fictícia (`src/dados/`).
 - Páginas públicas estáticas: home do portal com busca (sem acento) e filtro por comuna; `/servicios/<categoria>/`; `/sumate/`; `/privacidad/` (rascunho); 404; `sitemap.xml`; `robots.txt`.
-- **Site próprio de cada profissional** em `/<slug>/`: sem cabeçalho/rodapé do portal; topo com a marca dele (`marca`), portada com a foto escolhida (`capa`) e filtro escuro, faixa de dados, Servicios, Sobre mí (`retrato`), Trabajos, Contacto (WhatsApp/llamar/correo) e só no rodapé "Página creada con LoHagoYo.cl".
+- **Site próprio de cada profissional** em `/<slug>/` (modelo único, foco em qualidade): visual editorial claro inspirado nas referências — cabeçalho com a marca + ponto, título grande, colagem de fotos com cantos arredondados e selo "Atiendo", faixa de dados (serviços, zona, público, boleta), serviços numerados (01, 02…) com incluye/frecuencia/adicionales e preço, galeria, sobre mim, contato em bloco escuro; LoHagoYo.cl só no rodapé. Sem fotos próprias, usa as da categoria.
+- **Home do portal**: busca (serviço + comuna, sugestões, sinônimos), categorias com foto, resultados, cómo funciona, chamada para profissionais. 23 fotos livres do Unsplash (`public/img/servicios/`, créditos em `/creditos/`).
 - SEO: canonical, Open Graph, JSON-LD (`WebSite`, `BreadcrumbList`, `LocalBusiness` com catálogo de serviços).
 - Serviços com preço opcional (7 tipos), mão de obra × materiais, temporadas, extras, botão "Cotizar por WhatsApp" com mensagem pronta.
 - **Tarjeta de presentación em PDF** no navegador: **4 estruturas** (Clásica, Dividida, Franja, Punto) × **4 cores da paleta** (Grafito, Pizarra, Blanco, Piedra); logo discreto no canto; QR vetorial; fontes da marca embutidas; 9 × 5 cm com sangria 3 mm e marcas de corte, ou folha A4 com 10. Prévia instantânea em `/tarjeta/<slug>/` (temporário, noindex; a interface será refeita no painel) (mesmo desenho do PDF, `src/components/cartao/desenho.ts`).
@@ -22,6 +23,9 @@ npm run dev     # http://localhost:4321
 npm test
 npm run build
 ```
+
+## Teste local com perfil real
+- `data/perfis-locais.json` e `public/locais/` (fora do git) — hoje com o Manuel (`/manu-piscinas/`), usando fotos de referência. Falta WhatsApp e comunas dele.
 
 ## Pendências do responsável humano
 1. Criar a caixa `hola@lohagoyo.cl` na Cloudez.
