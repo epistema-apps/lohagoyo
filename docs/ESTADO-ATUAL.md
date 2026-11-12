@@ -41,6 +41,11 @@ npm run build
 - Testado de ponta a ponta nos emuladores (conta, foto, serviço, banco, envio, aprovação, sincronização, página gerada).
 - Regras: 18 testes (`npm run test:regras`, Java portátil em `~/.local/jre21`).
 
+## Cadastro assistido (sem o profissional precisar entrar)
+- `node scripts/importar-perfil.mjs <slug> [--foto arquivo.jpg] [--nome-completo "..."]`: copia um perfil de `data/perfis-locais.json` para o Firestore real, já aprovado (usa a sessão do firebase-tools de hola@lohagoyo.cl). Dono provisório `lhy…`; quando o profissional quiser editar, criar a conta dele com esse uid.
+- `node scripts/subir-retrato.mjs <slug> <arquivo.jpg>`: coloca/troca a foto pessoal.
+- Manuel importado em 12/11/2026 (`manu-piscinas`, uid `lhydde84af3d6ac45c3c82ccf9cd238`), **ainda sem foto**. Backup do perfil manual em `data/perfis-locais.bak.json`.
+
 ## Teste local com perfil real
 - `data/perfis-locais.json` e `public/locais/` (fora do git) — hoje com o Manuel (`/manu-piscinas/`), usando fotos de referência. Falta WhatsApp e comunas dele.
 
