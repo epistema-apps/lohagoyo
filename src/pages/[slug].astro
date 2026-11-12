@@ -18,10 +18,16 @@ import type { TemaId } from '../components/cartao/temas';
 
 export async function getStaticPaths() {
   const perfis = await dados.listarPerfisPublicos();
-  return perfis.map((perfil) => ({ params: { slug: perfil.slug }, props: { perfil } }));
+  const suspensos = await dados.listarSuspensos();
+  return [
+    ...perfis.map((perfil) => ({ params: { slug: perfil.slug }, props: { perfil } })),
+    ...suspensos.map((s) => ({ params: { slug: s.slug }, props: { suspenso: s } })),
+  ];
 }
 
-const { perfil } = Astro.props as { perfil: Perfil };
+const { perfil: perfilProp, suspenso } = Astro.props as { perfil?: Perfil; suspenso?: { slug: string; marca: string } };
+if (suspenso) return Astro.rewrite('/en-verificacion/');
+const perfil = perfilProp!;
 const servicos = await dados.listarServicosDoPerfil(perfil.id);
 const avaliacoes = await dados.listarAvaliacoesDoPerfil(perfil.id);
 const media = avaliacoes.length ? avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length : 0;
@@ -287,6 +293,7 @@ const jsonLd = {
           <span>Página creada con</span>
           <img src="/marca/logo.svg?v=esmeralda" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
         </a>
+        <a class="acesso" href="/normas/">Normas</a>
         <a class="acesso" href="/terminos/">Términos</a>
         <a class="acesso" href="/panel/">Acceso</a>
       </div>

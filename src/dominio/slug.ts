@@ -4,7 +4,8 @@ import { normalizar } from './formato';
 /** Rotas do site que nenhum perfil pode usar. */
 export const SLUGS_RESERVADOS = new Set([
   'servicios', 'sumate', 'privacidad', 'terminos', 'panel', 'admin', 'api', 'buscar',
-  'apoyo', 'dalepega', 'ayuda', 'contacto', 'sitemap', 'robots', '404', '_astro', 'demo',
+  'apoyo', 'dalepega', 'ayuda', 'contacto', 'sitemap', 'robots', '404', '_astro', 'demo', 'normas', 'en-verificacion', 'opinion',
+  'creditos', 'tarjeta', 'marca', 'fonts', 'og', 'f',
 ]);
 
 export function gerarSlug(texto: string): string {

@@ -86,6 +86,12 @@ describe('perfis (cópia de trabalho)', () => {
     await assertFails(updateDoc(doc(db(ANA), `perfis/${ANA}`), { lema: 'x', status: 'pendiente' }));
     await assertSucceeds(updateDoc(doc(db(MOD), `perfis/${ANA}`), { status: 'aprobado' }));
   });
+  it('auditoria: só o moderador marca auditadoEm (o dono não zera a contagem)', async () => {
+    await semRegras((d) => setDoc(doc(d, `perfis/${ANA}`), perfil(ANA, { status: 'aprobado', auditadoEm: '2026-01-01' })));
+    await assertFails(updateDoc(doc(db(ANA), `perfis/${ANA}`), { status: 'pendiente', auditadoEm: '2099-01-01' }));
+    await assertSucceeds(updateDoc(doc(db(ANA), `perfis/${ANA}`), { status: 'pendiente', lema: 'nuevo' }));
+    await assertSucceeds(updateDoc(doc(db(MOD), `perfis/${ANA}`), { auditadoEm: '2026-11-12' }));
+  });
   it('outra pessoa não edita nem apaga; moderador aprova', async () => {
     await semRegras((d) => setDoc(doc(d, `perfis/${ANA}`), perfil(ANA)));
     await assertFails(updateDoc(doc(db(BETO), `perfis/${ANA}`), { lema: 'x' }));

@@ -100,3 +100,8 @@ Fundo **coletivo e discreto** (financiar cartões/kits). **Nenhum perfil mostra 
 3. Firebase real + moderação + republicação automática.
 4. Home com busca completa, páginas por comuna, SEO, PWA.
 5. Apoiadores (Dale pega).
+
+## 2026-11-12 — Normas de calidad e auditoria automática
+- Regra pública em `/normas/` (link no rodapé, Súmate, Términos, painel e aceite `2026-11-12c`): **a cada 2 opiniões de 1–2 estrelas** confirmadas desde a última auditoria (`perfis.auditadoEm`), a página sai do ar automaticamente (function `verificarBloqueio`), fica um aviso neutro `/en-verificacion/` no endereço (sem nome nem motivo, noindex), o profissional recebe e-mail e pode responder no painel; o admin decide na aba "En auditoría". "Volver a publicar" grava `auditadoEm` e zera a contagem; o profissional é avisado por e-mail.
+- Único ponto em que o site admite revisão humana (exigência da Ley 21.719 contra decisões só automatizadas com efeito significativo).
+- Tom do site: "você faz, o sistema publica"; nunca "nós".

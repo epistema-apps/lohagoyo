@@ -63,7 +63,7 @@ service cloud.firestore {
             'id', 'slug', 'nomePublico', 'marca', 'oficio', 'lema', 'apresentacao', 'categoriaIds', 'regiaoId',
             'comunas', 'publicos', 'contatos', 'endereco', 'capa', 'retrato', 'fotos', 'layout', 'cartao', 'cor',
             'pagamentos', 'emiteBoleta', 'horario', 'tipoPessoa', 'status', 'criadoEm', 'atualizadoEm',
-            'aprovadoPor', 'aprovadoEm', 'bloqueadoEm', 'motivoBloqueio'])
+            'aprovadoPor', 'aprovadoEm', 'bloqueadoEm', 'motivoBloqueio', 'auditadoEm'])
           && novo().id == uid
           && texto(novo().nomePublico, 80) && texto(novo().oficio, 80) && texto(novo().apresentacao, 1500)
           && novo().fotos is list && novo().fotos.size() <= 4
@@ -82,14 +82,15 @@ service cloud.firestore {
 
       // O dono nunca aprova: salva como rascunho, envia para revisão ou pausa.
       allow create: if (eu(uid) && camposValidos() && novo().status in ['borrador', 'pendiente']
-          && !('aprovadoPor' in novo()))
+          && !('aprovadoPor' in novo()) && !('auditadoEm' in novo()))
         || (moderador() && camposValidos()); // cadastro assistido
-      // Bloqueado (ex.: 5 avaliações ruins): só o administrador mexe.
+      // Bloqueado (auditoria por avaliações negativas): só o administrador mexe. O dono não mexe em auditadoEm.
       allow update: if (eu(uid) && camposValidos()
           && resource.data.status != 'bloqueado'
           && novo().status in ['borrador', 'pendiente', 'pausado']
           && novo().get('aprovadoPor', null) == resource.data.get('aprovadoPor', null)
-          && novo().get('aprovadoEm', null) == resource.data.get('aprovadoEm', null))
+          && novo().get('aprovadoEm', null) == resource.data.get('aprovadoEm', null)
+          && novo().get('auditadoEm', null) == resource.data.get('auditadoEm', null))
         || moderador();
       allow delete: if eu(uid) || moderador();
     }

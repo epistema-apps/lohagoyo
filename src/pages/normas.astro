@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTATO } from '../config';
+---
+<Base titulo="Normas de calidad" descricao="Cómo se mantiene la calidad en LoHagoYo.cl: requisitos para publicar, opiniones y auditoría automática." >
+  <article class="wrap legal">
+    <p class="sobre"><span></span>Normas de calidad</p>
+    <h1>Cómo se mantiene la calidad<span class="ponto">.</span></h1>
+    <p class="lead">LoHagoYo.cl funciona solo: cada profesional crea y gestiona su página, y los clientes dejan su opinión. Estas normas se aplican de forma automática y por igual a todas las páginas.</p>
+
+    <aside class="destaque" aria-labelledby="regra">
+      <p class="destaque-sobre">La regla principal</p>
+      <h2 id="regra">Cada 2 opiniones de 1 o 2 estrellas, la página sale del aire y pasa a una auditoría.</h2>
+      <ul>
+        <li><strong>Automático:</strong> al confirmarse la segunda opinión negativa, la página sale del aire en ese momento.</li>
+        <li><strong>Discreto:</strong> en su dirección aparece solo un aviso de «página en verificación», sin el nombre ni el motivo.</li>
+        <li><strong>Con derecho a respuesta:</strong> el profesional recibe un correo y puede responder las opiniones desde su panel antes de la decisión.</li>
+        <li><strong>Con revisión humana:</strong> es el único paso de la plataforma en que una persona revisa el caso —las opiniones, las respuestas y la información de la página— y decide.</li>
+      </ul>
+    </aside>
+
+    <h2>1. Para publicar una página</h2>
+    <ul>
+      <li>Foto real de la persona que presta el servicio.</li>
+      <li>Nombre completo y RUT (privados: no se publican, identifican al responsable de la página).</li>
+      <li>Dirección completa con código postal (se publica, para dar confianza y evitar fraudes).</li>
+      <li>Datos de contacto verdaderos y servicios que realmente se prestan.</li>
+      <li>Aceptar los <a href="/terminos/">Términos y Condiciones</a>, la <a href="/privacidad/">Política de Privacidad</a> y estas Normas.</li>
+    </ul>
+    <p>Cada página se verifica antes de publicarse, y también después de cada cambio.</p>
+
+    <h2>2. Opiniones</h2>
+    <ul>
+      <li>Cualquier cliente puede dejar una opinión. Se publica cuando confirma su correo.</li>
+      <li>En la página se ven solo el primer nombre, la nota y el comentario. El correo nunca se publica.</li>
+      <li>El profesional puede responder públicamente cada opinión desde su panel.</li>
+      <li>Las opiniones falsas, ofensivas o que no evalúan un servicio se retiran.</li>
+    </ul>
+
+    <h2>3. La auditoría, paso a paso</h2>
+    <ol>
+      <li>Se confirma la segunda opinión de 1 o 2 estrellas desde la última auditoría (o desde la publicación).</li>
+      <li>La página sale del aire y queda el aviso neutro «en verificación».</li>
+      <li>El profesional recibe un correo y puede responder desde su panel.</li>
+      <li>Una persona revisa el caso y decide a la brevedad.</li>
+      <li>Resultado posible:
+        <ul>
+          <li><strong>Vuelve al aire</strong> y la cuenta de opiniones negativas empieza de cero;</li>
+          <li><strong>se pide un ajuste</strong> (por ejemplo, corregir información) antes de volver;</li>
+          <li><strong>se retira definitivamente</strong>, si hay fraude, suplantación, datos falsos o incumplimientos graves.</li>
+        </ul>
+        Si se comprueba que una opinión es falsa, se retira y no cuenta.
+      </li>
+      <li>El profesional recibe un correo con la decisión.</li>
+    </ol>
+
+    <h2>4. Retiro inmediato</h2>
+    <p>Sin esperar opiniones, una página puede salir del aire en cualquier momento si hay indicios de fraude, suplantación de identidad, servicios ilegales, contenido ofensivo o datos falsos.</p>
+
+    <h2>5. Denuncias</h2>
+    <p>Si ves una página u opinión sospechosa, escribe a <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>.</p>
+  </article>
+</Base>
+
+<style>
+  .legal { max-width: 760px; padding-top: 48px; padding-bottom: 32px; }
+  .legal h1 { font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -0.045em; margin-bottom: 0.3em; }
+  .legal > h2 { font-size: 1.25rem; margin: 2em 0 0.6em; letter-spacing: -0.02em; }
+  .legal li { margin-bottom: 0.6em; }
+  .lead { font-size: 1.15rem; color: var(--muted); }
+  .sobre { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .sobre span { width: 28px; height: 1px; background: currentColor; }
+  .destaque { margin: 32px 0; padding: clamp(22px, 4vw, 34px); border-radius: 12px; background: var(--fundo-escuro); color: #dfe1e3; }
+  .destaque-sobre { margin: 0 0 10px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--sol); }
+  .destaque h2 { color: #fff; font-size: clamp(1.35rem, 3.6vw, 1.8rem); line-height: 1.2; letter-spacing: -0.03em; margin: 0 0 18px; }
+  .destaque ul { margin: 0; padding-left: 1.1em; }
+  .destaque strong { color: var(--sol); }
+</style>

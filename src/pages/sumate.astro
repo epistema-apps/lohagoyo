@@ -34,6 +34,11 @@ const capa = foto('general-2')!;
       <li><span>03</span><h3>Envía y se publica</h3><p>Tu página se verifica y queda en <strong>lohagoyo.cl/tu-nombre</strong>, con tu tarjeta de presentación lista para imprimir.</p></li>
     </ol>
     <p class="nota">Lo haces tú mismo, desde tu celular, en pocos minutos. Cada página se verifica antes de publicarse.</p>
+    <a class="normas" href="/normas/">
+      <span class="normas-sobre">Normas de calidad</span>
+      <strong>Cada 2 opiniones de 1 o 2 estrellas, la página sale del aire y pasa a una auditoría.</strong>
+      <span class="normas-link">Ver cómo funciona →</span>
+    </a>
   </section>
 </Base>
 
@@ -56,4 +61,9 @@ const capa = foto('general-2')!;
   .acoes { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
   .link-ajuda { color: rgba(255, 255, 255, 0.8); font-weight: 700; }
   .nota { margin-top: 24px; color: var(--muted); font-size: 0.95rem; }
+  .normas { display: grid; gap: 6px; margin-top: 28px; padding: 22px 24px; border-radius: 12px; background: var(--fundo-escuro); color: #fff; text-decoration: none; max-width: 760px; }
+  .normas:hover { background: var(--fundo-escuro-hover); }
+  .normas-sobre { font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--sol); }
+  .normas strong { font: 700 clamp(1.1rem, 2.6vw, 1.35rem)/1.3 var(--font-head); letter-spacing: -0.02em; }
+  .normas-link { color: var(--sol); font-weight: 700; font-size: .95rem; }
 </style>

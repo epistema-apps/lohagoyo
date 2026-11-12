@@ -6,7 +6,7 @@ import * as semilla from './semilla';
 
 // data/perfis-locais.json: perfis cadastrados à mão. data/publicado.json: aprovados no painel
 // (gerado por scripts/sincronizar.mjs). Os dois ficam fora do git; o do painel tem prioridade.
-type Lote = { default: { perfis: Perfil[]; servicos: Servico[]; avaliacoes?: Avaliacao[] } };
+type Lote = { default: { perfis: Perfil[]; servicos: Servico[]; avaliacoes?: Avaliacao[]; suspensos?: { slug: string; marca: string }[] } };
 const lotes = import.meta.glob<Lote>(['/data/perfis-locais.json', '/data/publicado.json'], { eager: true });
 const lLocal = lotes['/data/perfis-locais.json']?.default ?? { perfis: [], servicos: [] };
 const lPainel = lotes['/data/publicado.json']?.default ?? { perfis: [], servicos: [] };
@@ -33,6 +33,9 @@ export const adaptadorLocal: FonteDados = {
   },
   async buscarPerfilPorSlug(slug) {
     return perfis.find((p) => p.slug === slug && p.status === 'aprobado') ?? null;
+  },
+  async listarSuspensos() {
+    return (lPainel.suspensos ?? []).filter((s) => !perfis.some((p) => p.slug === s.slug && p.status === 'aprobado'));
   },
   async listarAvaliacoesDoPerfil(perfilId) {
     return (lPainel.avaliacoes ?? [])

@@ -81,9 +81,14 @@ async function listar(colecao) {
 let perfis = [];
 let servicos = [];
 let avaliacoes = [];
+const suspensos = []; // em auditoria: só slug e marca, para a página neutra
 try {
   const publicados = await listar('publicados');
   for (const pub of publicados) {
+    if (pub.suspenso) {
+      if (pub.perfil?.slug) suspensos.push({ slug: pub.perfil.slug, marca: pub.perfil.marca ?? '' });
+      continue;
+    }
     const p = { ...pub.perfil, status: 'aprobado' };
     p.retrato = await baixarFoto(p.retrato, p.id, 'retrato');
     p.capa = await baixarFoto(p.capa, p.id, 'capa');
@@ -103,5 +108,5 @@ try {
 }
 
 mkdirSync(join(RAIZ, 'data'), { recursive: true });
-writeFileSync(join(RAIZ, 'data', 'publicado.json'), JSON.stringify({ perfis, servicos, avaliacoes }, null, 2));
+writeFileSync(join(RAIZ, 'data', 'publicado.json'), JSON.stringify({ perfis, servicos, avaliacoes, suspensos }, null, 2));
 console.log(`sincronizar: ${perfis.length} perfis publicados, ${servicos.length} serviços, ${avaliacoes.length} avaliações; fotos: ${baixadas} baixadas, ${reaproveitadas} do cache`);

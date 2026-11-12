@@ -171,11 +171,14 @@ export async function publicarPerfil(uid: string, moderadorUid: string): Promise
   ]);
   if (!p.exists()) throw new Error('perfil-inexistente');
   const t = agora();
-  const perfil = { ...(p.data() as Perfil), status: 'aprobado' as const, aprovadoPor: moderadorUid, aprovadoEm: t };
+  const atual = p.data() as Perfil;
+  // saindo de uma auditoria (bloqueado): a contagem de avaliações negativas recomeça daqui
+  const auditoria = atual.status === 'bloqueado' ? { auditadoEm: t } : {};
+  const perfil = { ...atual, ...auditoria, status: 'aprobado' as const, aprovadoPor: moderadorUid, aprovadoEm: t };
   const servicos = sv.docs.map((d) => ({ ...(d.data() as Servico), id: d.id })).filter((s) => s.ativo !== false);
   const b = writeBatch(db());
   b.set(doc(db(), 'publicados', uid), limpo({ perfil, servicos, publicadoEm: t, publicadoPor: moderadorUid }));
-  b.update(doc(db(), 'perfis', uid), { status: 'aprobado', aprovadoPor: moderadorUid, aprovadoEm: t, atualizadoEm: t });
+  b.update(doc(db(), 'perfis', uid), { status: 'aprobado', aprovadoPor: moderadorUid, aprovadoEm: t, atualizadoEm: t, ...auditoria });
   await b.commit();
 }
 

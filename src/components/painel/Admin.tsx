@@ -12,7 +12,7 @@ type Filtro = Perfil['status'] | 'todos';
 
 const FILTROS: { id: Filtro; nome: string }[] = [
   { id: 'pendiente', nome: 'Por revisar' }, { id: 'aprobado', nome: 'Publicados' },
-  { id: 'borrador', nome: 'Borradores' }, { id: 'pausado', nome: 'Pausados' }, { id: 'bloqueado', nome: 'Bloqueados' }, { id: 'todos', nome: 'Todos' },
+  { id: 'borrador', nome: 'Borradores' }, { id: 'pausado', nome: 'Pausados' }, { id: 'bloqueado', nome: 'En auditoría' }, { id: 'todos', nome: 'Todos' },
 ];
 
 export default function Admin(props: PropsPainel) {
@@ -134,7 +134,7 @@ export default function Admin(props: PropsPainel) {
                       {FILTROS.find((f) => f.id === p.status)?.nome ?? p.status}
                       {p.status === 'pendiente' && noAr.has(p.id) && <span className="md-selo">Cambios en página publicada</span>}
                     </div>
-                    {p.status === 'bloqueado' && <div className="pn-erro" style={{ margin: 0 }}>Bloqueado: {p.motivoBloqueio ?? 'evaluaciones'}</div>}
+                    {p.status === 'bloqueado' && <div className="pn-erro" style={{ margin: 0 }}>En auditoría: {p.motivoBloqueio ?? 'evaluaciones'}</div>}
                     {p.endereco?.calle && <div className="pn-dica" style={{ margin: 0 }}>{p.endereco.calle} {p.endereco.numero}, {p.endereco.comuna}</div>}
                   </div>
                 </header>
@@ -167,7 +167,7 @@ export default function Admin(props: PropsPainel) {
                 <div className="md-acoes">
                   {p.status !== 'aprobado' && (
                     <button type="button" className="btn btn-primary" disabled={!p.retrato || !p.endereco?.calle} title={!p.endereco?.calle ? 'Falta la dirección' : undefined} onClick={() => mudar(item, 'aprobado')}>
-                      {p.status === 'bloqueado' ? 'Desbloquear y publicar' : 'Aprobar y publicar'}
+                      {p.status === 'bloqueado' ? 'Volver a publicar' : 'Aprobar y publicar'}
                     </button>
                   )}
                   {noAr.has(p.id) && <button type="button" className="btn btn-ghost" onClick={() => confirm('¿Retirar esta página del sitio?') && mudar(item, 'pausado')}>Retirar del sitio</button>}

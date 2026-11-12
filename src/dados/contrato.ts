@@ -11,4 +11,6 @@ export interface FonteDados {
   listarServicosDoPerfil(perfilId: string): Promise<Servico[]>;
   /** Só avaliações aprovadas pela moderação. */
   listarAvaliacoesDoPerfil(perfilId: string): Promise<Avaliacao[]>;
+  /** Páginas fora do ar por auditoria: no endereço fica só um aviso neutro. */
+  listarSuspensos(): Promise<{ slug: string; marca: string }[]>;
 }

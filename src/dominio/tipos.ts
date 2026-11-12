@@ -96,6 +96,7 @@ export interface Perfil {
   aprovadoPor?: string;
   aprovadoEm?: string;
   bloqueadoEm?: string;
+  auditadoEm?: string; // última auditoria concluída: avaliações negativas contam a partir daqui
   motivoBloqueio?: string;
   criadoEm: string;
   atualizadoEm: string;

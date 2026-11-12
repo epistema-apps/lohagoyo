@@ -52,8 +52,16 @@ const nomeDoPerfil = async (uid) => {
 
 // ---------- publicação automática ----------
 
-export const aoMudarPublicado = onDocumentWritten({ document: 'publicados/{id}', secrets: [GITHUB_TOKEN] }, async (ev) => {
+export const aoMudarPublicado = onDocumentWritten({ document: 'publicados/{id}', secrets: [GITHUB_TOKEN, SMTP_SENHA] }, async (ev) => {
   await publicar(`publicado ${ev.params.id}: ${ev.data?.after?.exists ? 'atualizado' : 'retirado'}`);
+  // saiu da auditoria e voltou ao ar: avisa o profissional
+  const antes = ev.data?.before?.data();
+  const depois = ev.data?.after?.data();
+  if (antes?.suspenso && depois && !depois.suspenso) {
+    const { primeiro } = await nomeDoPerfil(ev.params.id);
+    await email(await emailDoProfissional(ev.params.id), 'Tu página volvió a estar publicada',
+      `Hola ${primeiro}:\n\nLa verificación de tu página terminó y ya está publicada de nuevo:\n${SITE}/${depois.perfil?.slug ?? ''}/`);
+  }
 });
 
 // ---------- avaliações ----------
@@ -93,30 +101,43 @@ export const aoMudarAvaliacao = onDocumentWritten(
   },
 );
 
-// ---------- bloqueio automático por avaliações ruins ----------
-// Regra: com LIMITE_MAS avaliações confirmadas de nota <= NOTA_MA (não recusadas pelo admin),
-// o perfil é bloqueado, sai do site e vai para a aba "Bloqueados" do admin.
+// ---------- auditoria automática por avaliações negativas ----------
+// Regra (publicada em /normas/): a cada A_CADA avaliações confirmadas de nota <= NOTA_MA
+// recebidas desde a última auditoria (perfil.auditadoEm), a página sai do ar (fica uma página
+// neutra "en verificación"), o profissional é avisado e o caso vai para a aba "Bloqueados".
+// Ao "Desbloquear y publicar", auditadoEm = agora e a contagem recomeça.
 const NOTA_MA = 2;
-const LIMITE_MAS = 5;
+const A_CADA = 2;
 const CONTAM = ['pendiente', 'en_contestacion', 'aprobada'];
 
 async function verificarBloqueio(perfilId) {
-  const s = await db().collection('avaliacoes').where('perfilId', '==', perfilId).get();
-  const mas = s.docs.filter((d) => CONTAM.includes(d.get('status')) && Number(d.get('nota')) <= NOTA_MA).length;
-  if (mas < LIMITE_MAS) return;
   const ref = db().doc(`perfis/${perfilId}`);
   const p = await ref.get();
   if (!p.exists || p.get('status') === 'bloqueado') return;
+  const desde = p.get('auditadoEm') ?? '';
+  const s = await db().collection('avaliacoes').where('perfilId', '==', perfilId).get();
+  const mas = s.docs.filter((d) => CONTAM.includes(d.get('status')) && Number(d.get('nota')) <= NOTA_MA
+    && String(d.get('criadoEm') ?? '') > desde).length;
+  if (mas < A_CADA) return;
   const agora = new Date().toISOString();
-  const motivo = `${mas} evaluaciones de ${NOTA_MA} estrellas o menos`;
+  const motivo = `${mas} evaluaciones de ${NOTA_MA} estrellas o menos desde la última auditoría`;
+  const pub = await db().doc(`publicados/${perfilId}`).get();
   const b = db().batch();
   b.update(ref, { status: 'bloqueado', bloqueadoEm: agora, motivoBloqueio: motivo, atualizadoEm: agora });
-  b.delete(db().doc(`publicados/${perfilId}`)); // sai do site (aoMudarPublicado republica)
+  // sai do ar: no lugar da página fica só um aviso neutro (sem dados pessoais)
+  if (pub.exists) {
+    b.set(db().doc(`publicados/${perfilId}`), {
+      suspenso: true, suspensoEm: agora,
+      perfil: { id: perfilId, slug: pub.get('perfil.slug') ?? p.get('slug'), marca: pub.get('perfil.marca') ?? p.get('marca') ?? '' },
+    });
+  }
   await b.commit();
-  logger.warn('perfil bloqueado', perfilId, motivo);
-  const { nome } = await nomeDoPerfil(perfilId);
-  await email(REMETENTE, `Bloqueado por evaluaciones: ${nome}`,
-    `${nome} fue bloqueado automáticamente (${motivo}) y salió del sitio.\n\nRevisa en el panel, pestaña Profesionales > Bloqueados:\n${SITE}/panel/admin/`);
+  logger.warn('perfil em auditoria', perfilId, motivo);
+  const { nome, primeiro } = await nomeDoPerfil(perfilId);
+  await email(REMETENTE, `Auditoría automática: ${nome}`,
+    `${nome} salió del aire automáticamente (${motivo}).\n\nDecide en el panel, pestaña Profesionales > En auditoría:\n${SITE}/panel/admin/`);
+  await email(await emailDoProfissional(perfilId), 'Tu página está en verificación',
+    `Hola ${primeiro}:\n\nTu página recibió ${A_CADA} opiniones de ${NOTA_MA} estrellas o menos. Según las Normas de calidad (${SITE}/normas/), quedó fuera del aire mientras se hace una revisión.\n\nPuedes ver las opiniones y responderlas en tu panel:\n${SITE}/panel/\n\nRecibirás un aviso cuando haya una decisión.`);
 }
 
 // Link do e-mail: confirma a avaliação e ela é PUBLICADA na hora (regra: publicação automática;
