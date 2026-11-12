@@ -3,6 +3,7 @@ import { atualizarPermissoes, observarUsuario, sair, type Usuario } from '../../
 import { despublicarPerfil, idsPublicados, listarParaModerar, novoIdAssistido, publicarPerfil, souModerador, type Privado } from '../../dados/painel';
 import AdminAvaliacoes from './AdminAvaliacoes';
 import { textoPreco, textoPublico } from '../../dominio/formato';
+import { formatarRut } from '../../dominio/rut';
 import type { Perfil, Servico } from '../../dominio/tipos';
 import { Editor, Entrar, type PropsPainel } from './Painel';
 
@@ -155,7 +156,7 @@ export default function Admin(props: PropsPainel) {
                     {p.lema && <p><strong>Frase:</strong> {p.lema}</p>}
                     <p>{p.apresentacao}</p>
                     <p><strong>Atiende:</strong> {p.publicos.map(textoPublico).join(', ')} · <strong>Boleta:</strong> {p.emiteBoleta ? 'Sí' : 'No'}</p>
-                    <p><strong>Privado:</strong> {item.privado?.nomeCompleto ?? '—'} · {email ?? '—'}</p>
+                    <p><strong>Privado:</strong> {item.privado?.nomeCompleto ?? '—'} · RUT {item.privado?.rut ? formatarRut(item.privado.rut) : <em>sin RUT</em>} · {email ?? '—'}</p>
                     <ul>{item.servicos.map((s) => <li key={s.id}>{s.nome} — {textoPreco(s.preco)}</li>)}</ul>
                     <div className="md-fotos">
                       {[p.capa, ...p.fotos].filter(Boolean).map((f) => <img key={f} src={f} alt="" />)}

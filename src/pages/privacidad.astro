@@ -10,7 +10,7 @@ import { CONTATO } from '../config';
 
     <h2>1. Qué datos tratamos</h2>
     <ul>
-      <li><strong>Profesionales:</strong> nombre, nombre de su servicio, foto, dirección, comunas de atención, datos de contacto (WhatsApp, teléfono, correo), servicios, precios, fotos de trabajos y, de forma privada, nombre completo y correo de su cuenta.</li>
+      <li><strong>Profesionales:</strong> nombre, nombre de su servicio, foto, dirección, comunas de atención, datos de contacto (WhatsApp, teléfono, correo), servicios, precios, fotos de trabajos y, de forma privada, nombre completo, RUT y correo de su cuenta.</li>
       <li><strong>Personas que dejan una opinión:</strong> primer nombre (público), nota, comentario y correo electrónico (privado, solo para confirmar la opinión).</li>
       <li><strong>Visitantes:</strong> no usamos cookies de publicidad ni herramientas de seguimiento.</li>
     </ul>
@@ -24,7 +24,7 @@ import { CONTATO } from '../config';
     <p>Base de licitud: el <strong>consentimiento</strong> expreso que se registra al crear la página o confirmar una opinión. No vendemos ni cedemos datos a terceros con fines comerciales.</p>
 
     <h2>3. Qué es público y qué es privado</h2>
-    <p>Es público solo lo que aparece en la página del Profesional (incluida su dirección, que es requisito para publicar). Son privados: nombre completo, correo de la cuenta, correos de quienes opinan y las conversaciones con la moderación.</p>
+    <p>Es público solo lo que aparece en la página del Profesional (incluida su dirección, que es requisito para publicar). Son privados: nombre completo, RUT, correo de la cuenta, correos de quienes opinan y las conversaciones con la moderación.</p>
 
     <h2>4. Dónde se guardan</h2>
     <p>En servicios de Google Cloud / Firebase, con los datos y fotos alojados en Santiago de Chile (región southamerica-west1), con acceso restringido por reglas de seguridad.</p>
@@ -32,8 +32,10 @@ import { CONTATO } from '../config';
     <h2>5. Tus derechos</h2>
     <p>Puedes pedir en cualquier momento <strong>acceso, rectificación, supresión, oposición y portabilidad</strong> de tus datos, y retirar tu consentimiento, escribiendo a <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>. Los Profesionales pueden además editar o pausar su página desde su panel.</p>
 
-    <h2>6. Responsable y contacto</h2>
-    <p>Responsable del tratamiento: LoHagoYo.cl. Contacto: <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>.</p>
+    <h2>6. Responsable del tratamiento</h2>
+    <p>Cada página es creada y gestionada por su Profesional titular, quien se registra con su <strong>nombre completo y RUT</strong> (datos que no se publican). <strong>El responsable de los datos publicados en cada página, y de los datos tratados con motivo de ella</strong> (incluidas las opiniones que recibe), <strong>es el Profesional titular identificado por ese RUT</strong>, quien decide qué publica y para qué.</p>
+    <p>LoHagoYo.cl solo pone a disposición la herramienta técnica: aloja la información, la muestra según las instrucciones del Profesional, confirma las opiniones por correo y aplica las reglas de moderación. Si una autoridad o una persona con interés legítimo lo requiere, LoHagoYo.cl podrá informar la identidad del Profesional responsable de una página.</p>
+    <p>Para ejercer tus derechos sobre los datos de una página, contacta al Profesional por los medios publicados en ella, o escríbenos a <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a> y haremos llegar tu solicitud al responsable.</p>
 
     <p>Ver también los <a href="/terminos/">Términos y Condiciones</a>.</p>
   </article>

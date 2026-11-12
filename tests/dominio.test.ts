@@ -72,3 +72,18 @@ describe('tarjeta', () => {
     expect(a4.length).toBeGreaterThan(1000);
   });
 });
+
+import { formatarRut, normalizarRut, rutValido } from '../src/dominio/rut';
+describe('RUT', () => {
+  it('valida dígito verificador', () => {
+    expect(rutValido('11.111.111-1')).toBe(true);
+    expect(rutValido('12.345.678-5')).toBe(true);
+    expect(rutValido('12345678-K')).toBe(false);
+    expect(rutValido('10.000.013-K')).toBe(true);
+    expect(rutValido('123')).toBe(false);
+  });
+  it('normaliza e formata', () => {
+    expect(normalizarRut('12.345.678-5')).toBe('12345678-5');
+    expect(formatarRut('123456785')).toBe('12.345.678-5');
+  });
+});

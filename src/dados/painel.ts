@@ -31,7 +31,7 @@ function limpo<T extends object>(o: T): T {
   return JSON.parse(JSON.stringify(o)) as T;
 }
 
-export interface Privado { nomeCompleto: string; email: string; telefone?: string; documento?: string }
+export interface Privado { nomeCompleto: string; email: string; telefone?: string; documento?: string; rut?: string }
 export interface MeusDados { perfil: Perfil | null; privado: Privado | null; servicos: Servico[] }
 
 export async function carregarMeusDados(uid: string): Promise<MeusDados> {

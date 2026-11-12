@@ -48,8 +48,9 @@ service cloud.firestore {
     match /profissionais/{uid} {
       allow read: if eu(uid) || moderador();
       allow create, update: if (eu(uid) || moderador())
-        && novo().keys().hasOnly(['nomeCompleto', 'email', 'telefone', 'documento', 'notas', 'criadoEm', 'atualizadoEm'])
-        && texto(novo().nomeCompleto, 120);
+        && novo().keys().hasOnly(['nomeCompleto', 'email', 'telefone', 'documento', 'rut', 'notas', 'criadoEm', 'atualizadoEm'])
+        && texto(novo().nomeCompleto, 120)
+        && (!('rut' in novo()) || (novo().rut is string && novo().rut.matches('^[0-9]{7,8}-[0-9K]$')));
       allow delete: if eu(uid) || moderador();
     }
 

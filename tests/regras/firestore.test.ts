@@ -215,6 +215,11 @@ describe('dados privados, consentimentos, denúncias e config', () => {
     await assertFails(getDoc(doc(db(BETO), `profissionais/${ANA}`)));
     await assertFails(getDoc(doc(db(), `profissionais/${ANA}`)));
   });
+  it('RUT fica no privado, só em formato normalizado', async () => {
+    await assertSucceeds(setDoc(doc(db(ANA), `profissionais/${ANA}`), { nomeCompleto: 'Ana Ejemplo Soto', email: '', rut: '11111111-1' }));
+    await assertFails(setDoc(doc(db(ANA), `profissionais/${ANA}`), { nomeCompleto: 'Ana Ejemplo Soto', email: '', rut: '11.111.111-1' }));
+    await assertFails(getDoc(doc(db(BETO), `profissionais/${ANA}`)));
+  });
   it('consentimento só se cria; denúncia aberta, lida só pelo moderador; config protegida', async () => {
     const ref = doc(db(ANA), 'consentimentos/c1');
     await assertSucceeds(setDoc(ref, { uid: ANA, versao: '2026-11', texto: 'acepto', criadoEm: 'x' }));

@@ -8,17 +8,18 @@ import Conversa from './Conversa';
 import GeradorCartao from '../cartao/GeradorCartao';
 import { textoPreco } from '../../dominio/formato';
 import { gerarSlug, slugValido } from '../../dominio/slug';
+import { formatarRut, normalizarRut, rutValido } from '../../dominio/rut';
 import type { Avaliacao, Perfil, Publico, Servico, TipoPreco } from '../../dominio/tipos';
 
 export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
 interface Props { categorias: { id: string; nome: string; sugeridos: string[] }[]; comunas: string[]; banco: FotoBanco[] }
 
-const VERSAO_TERMOS = '2026-11-12';
+const VERSAO_TERMOS = '2026-11-12b';
 const TEXTO_ASISTIDO =
   'Registro asistido: confirmo que el profesional leyó y aceptó los Términos y Condiciones y la Política de Privacidad de LoHagoYo.cl, incluida su responsabilidad total por su página y sus servicios, y autorizó a publicar estos datos y fotos.';
 const TEXTO_CONSENTIMIENTO =
-  'Acepto los Términos y Condiciones y la Política de Privacidad de LoHagoYo.cl. Declaro que soy el único responsable de mi página, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo.cl no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo.cl frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
+  'Acepto los Términos y Condiciones y la Política de Privacidad de LoHagoYo.cl. Declaro que mis datos y mi RUT son verdaderos y que soy el titular y único responsable de mi página, de los datos personales que en ella se tratan, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo.cl no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo.cl frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
 
 export default function Painel(props: Props) {
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
@@ -178,8 +179,10 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
     if (!perfil.endereco?.calle?.trim() || !perfil.endereco?.numero?.trim() || !perfil.endereco?.comuna?.trim()) f.push('Escribe tu dirección completa (calle, número y comuna)');
     if (!perfil.contatos.whatsapp && !perfil.contatos.telefone) f.push('Agrega tu WhatsApp o teléfono');
     if (!servicos.length) f.push('Agrega al menos un servicio');
+    if (!privado.nomeCompleto?.trim()) f.push('Escribe tu nombre completo');
+    if (!rutValido(privado.rut ?? '')) f.push('Escribe un RUT válido (privado)');
     return f;
-  }, [perfil, servicos, slugLivre]);
+  }, [perfil, servicos, slugLivre, privado]);
 
   if (!perfil) return <p className="pn-carregando">{msg?.t ?? 'Cargando tu página…'}</p>;
 
@@ -198,7 +201,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       const novo = { ...perfil, id: alvo, slug, status: st,
         ...(admin && st === 'aprobado' && !perfil.aprovadoPor ? { aprovadoPor: usuario.uid, aprovadoEm: new Date().toISOString() } : {}) };
       await salvarPerfil(novo, slugOriginal || undefined);
-      await salvarPrivado(alvo, privado);
+      await salvarPrivado(alvo, { ...privado, rut: privado.rut && rutValido(privado.rut) ? normalizarRut(privado.rut) : undefined });
       setPerfil(novo);
       setSlugOriginal(slug);
       setMsg({ tipo: 'ok', t: !admin && perfil.status === 'aprobado' ? 'Cambios guardados. Quedan en revisión; tu página sigue publicada como estaba.' : 'Cambios guardados.' });
@@ -371,6 +374,12 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         </label>
         <Campo rotulo="Tu nombre completo (privado)" ajuda="Solo lo ve el equipo de LoHagoYo.cl. No aparece en tu página.">
           <input value={privado.nomeCompleto} maxLength={120} onChange={(e) => setPrivado({ ...privado, nomeCompleto: e.target.value })} />
+        </Campo>
+        <Campo rotulo="Tu RUT (privado)" ajuda="Obligatorio. Nunca aparece en tu página. Te identifica como responsable de tu página, tus servicios y los datos que publicas.">
+          <input value={privado.rut ?? ''} inputMode="text" autoComplete="off" placeholder="12.345.678-9" maxLength={12}
+            onChange={(e) => setPrivado({ ...privado, rut: e.target.value })}
+            onBlur={() => privado.rut && setPrivado({ ...privado, rut: formatarRut(privado.rut) })} />
+          {privado.rut && !rutValido(privado.rut) && <small className="pn-erro">RUT no válido: revisa el dígito verificador.</small>}
         </Campo>
       </Secao>
 
