@@ -14,7 +14,7 @@ const perfil = (uid: string, extra: Record<string, unknown> = {}) => ({
   id: uid, slug: `${uid}-slug`, nomePublico: 'Ana Ejemplo', oficio: 'Jardinería', apresentacao: 'Hola',
   categoriaIds: ['jardineria'], regiaoId: 'santiago', comunas: ['Ñuñoa'], publicos: ['casas'], contatos: {},
   fotos: [], layout: 'foto', pagamentos: [], emiteBoleta: false, tipoPessoa: 'persona_natural',
-  status: 'pendiente', criadoEm: 'x', atualizadoEm: 'x', ...extra,
+  retrato: 'https://exemplo/retrato.jpg', status: 'pendiente', criadoEm: 'x', atualizadoEm: 'x', ...extra,
 });
 
 beforeAll(async () => {
@@ -56,6 +56,10 @@ describe('perfis', () => {
   it('ninguém cria perfil já aprovado nem no lugar de outro', async () => {
     await assertFails(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { status: 'aprobado' })));
     await assertFails(setDoc(doc(db(ANA), `perfis/${BETO}`), perfil(BETO)));
+  });
+  it('sem foto da pessoa só pode ficar como rascunho', async () => {
+    await assertFails(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { retrato: '' })));
+    await assertSucceeds(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { retrato: '', status: 'borrador' })));
   });
   it('não usa slug de outra pessoa', async () => {
     await assertFails(setDoc(doc(db(ANA), `perfis/${ANA}`), perfil(ANA, { slug: `${BETO}-slug` })));
@@ -120,6 +124,9 @@ describe('serviços', () => {
     });
     await assertFails(getDoc(doc(db(), 'servicos/sa')));
     await assertSucceeds(getDoc(doc(db(), 'servicos/sb')));
+    // consulta pública usada na publicação do site
+    await assertSucceeds(getDocs(query(collection(db(), 'servicos'), where('perfilId', '==', BETO))));
+    await assertFails(getDocs(query(collection(db(), 'servicos'), where('perfilId', '==', ANA))));
   });
 });
 

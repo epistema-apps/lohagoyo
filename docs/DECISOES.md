@@ -16,7 +16,7 @@ Plataforma **gratuita** onde profissionais independentes de serviços gerais (pi
 |---|---|---|
 | Páginas públicas | **Astro** (HTML estático) | **Desvio do padrão React+Vite puro**: SEO e vista prévia de link no WhatsApp exigem HTML pronto. Astro usa Vite e TypeScript; mesma base do site Novida. |
 | Painel do profissional | **React** (ilha dentro do Astro, PWA) | Segue o padrão. |
-| Login | Firebase Auth: link por e-mail + Google | Sem SMS (pago). |
+| Login | Firebase Auth: **e-mail + senha (qualquer e-mail)** + Google | Sem SMS (pago). O e-mail da conta é o canal de comunicação com o profissional. |
 | Banco | Firestore `southamerica-west1` (Santiago) | Coleções planas. |
 | Fotos | Firebase Storage | Exige **Blaze**. Ver custos. |
 | Hospedagem | Firebase Hosting | A Cloudez não é usada. |
@@ -56,6 +56,13 @@ Mais: insumos incluídos ou à parte, mão de obra e materiais separados (opcion
 - Sem caixas de e-mail por profissional (o profissional pode mostrar o próprio e-mail, se quiser).
 - Único e-mail automático: link de login do Firebase Auth.
 - Mensagens dentro do app ficam como ideia futura, só se houver necessidade.
+
+## Painel e moderação
+
+- Foto pessoal **obrigatória** para enviar à revisão (garantido também nas regras do Firestore).
+- Capa e fotos de trabalhos: subir ou escolher do banco (do rubro primeiro).
+- Moderação em `/panel/admin/`: o responsável vê, contata (WhatsApp/correo) e aprova com um clique. Edições de perfil já aprovado seguem publicadas.
+- Publicação ainda manual (`npm run publicar`); automatizar com GitHub Actions agendado quando o repositório existir.
 
 ## Cartão de visita
 

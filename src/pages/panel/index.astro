@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import Painel from '../../components/painel/Painel';
+import { dados } from '../../dados';
+import { FOTOS } from '../../dados/fotos';
+import '../../styles/painel.css';
+
+const categorias = (await dados.listarCategorias()).map((c) => ({ id: c.id, nome: c.nome, sugeridos: c.servicosSugeridos }));
+const comunas = (await dados.listarRegioes()).flatMap((r) => r.comunas).sort((a, b) => a.localeCompare(b, 'es'));
+const banco = Object.entries(FOTOS)
+  .filter(([id]) => !id.startsWith('general'))
+  .map(([id, f]) => ({ id, src: f.src, thumb: f.thumb, alt: f.alt, categoria: id.replace(/-\d+$/, '') }));
+---
+<Base titulo="Tu panel" descricao="Crea y edita tu página en LoHagoYo.cl." noindex>
+  <section class="wrap pn-pagina">
+    <Painel client:only="react" categorias={categorias} comunas={comunas} banco={banco} />
+  </section>
+</Base>

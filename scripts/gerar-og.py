@@ -81,9 +81,10 @@ for cid, nome, fid in re.findall(r"id: '([\w-]+)', nome: '([^']+)', foto: '([\w-
            nome, f'lohagoyo.cl/servicios/{cid}')
 
 # profissionais reais (data/perfis-locais.json, fora do git)
-arq = P('data/perfis-locais.json')
 n = 0
-if os.path.exists(arq):
+for arq in [P('data/perfis-locais.json'), P('data/publicado.json')]:
+    if not os.path.exists(arq):
+        continue
     for p in json.load(open(arq, encoding='utf-8'))['perfis']:
         compor(P(f"public/og/{p['slug']}.jpg"), p.get('capa') or (p.get('fotos') or [None])[0],
                p['oficio'], p.get('marca') or p['nomePublico'], f"lohagoyo.cl/{p['slug']}")

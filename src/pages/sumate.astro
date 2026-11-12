@@ -15,19 +15,20 @@ const capa = foto('general-2')!;
       <p class="sobretitulo"><span></span>Para profesionales</p>
       <h1>Tu página, gratis<span class="ponto">.</span></h1>
       <p class="lead">Una página propia con tus servicios, tus fotos y tu WhatsApp. Sin comisiones y sin intermediarios: los clientes te escriben directo.</p>
-      <a class="btn btn-branco" href={linkCadastro()} target="_blank" rel="noopener">
-        {CONTATO.whatsapp ? 'Quiero mi página (WhatsApp)' : 'Quiero mi página'}
-      </a>
+      <div class="acoes">
+        <a class="btn btn-branco" href="/panel/">Crear mi página</a>
+        <a class="link-ajuda" href={linkCadastro()} target="_blank" rel="noopener">¿Necesitas ayuda? Escríbenos</a>
+      </div>
     </div>
   </section>
 
   <section class="wrap bloco">
     <ol class="passos">
       <li><span>01</span><h3>Cuéntanos qué haces</h3><p>Tus servicios, cómo trabajas y, si quieres, tus precios y condiciones.</p></li>
-      <li><span>02</span><h3>Envíanos 2 o 3 fotos</h3><p>De tus trabajos. Si no tienes, usamos fotos de referencia de tu rubro.</p></li>
-      <li><span>03</span><h3>Publicamos tu página</h3><p>Queda en <strong>lohagoyo.cl/tu-nombre</strong>, con tu tarjeta de presentación lista para imprimir.</p></li>
+      <li><span>02</span><h3>Sube tu foto</h3><p>Una foto tuya (obligatoria) y, si quieres, de tus trabajos. Si no tienes, eliges del banco de fotos de tu rubro.</p></li>
+      <li><span>03</span><h3>Revisamos y publicamos</h3><p>Queda en <strong>lohagoyo.cl/tu-nombre</strong>, con tu tarjeta de presentación lista para imprimir.</p></li>
     </ol>
-    <p class="nota">Por ahora te ayudamos personalmente a crear tu página. Muy pronto podrás hacerlo tú mismo desde tu celular.</p>
+    <p class="nota">Lo haces tú mismo desde tu celular en pocos minutos. Revisamos cada página antes de publicarla. Si prefieres, te ayudamos.</p>
   </section>
 </Base>
 
@@ -49,5 +50,7 @@ const capa = foto('general-2')!;
   .passos span { font: 700 0.85rem var(--font-head); color: var(--accent); }
   .passos h3 { margin: 10px 0 6px; font-size: 1.3rem; }
   .passos p { color: var(--muted); }
+  .acoes { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .link-ajuda { color: rgba(255, 255, 255, 0.8); font-weight: 700; }
   .nota { margin-top: 24px; color: var(--muted); font-size: 0.95rem; }
 </style>

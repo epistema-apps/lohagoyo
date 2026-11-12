@@ -85,6 +85,7 @@ export interface Perfil {
   retrato?: string; // foto da pessoa (seção "Sobre mí")
   fotos: string[]; // trabalhos — URLs (copiadas ao Hosting no build)
   layout: Layout;
+  cartao?: { estrutura: string; tema: string }; // tarjeta escolhida no painel
   cor?: string; // cor de destaque opcional
   pagamentos: string[]; // 'Transferencia', 'Efectivo'
   emiteBoleta: boolean;

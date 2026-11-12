@@ -1,0 +1,10 @@
+---
+import Base from '../../layouts/Base.astro';
+import Admin from '../../components/painel/Admin';
+import '../../styles/painel.css';
+---
+<Base titulo="Administración" descricao="Administración de LoHagoYo.cl." noindex>
+  <section class="wrap pn-pagina" style="max-width:960px">
+    <Admin client:only="react" />
+  </section>
+</Base>

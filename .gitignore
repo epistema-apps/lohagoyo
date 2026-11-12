@@ -25,3 +25,6 @@ public/locais/
 # imagens de prévia por profissional (dados reais)
 public/og/*.jpg
 !public/og/servicios-*.jpg
+
+# fotos enviadas pelos profissionais (baixadas na publicação)
+public/f/

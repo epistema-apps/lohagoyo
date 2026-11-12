@@ -34,6 +34,13 @@ npm test
 npm run build
 ```
 
+## Painel (Fase 2) — pronto no código, falta ativar no Firebase
+- `/panel/`: cria conta com **qualquer e-mail e senha** (ou Google), recupera senha. Editor em 8 seções: foto pessoal (**obrigatória**), quem é, onde/para quem, contato (+ nome completo privado), serviços (preço opcional, materiais, temporadas, extras), fotos da página (**subir ou escolher do banco**), tarjeta (estrutura/cor, aparece no fim da página pública com Compartir/Descargar), envio com consentimento.
+- `/panel/admin/`: moderação — filtros por estado, foto, dados, serviços, WhatsApp/correo/llamar em um clique, **Aprobar y publicar**, pausar/reativar. Acesso: uid em `config/moderadores.uids` (a tela mostra o uid).
+- Publicação: `npm run publicar` roda `scripts/sincronizar.mjs` (lê aprovados do Firestore pela leitura pública, baixa fotos para `public/f/`), gera prévias e publica. Regras: `npm run publicar:regras`.
+- Testado de ponta a ponta nos emuladores (conta, foto, serviço, banco, envio, aprovação, sincronização, página gerada).
+- Regras: 18 testes (`npm run test:regras`, Java portátil em `~/.local/jre21`).
+
 ## Teste local com perfil real
 - `data/perfis-locais.json` e `public/locais/` (fora do git) — hoje com o Manuel (`/manu-piscinas/`), usando fotos de referência. Falta WhatsApp e comunas dele.
 

@@ -29,9 +29,14 @@ async function criarMedidorCanvas(): Promise<Medir> {
   };
 }
 
-export default function GeradorCartao({ dados }: { dados: DadosCartao }) {
-  const [estrutura, setEstrutura] = useState<EstruturaId>('editorial');
-  const [tema, setTema] = useState<TemaId>('blanco');
+export default function GeradorCartao({ dados, inicial, aoEscolher }: {
+  dados: DadosCartao;
+  inicial?: { estrutura: string; tema: string };
+  aoEscolher?: (e: { estrutura: EstruturaId; tema: TemaId }) => void;
+}) {
+  const [estrutura, setEstrutura] = useState<EstruturaId>((inicial?.estrutura as EstruturaId) ?? 'editorial');
+  const [tema, setTema] = useState<TemaId>((inicial?.tema as TemaId) ?? 'blanco');
+  useEffect(() => { aoEscolher?.({ estrutura, tema }); }, [estrutura, tema]);
   const [medir, setMedir] = useState<Medir | null>(null);
   const [gerando, setGerando] = useState<SaidaCartao | null>(null);
   const [erro, setErro] = useState('');

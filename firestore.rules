@@ -57,13 +57,15 @@ service cloud.firestore {
       function camposValidos() {
         return novo().keys().hasOnly([
             'id', 'slug', 'nomePublico', 'marca', 'oficio', 'lema', 'apresentacao', 'categoriaIds', 'regiaoId',
-            'comunas', 'publicos', 'contatos', 'capa', 'retrato', 'fotos', 'layout', 'cor', 'pagamentos',
+            'comunas', 'publicos', 'contatos', 'capa', 'retrato', 'fotos', 'layout', 'cartao', 'cor', 'pagamentos',
             'emiteBoleta', 'horario', 'tipoPessoa', 'status', 'criadoEm', 'atualizadoEm', 'aprovadoPor', 'aprovadoEm'])
           && novo().id == uid
           && texto(novo().nomePublico, 80) && texto(novo().oficio, 80) && texto(novo().apresentacao, 1500)
           && novo().fotos is list && novo().fotos.size() <= 4
           && novo().categoriaIds is list && novo().categoriaIds.size() >= 1 && novo().categoriaIds.size() <= 3
-          && slugDono(novo().slug, uid);
+          && slugDono(novo().slug, uid)
+          // foto da pessoa é obrigatória para ir à revisão ou ficar publicado
+          && (novo().status in ['borrador', 'pausado'] || (novo().get('retrato', '') is string && novo().get('retrato', '').size() > 0));
       }
 
       // O dono cria como rascunho ou pendente; nunca se aprova.

@@ -10,9 +10,11 @@
     "preview": "astro preview",
     "test": "vitest run",
     "og": "python3 scripts/gerar-og.py",
-    "build:prod": "python3 scripts/gerar-og.py && astro build",
+    "build:prod": "node scripts/sincronizar.mjs && python3 scripts/gerar-og.py && astro build",
     "publicar": "npm run build:prod && firebase deploy --only hosting --project lohagoyo-prod --account hola@lohagoyo.cl",
-    "test:regras": "JAVA_HOME=$HOME/.local/jre21/Contents/Home PATH=$HOME/.local/jre21/Contents/Home/bin:$PATH firebase emulators:exec --only firestore,storage --project demo-lohagoyo 'vitest run --config vitest.regras.config.ts'"
+    "test:regras": "JAVA_HOME=$HOME/.local/jre21/Contents/Home PATH=$HOME/.local/jre21/Contents/Home/bin:$PATH firebase emulators:exec --only firestore,storage --project demo-lohagoyo 'vitest run --config vitest.regras.config.ts'",
+    "sincronizar": "node scripts/sincronizar.mjs",
+    "publicar:regras": "firebase deploy --only firestore:rules,storage --project lohagoyo-prod --account hola@lohagoyo.cl"
   },
   "dependencies": {
     "@astrojs/react": "7.1.8",

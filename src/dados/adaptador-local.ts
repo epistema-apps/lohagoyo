@@ -4,8 +4,18 @@ import type { Perfil, Servico } from '../dominio/tipos';
 import type { FonteDados } from './contrato';
 import * as semilla from './semilla';
 
-const locais = import.meta.glob<{ default: { perfis: Perfil[]; servicos: Servico[] } }>('/data/perfis-locais.json', { eager: true });
-const extra = Object.values(locais)[0]?.default ?? { perfis: [], servicos: [] };
+// data/perfis-locais.json: perfis cadastrados à mão. data/publicado.json: aprovados no painel
+// (gerado por scripts/sincronizar.mjs). Os dois ficam fora do git; o do painel tem prioridade.
+type Lote = { default: { perfis: Perfil[]; servicos: Servico[] } };
+const lotes = import.meta.glob<Lote>(['/data/perfis-locais.json', '/data/publicado.json'], { eager: true });
+const lLocal = lotes['/data/perfis-locais.json']?.default ?? { perfis: [], servicos: [] };
+const lPainel = lotes['/data/publicado.json']?.default ?? { perfis: [], servicos: [] };
+const slugsPainel = new Set(lPainel.perfis.map((p) => p.slug));
+const idsLocaisFora = new Set(lLocal.perfis.filter((p) => slugsPainel.has(p.slug)).map((p) => p.id));
+const extra = {
+  perfis: [...lLocal.perfis.filter((p) => !slugsPainel.has(p.slug)), ...lPainel.perfis],
+  servicos: [...lLocal.servicos.filter((s) => !idsLocaisFora.has(s.perfilId)), ...lPainel.servicos],
+};
 // Perfis fictícios só em desenvolvimento/testes ou com LHY_DEMO=1; em produção, só os reais.
 const demo = import.meta.env.DEV || import.meta.env.MODE === 'test' || process.env.LHY_DEMO === '1';
 const perfis = [...(demo ? semilla.perfis : []), ...extra.perfis];
