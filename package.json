@@ -11,7 +11,7 @@
     "test": "vitest run",
     "og": "python3 scripts/gerar-og.py",
     "build:prod": "python3 scripts/gerar-og.py && astro build",
-    "publicar": "npm run build:prod && firebase deploy --only hosting --project lohagoyo-prod"
+    "publicar": "npm run build:prod && firebase deploy --only hosting --project lohagoyo-prod --account hola@lohagoyo.cl"
   },
   "dependencies": {
     "@astrojs/react": "7.1.8",
