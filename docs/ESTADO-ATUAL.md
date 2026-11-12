@@ -44,11 +44,17 @@ npm run build
 ## Teste local com perfil real
 - `data/perfis-locais.json` e `public/locais/` (fora do git) — hoje com o Manuel (`/manu-piscinas/`), usando fotos de referência. Falta WhatsApp e comunas dele.
 
-## Pendências do responsável humano
-1. Criar a caixa `hola@lohagoyo.cl` na Cloudez.
-2. Criar conta Google com esse e-mail ("usar meu e-mail atual").
-3. Criar projetos Firebase `lohagoyo-dev` e `lohagoyo-prod` (Analytics desligado), Gmail pessoal como 2º proprietário. **Não criar banco/Storage ainda** (região Santiago será escolhida juntos).
-4. Criar repositório vazio privado `epistema-apps/lohagoyo` no GitHub.
+## Pendências do responsável humano (para ativar o painel)
+Console do Firebase, projeto `lohagoyo-prod`, conta `hola@lohagoyo.cl`:
+1. **Blaze**: Upgrade com cartão. Billing → Budgets & alerts: orçamento **USD 5**, alerta em 20% (USD 1), 50%, 100%.
+2. **Authentication** → Get started → ativar **Email/Password** e **Google**. Settings → Authorized domains → adicionar **lohagoyo.cl**.
+3. **Firestore Database** → Create database → **southamerica-west1 (Santiago)**, production mode.
+4. **Storage** → Get started → **southamerica-west1**, production mode.
+Depois (Claude): `npm run publicar:regras`, `PAINEL_ATIVO = true` em `src/config.ts`, `npm run publicar`.
+5. Entrar em **lohagoyo.cl/panel/admin/** com a própria conta, copiar o identificador (uid) mostrado e criar em Firestore o documento `config/moderadores` com o campo `uids` (array) contendo esse uid.
+6. GitHub: criar o repositório vazio privado `epistema-apps/lohagoyo` (para backup do código e publicação automática ao aprovar).
+7. Opcional: apagar a aplicação Node.js antiga na Cloudez (o domínio já não aponta para ela; e-mail continua).
+8. Pendente legal: definir a pessoa/entidade responsável pelos dados na política de privacidade (sem expor a Epistema).
 
 ## Próximos passos (Fase 2)
 - Painel `/painel/` (React): login (link por e-mail + Google), cadastro do perfil, editor de serviços com preço/condições, upload de até 4 fotos, escolha de layout, consentimento.
