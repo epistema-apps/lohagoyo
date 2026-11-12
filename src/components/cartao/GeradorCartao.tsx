@@ -12,6 +12,7 @@ const FONTES_CSS: Record<string, string> = {
   neg: "700 10px 'Atkinson Hyperlegible'",
 };
 
+/** Mede o texto com as mesmas fontes, já carregadas pelo navegador (rápido). */
 async function criarMedidorCanvas(): Promise<Medir> {
   await Promise.all(Object.values(FONTES_CSS).map((f) => document.fonts.load(f, 'Aá0')));
   const ctx = document.createElement('canvas').getContext('2d')!;
@@ -29,13 +30,12 @@ async function criarMedidorCanvas(): Promise<Medir> {
 }
 
 export default function GeradorCartao({ dados }: { dados: DadosCartao }) {
-  const [estrutura, setEstrutura] = useState<EstruturaId>('clasica');
-  const [tema, setTema] = useState<TemaId>('grafito');
+  const [estrutura, setEstrutura] = useState<EstruturaId>('editorial');
+  const [tema, setTema] = useState<TemaId>('blanco');
   const [medir, setMedir] = useState<Medir | null>(null);
   const [gerando, setGerando] = useState<SaidaCartao | null>(null);
   const [erro, setErro] = useState('');
 
-  // Prévia: mede o texto com as mesmas fontes, já carregadas pelo navegador (rápido).
   useEffect(() => {
     let vivo = true;
     criarMedidorCanvas()
@@ -44,10 +44,14 @@ export default function GeradorCartao({ dados }: { dados: DadosCartao }) {
     return () => { vivo = false; };
   }, []);
 
-  const previas = useMemo(() => {
-    if (!medir) return null;
-    return ESTRUTURAS.map((e) => ({ ...e, svg: cartaoSvg(desenharCartao(e.id, tema, dados, medir, 0), `cl-${e.id}`) }));
-  }, [medir, tema, dados]);
+  const principal = useMemo(
+    () => (medir ? cartaoSvg(desenharCartao(estrutura, tema, dados, medir, 0), 'gc-grande') : null),
+    [medir, estrutura, tema, dados],
+  );
+  const miniaturas = useMemo(
+    () => (medir ? ESTRUTURAS.map((e) => ({ ...e, svg: cartaoSvg(desenharCartao(e.id, tema, dados, medir, 0), `gc-${e.id}`) })) : null),
+    [medir, tema, dados],
+  );
 
   async function baixar(saida: SaidaCartao) {
     setGerando(saida);
@@ -59,7 +63,7 @@ export default function GeradorCartao({ dados }: { dados: DadosCartao }) {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       const base = dados.urlCurta.split('/').pop() || 'tarjeta';
-      a.download = `tarjeta-${base}-${estrutura}-${tema}-${saida === 'a4' ? 'hoja-a4' : '9x5'}.pdf`;
+      a.download = `tarjeta-${base}-${estrutura}-${tema}-${saida === 'a4' ? 'hoja-a4' : '9x5cm'}.pdf`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     } catch (e) {
@@ -72,66 +76,90 @@ export default function GeradorCartao({ dados }: { dados: DadosCartao }) {
 
   return (
     <div className="gc">
-      <fieldset className="gc-cores">
-        <legend>Color</legend>
-        {temas.map((t) => (
-          <label key={t.id} className={`gc-cor${tema === t.id ? ' ativo' : ''}`} title={t.nome}>
-            <input type="radio" name="tema" value={t.id} checked={tema === t.id} onChange={() => setTema(t.id)} />
-            <span className="gc-amostra" style={{ background: t.fundo }}>
-              <i style={{ background: t.acento }} />
-            </span>
-            <span>{t.nome}</span>
-          </label>
-        ))}
-      </fieldset>
-
-      <fieldset className="gc-estruturas">
-        <legend>Diseño</legend>
-        {previas
-          ? previas.map((p) => (
-              <label key={p.id} className={`gc-estrutura${estrutura === p.id ? ' ativo' : ''}`}>
-                <input type="radio" name="estrutura" value={p.id} checked={estrutura === p.id} onChange={() => setEstrutura(p.id)} />
-                <span className="gc-previa" dangerouslySetInnerHTML={{ __html: p.svg }} />
-                <span>{p.nome}</span>
-              </label>
-            ))
-          : ESTRUTURAS.map((e) => (
-              <span key={e.id} className="gc-estrutura">
-                <span className="gc-previa gc-carregando" />
-                <span>{e.nome}</span>
-              </span>
-            ))}
-      </fieldset>
-
-      <div className="gc-botoes">
-        <button className="btn btn-primary" onClick={() => baixar('imprenta')} disabled={!!gerando}>
-          {gerando === 'imprenta' ? 'Generando…' : 'PDF para imprenta (9 × 5 cm)'}
-        </button>
-        <button className="btn btn-ghost" onClick={() => baixar('a4')} disabled={!!gerando}>
-          {gerando === 'a4' ? 'Generando…' : 'Hoja A4 con 10 tarjetas'}
-        </button>
+      <div className="gc-palco">
+        <div className="gc-mesa">
+          {principal
+            ? <div className="gc-grande" dangerouslySetInnerHTML={{ __html: principal }} />
+            : <div className="gc-grande gc-carregando" />}
+        </div>
+        <p className="gc-medida">Tamaño real: 9 × 5 cm</p>
       </div>
-      {erro && <p role="alert" className="gc-erro">{erro}</p>}
+
+      <div className="gc-painel">
+        <section>
+          <h3>Diseño</h3>
+          <div className="gc-estruturas" role="radiogroup" aria-label="Diseño">
+            {ESTRUTURAS.map((e, i) => (
+              <button
+                key={e.id} type="button" role="radio" aria-checked={estrutura === e.id}
+                className={`gc-estrutura${estrutura === e.id ? ' ativo' : ''}`} onClick={() => setEstrutura(e.id)}
+              >
+                {miniaturas
+                  ? <span className="gc-mini" dangerouslySetInnerHTML={{ __html: miniaturas[i].svg }} />
+                  : <span className="gc-mini gc-carregando" />}
+                <span>{e.nome}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h3>Color</h3>
+          <div className="gc-cores" role="radiogroup" aria-label="Color">
+            {temas.map((t) => (
+              <button
+                key={t.id} type="button" role="radio" aria-checked={tema === t.id} title={t.nome}
+                className={`gc-cor${tema === t.id ? ' ativo' : ''}`} onClick={() => setTema(t.id)}
+              >
+                <span className="gc-amostra" style={{ background: t.fundo }}><i style={{ background: t.acento }} /></span>
+                <span>{t.nome}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="gc-baixar">
+          <h3>Descargar</h3>
+          <button className="btn btn-primary" onClick={() => baixar('imprenta')} disabled={!!gerando}>
+            {gerando === 'imprenta' ? 'Generando…' : 'PDF para imprenta'}
+          </button>
+          <p className="gc-ajuda">9 × 5 cm con sangrado de 3 mm y marcas de corte. Llévalo a cualquier imprenta.</p>
+          <button className="btn btn-ghost" onClick={() => baixar('a4')} disabled={!!gerando}>
+            {gerando === 'a4' ? 'Generando…' : 'Hoja A4 con 10 tarjetas'}
+          </button>
+          <p className="gc-ajuda">Para imprimir en casa al 100% y cortar.</p>
+          {erro && <p role="alert" className="gc-erro">{erro}</p>}
+        </section>
+      </div>
       <style>{css}</style>
     </div>
   );
 }
 
 const css = `
-.gc fieldset { border: 0; padding: 0; margin: 0 0 18px; display: flex; flex-wrap: wrap; gap: 12px; }
-.gc legend { font-weight: 700; margin-bottom: 8px; }
-.gc input[type=radio] { position: absolute; opacity: 0; pointer-events: none; }
-.gc-cor { cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-weight: 700; font-size: .9rem; }
+.gc { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+@media (max-width: 880px) { .gc { grid-template-columns: 1fr; } }
+.gc h3 { margin: 0 0 12px; font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.gc-palco { position: sticky; top: 24px; }
+.gc-mesa { background: linear-gradient(160deg, #ecebe7, #dedcd6); border-radius: 22px; padding: clamp(28px, 7vw, 72px); display: grid; place-items: center; }
+.gc-grande { width: 100%; max-width: 560px; aspect-ratio: 90 / 50; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 4px rgba(21,23,28,.08), 0 24px 50px rgba(21,23,28,.22); transform: rotate(-1.2deg); }
+.gc-grande svg, .gc-mini svg { display: block; width: 100%; height: 100%; }
+.gc-medida { margin: 10px 0 0; text-align: center; font-size: .82rem; color: var(--muted); }
+.gc-painel { display: grid; gap: 28px; }
+.gc-estruturas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gc-estrutura, .gc-cor { font: inherit; background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink); text-align: left; }
+.gc-estrutura { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: .88rem; }
+.gc-mini { display: block; aspect-ratio: 90 / 50; border-radius: 4px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); transition: box-shadow .15s ease; }
+.gc-estrutura.ativo .gc-mini { box-shadow: 0 0 0 2px var(--ink); }
+.gc-estrutura:focus-visible .gc-mini, .gc-cor:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.gc-cores { display: flex; flex-wrap: wrap; gap: 8px; }
+.gc-cor { display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border: 1px solid var(--line); border-radius: 999px; font-weight: 700; font-size: .88rem; }
 .gc-cor.ativo { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-.gc-amostra { position: relative; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,.12); overflow: hidden; }
-.gc-amostra i { position: absolute; right: 3px; bottom: 3px; width: 8px; height: 8px; border-radius: 50%; }
-.gc-estruturas { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-.gc-estrutura { cursor: pointer; display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: .9rem; }
-.gc-previa { display: block; aspect-ratio: 90 / 50; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 6px rgba(14,18,48,.15); outline: 2px solid transparent; outline-offset: 3px; }
-.gc-previa svg { display: block; width: 100%; height: 100%; }
-.gc-estrutura.ativo .gc-previa { outline-color: var(--accent); }
-.gc-estrutura:has(input:focus-visible) .gc-previa, .gc-cor:has(input:focus-visible) { outline: 3px solid var(--ink); }
-.gc-carregando { background: linear-gradient(90deg, #eceef6, #f6f7fb, #eceef6); }
-.gc-botoes { display: flex; gap: 10px; flex-wrap: wrap; }
-.gc-erro { color: #b00020; margin-top: 8px; }
+.gc-amostra { position: relative; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); overflow: hidden; }
+.gc-amostra i { position: absolute; right: 4px; bottom: 4px; width: 7px; height: 7px; border-radius: 50%; }
+.gc-baixar { display: grid; gap: 6px; justify-items: start; }
+.gc-baixar .btn { width: 100%; }
+.gc-ajuda { margin: 0 0 10px; font-size: .84rem; color: var(--muted); }
+.gc-carregando { background: linear-gradient(90deg, #eceae5, #f6f5f2, #eceae5); }
+.gc-erro { color: #b00020; }
 `;

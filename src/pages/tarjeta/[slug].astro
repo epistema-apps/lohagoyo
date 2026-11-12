@@ -1,6 +1,5 @@
 ---
-// TEMPORÁRIO: gerador de tarjeta fora da página pública do profissional.
-// Vai para o painel do profissional na Fase 2 (interface a redesenhar).
+// Gerador de tarjeta do profissional (noindex). Vai para o painel na Fase 2.
 import Base from '../../layouts/Base.astro';
 import GeradorCartao from '../../components/cartao/GeradorCartao';
 import { dados } from '../../dados';
@@ -11,22 +10,38 @@ export async function getStaticPaths() {
   return perfis.map((perfil) => ({ params: { slug: perfil.slug }, props: { perfil } }));
 }
 const { perfil } = Astro.props as { perfil: Perfil };
+const marca = perfil.marca ?? perfil.nomePublico;
 const url = new URL(`/${perfil.slug}/`, Astro.site).href;
+const comunas = perfil.comunas.includes('Todo Santiago') ? 'Todo Santiago' : perfil.comunas.slice(0, 3).join(' · ');
 ---
-<Base titulo={`Tarjeta de ${perfil.marca ?? perfil.nomePublico}`} descricao="Tarjeta de presentación lista para imprimir." noindex>
-  <section class="wrap" style="padding-top:40px">
-    <h1>Tu tarjeta de presentación</h1>
+<Base titulo={`Tarjeta de ${marca}`} descricao="Tarjeta de presentación lista para imprimir." noindex>
+  <section class="wrap topo">
+    <p class="sobretitulo"><span></span>Tarjeta de presentación</p>
+    <h1>Tu tarjeta, lista para imprimir<span class="ponto">.</span></h1>
+    <p class="lead">Elige el diseño y el color. Los datos vienen de tu página <a href={`/${perfil.slug}/`}>lohagoyo.cl/{perfil.slug}</a>.</p>
+  </section>
+  <section class="wrap">
     <GeradorCartao
       client:load
       dados={{
+        marca,
         nome: perfil.nomePublico,
         oficio: perfil.oficio,
         telefone: perfil.contatos.telefone ?? (perfil.contatos.whatsapp ? `+${perfil.contatos.whatsapp}` : ''),
         email: perfil.contatos.email ?? '',
-        comunas: perfil.comunas.slice(0, 3).join(' · '),
+        comunas,
         url,
         urlCurta: `lohagoyo.cl/${perfil.slug}`,
       }}
     />
   </section>
 </Base>
+
+<style>
+  .topo { padding-top: 48px; padding-bottom: 32px; }
+  .sobretitulo { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .sobretitulo span { width: 28px; height: 1px; background: currentColor; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.045em; margin-bottom: .3em; }
+  .ponto { color: var(--accent); }
+  .lead { color: var(--muted); max-width: 56ch; }
+</style>

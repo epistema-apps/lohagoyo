@@ -63,7 +63,7 @@ describe('tarjeta', () => {
     const { ESTRUTURAS } = await import('../src/components/cartao/desenho');
     const { TEMAS } = await import('../src/components/cartao/temas');
     const carregar = async (c: string) => readFileSync('public' + c);
-    const d = { nome: 'Pedro Ejemplo Muñoz', oficio: 'Mantención de piscinas', telefone: '+56 9 0000 0000', email: 'pedro@ejemplo.cl', comunas: 'Ñuñoa · La Reina', url: 'https://lohagoyo.cl/pedro/', urlCurta: 'lohagoyo.cl/pedro' };
+    const d = { marca: 'Pedro Piscinas', nome: 'Pedro Ejemplo Muñoz', oficio: 'Mantención de piscinas', telefone: '+56 9 0000 0000', email: 'pedro@ejemplo.cl', comunas: 'Ñuñoa · La Reina', url: 'https://lohagoyo.cl/pedro/', urlCurta: 'lohagoyo.cl/pedro' };
     for (const e of ESTRUTURAS) for (const t of Object.keys(TEMAS)) {
       const pdf = await gerarPdfCartao(d, e.id, t as never, 'imprenta', carregar);
       expect(new TextDecoder().decode(pdf.slice(0, 5))).toBe('%PDF-');
