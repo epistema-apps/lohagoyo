@@ -29,7 +29,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
   if (estado === 'ok') {
     return (
       <div className="fa-ok">
-        <strong>¡Gracias!</strong> Te enviamos un correo a {email}. Confirma tu opinión con el enlace del correo; luego la revisaremos antes de publicarla.
+        <strong>¡Gracias!</strong> Te enviamos un correo a {email}. Abre el enlace del correo para confirmar y publicar tu opinión.
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
       <label>Tu comentario<textarea rows={4} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="¿Cómo fue el servicio?" /></label>
       <button className="btn fa-enviar" disabled={!nota || estado === 'enviando'}>{estado === 'enviando' ? 'Enviando…' : 'Enviar opinión'}</button>
       {estado === 'erro' && <p className="fa-erro">No se pudo enviar. Inténtalo de nuevo.</p>}
-      <p className="fa-nota">Recibirás un correo para confirmar. Todas las opiniones son revisadas por LoHagoYo.cl antes de publicarse.</p>
+      <p className="fa-nota">Recibirás un correo para confirmar tu opinión; al confirmarla se publica. LoHagoYo.cl puede retirar opiniones falsas u ofensivas.</p>
     </form>
   );
   }

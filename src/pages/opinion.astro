@@ -12,7 +12,7 @@ import Base from '../layouts/Base.astro';
   const estado = new URLSearchParams(location.search).get('estado');
   const t = document.getElementById('texto')!;
   const h = document.getElementById('titulo')!;
-  if (estado === 'confirmada') { h.firstChild!.textContent = '¡Gracias! Opinión confirmada'; t.textContent = 'LoHagoYo.cl la revisará antes de publicarla en la página del profesional.'; }
+  if (estado === 'confirmada') { h.firstChild!.textContent = '¡Gracias! Opinión confirmada'; t.textContent = 'Ya está publicada: aparecerá en la página del profesional en unos minutos.'; }
   else if (estado === 'invalido') { h.firstChild!.textContent = 'Enlace no válido'; t.textContent = 'El enlace expiró o ya fue usado. Si el problema continúa, escríbenos a hola@lohagoyo.cl.'; }
   else { h.firstChild!.textContent = 'Algo salió mal'; t.textContent = 'No pudimos confirmar tu opinión. Inténtalo de nuevo más tarde.'; }
 </script>

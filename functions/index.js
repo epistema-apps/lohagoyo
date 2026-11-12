@@ -70,7 +70,7 @@ export const aoMudarAvaliacao = onDocumentWritten(
       const pr = await db().doc(`avaliacoesPrivado/${id}`).get();
       const { nome } = await nomeDoPerfil(depois.perfilId);
       await email(pr.get('email'), `Confirma tu opinión sobre ${nome}`,
-        `Hola ${depois.nome}:\n\nGracias por tu opinión sobre ${nome}. Para confirmarla, abre este enlace:\n\n${SITE}/api/confirmar?id=${id}&t=${pr.get('token')}\n\nDespués de confirmarla, LoHagoYo.cl la revisa antes de publicarla.\nSi no fuiste tú, ignora este correo.`);
+        `Hola ${depois.nome}:\n\nGracias por tu opinión sobre ${nome}. Para confirmarla y publicarla, abre este enlace:\n\n${SITE}/api/confirmar?id=${id}&t=${pr.get('token')}\n\nSi no fuiste tú, ignora este correo.`);
     }
 
     // enviada ao profissional para conversar antes de publicar
@@ -119,14 +119,15 @@ async function verificarBloqueio(perfilId) {
     `${nome} fue bloqueado automáticamente (${motivo}) y salió del sitio.\n\nRevisa en el panel, pestaña Profesionales > Bloqueados:\n${SITE}/panel/admin/`);
 }
 
-// Link do e-mail: confirma a avaliação e manda para a moderação.
+// Link do e-mail: confirma a avaliação e ela é PUBLICADA na hora (regra: publicação automática;
+// o controle é o bloqueio por avaliações ruins).
 export const confirmarAvaliacao = onRequest(async (req, res) => {
   const id = String(req.query.id ?? '');
   const t = String(req.query.t ?? '');
   try {
     const [av, pr] = await Promise.all([db().doc(`avaliacoes/${id}`).get(), db().doc(`avaliacoesPrivado/${id}`).get()]);
     if (!av.exists || !pr.exists || !t || pr.get('token') !== t) return res.redirect(302, `${SITE}/opinion/?estado=invalido`);
-    if (av.get('status') === 'por_confirmar') await av.ref.update({ status: 'pendiente' });
+    if (av.get('status') === 'por_confirmar') await av.ref.update({ status: 'aprobada' });
     return res.redirect(302, `${SITE}/opinion/?estado=confirmada`);
   } catch (e) {
     logger.error(e);

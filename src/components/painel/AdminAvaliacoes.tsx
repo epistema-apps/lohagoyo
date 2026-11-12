@@ -7,15 +7,15 @@ import type { Perfil, StatusAvaliacao } from '../../dominio/tipos';
 import Conversa from './Conversa';
 
 const FILTROS: { id: StatusAvaliacao | 'todas'; nome: string }[] = [
-  { id: 'pendiente', nome: 'Por revisar' }, { id: 'en_contestacion', nome: 'Con el profesional' },
-  { id: 'aprobada', nome: 'Publicadas' }, { id: 'por_confirmar', nome: 'Sin confirmar correo' },
+  { id: 'aprobada', nome: 'Publicadas' }, { id: 'en_contestacion', nome: 'Con el profesional' },
+  { id: 'pendiente', nome: 'Retiradas' }, { id: 'por_confirmar', nome: 'Sin confirmar correo' },
   { id: 'rechazada', nome: 'Rechazadas' }, { id: 'todas', nome: 'Todas' },
 ];
 const estrelas = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
 
 export default function AdminAvaliacoes({ perfis, moderadorUid }: { perfis: Perfil[]; moderadorUid: string }) {
   const [itens, setItens] = useState<AvaliacaoAdmin[] | null>(null);
-  const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['id']>('pendiente');
+  const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['id']>('aprobada');
   const [aberta, setAberta] = useState<string | null>(null);
   const [editando, setEditando] = useState<{ id: string; texto: string } | null>(null);
   const [nova, setNova] = useState(false);
@@ -48,7 +48,7 @@ export default function AdminAvaliacoes({ perfis, moderadorUid }: { perfis: Perf
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setNova(!nova)}>+ Agregar evaluación</button>
       </div>
       {aviso && <p className="pn-msg pn-msg-ok" style={{ marginTop: 12 }} role="status">{aviso}</p>}
-      {nova && <NovaAvaliacao perfis={perfis} aoSalvar={async (a) => { await criarAvaliacaoAdmin(a); setNova(false); setAviso('Evaluación agregada.'); carregar(); }} />}
+      {nova && <NovaAvaliacao perfis={perfis} aoSalvar={async (a) => { await criarAvaliacaoAdmin(a); setNova(false); setAviso('Evaluación publicada. Aparecerá en la página en unos minutos.'); carregar(); }} />}
 
       <div className="av-lista" style={{ marginTop: 16 }}>
         {itens === null && <p className="pn-dica">Cargando…</p>}
@@ -98,14 +98,14 @@ function NovaAvaliacao({ perfis, aoSalvar }: { perfis: Perfil[]; aoSalvar: (a: {
   const [nota, setNota] = useState(5);
   const [texto, setTexto] = useState('');
   return (
-    <form className="pn-servico-form" style={{ marginTop: 12 }} onSubmit={async (e) => { e.preventDefault(); await aoSalvar({ perfilId, nome: nome.trim(), nota, texto: texto.trim(), status: 'pendiente' }); }}>
+    <form className="pn-servico-form" style={{ marginTop: 12 }} onSubmit={async (e) => { e.preventDefault(); await aoSalvar({ perfilId, nome: nome.trim(), nota, texto: texto.trim(), status: 'aprobada' }); }}>
       <label className="pn-campo"><span>Profesional</span>
         <select value={perfilId} onChange={(e) => setPerfilId(e.target.value)}>{perfis.map((p) => <option key={p.id} value={p.id}>{p.marca || p.nomePublico}</option>)}</select></label>
       <label className="pn-campo"><span>Nombre del cliente</span><input required value={nome} maxLength={60} onChange={(e) => setNome(e.target.value)} /></label>
       <label className="pn-campo"><span>Nota</span>
         <select value={nota} onChange={(e) => setNota(Number(e.target.value))}>{[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{estrelas(n)}</option>)}</select></label>
       <label className="pn-campo"><span>Comentario</span><textarea rows={3} value={texto} maxLength={1000} onChange={(e) => setTexto(e.target.value)} /></label>
-      <div className="pn-form-acoes"><button className="btn btn-primary">Agregar (queda por revisar)</button></div>
+      <div className="pn-form-acoes"><button className="btn btn-primary">Agregar y publicar</button></div>
     </form>
   );
 }
