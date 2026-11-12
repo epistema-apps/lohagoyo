@@ -81,6 +81,11 @@ describe('perfis (cópia de trabalho)', () => {
     await assertSucceeds(updateDoc(doc(db(ANA), `perfis/${ANA}`), { lema: 'Nuevo', status: 'pendiente' }));
     await assertFails(updateDoc(doc(db(ANA), `perfis/${ANA}`), { aprovadoPor: ANA }));
   });
+  it('bloqueado por avaliações: o dono não edita; o moderador desbloqueia', async () => {
+    await semRegras((d) => setDoc(doc(d, `perfis/${ANA}`), perfil(ANA, { status: 'bloqueado', motivoBloqueio: '5 evaluaciones malas' })));
+    await assertFails(updateDoc(doc(db(ANA), `perfis/${ANA}`), { lema: 'x', status: 'pendiente' }));
+    await assertSucceeds(updateDoc(doc(db(MOD), `perfis/${ANA}`), { status: 'aprobado' }));
+  });
   it('outra pessoa não edita nem apaga; moderador aprova', async () => {
     await semRegras((d) => setDoc(doc(d, `perfis/${ANA}`), perfil(ANA)));
     await assertFails(updateDoc(doc(db(BETO), `perfis/${ANA}`), { lema: 'x' }));

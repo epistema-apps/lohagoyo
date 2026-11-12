@@ -65,7 +65,7 @@ export interface Contatos {
   instagram?: string;
 }
 
-export type StatusPerfil = 'borrador' | 'pendiente' | 'aprobado' | 'pausado';
+export type StatusPerfil = 'borrador' | 'pendiente' | 'aprobado' | 'pausado' | 'bloqueado';
 
 /** Dados públicos. Nada aqui pode expor situação de necessidade. */
 export interface Perfil {
@@ -95,6 +95,8 @@ export interface Perfil {
   status: StatusPerfil;
   aprovadoPor?: string;
   aprovadoEm?: string;
+  bloqueadoEm?: string;
+  motivoBloqueio?: string;
   criadoEm: string;
   atualizadoEm: string;
 }

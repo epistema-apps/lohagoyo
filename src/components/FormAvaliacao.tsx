@@ -23,6 +23,9 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
     }
   }
 
+  return <div className="fa-raiz"><style>{css}</style>{conteudo()}</div>;
+
+  function conteudo() {
   if (estado === 'ok') {
     return (
       <div className="fa-ok">
@@ -32,9 +35,14 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
   }
   if (!abrir) {
     return (
-      <button type="button" className="fa-convite" onClick={() => setAbrir(true)}>
-        ¿Trabajaste con {nomeProfissional}? <span>Deja tu opinión →</span>
-      </button>
+      <div className="fa-cta">
+        <div>
+          <p className="fa-sobre"><span />Tu opinión</p>
+          <h3>¿Trabajaste con {nomeProfissional}<span className="fa-ponto">?</span></h3>
+          <p>Cuéntanos cómo fue. Tu opinión ayuda a otros vecinos a elegir y a {nomeProfissional} a seguir creciendo.</p>
+        </div>
+        <button type="button" className="btn fa-botao" onClick={() => setAbrir(true)}>Dejar mi opinión <span aria-hidden="true">★</span></button>
+      </div>
     );
   }
   return (
@@ -51,7 +59,12 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
       <button className="btn fa-enviar" disabled={!nota || estado === 'enviando'}>{estado === 'enviando' ? 'Enviando…' : 'Enviar opinión'}</button>
       {estado === 'erro' && <p className="fa-erro">No se pudo enviar. Inténtalo de nuevo.</p>}
       <p className="fa-nota">Recibirás un correo para confirmar. Todas las opiniones son revisadas por LoHagoYo.cl antes de publicarse.</p>
-      <style>{`
+    </form>
+  );
+  }
+}
+
+const css = `
         .fa{display:grid;gap:12px;max-width:560px}
         .fa label{display:grid;gap:6px;font-weight:700;font-size:.92rem}
         .fa input,.fa textarea{padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:1rem var(--font-body);background:#fff}
@@ -66,7 +79,16 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
         .fa-convite{font:inherit;background:none;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;cursor:pointer;color:var(--muted);text-align:left}
         .fa-convite span{color:var(--ink);font-weight:700}
         .fa-convite:hover{border-color:var(--ink)}
-      `}</style>
-    </form>
-  );
-}
+      
+  .fa-raiz{margin-top:8px}
+  .fa-cta{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:var(--bg);border-radius:24px;padding:clamp(24px,5vw,44px)}
+  .fa-cta h3{font-size:clamp(1.6rem,4vw,2.3rem);letter-spacing:-.045em;line-height:1.05;margin:0 0 .4em}
+  .fa-cta p{color:var(--muted);margin:0;max-width:48ch}
+  .fa-sobre{display:flex;align-items:center;gap:12px;font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin:0 0 14px!important}
+  .fa-sobre span{width:28px;height:1px;background:currentColor}
+  .fa-ponto{color:var(--accent)}
+  .fa-botao{background:var(--ink);color:#fff;min-height:54px;padding:0 28px;font-size:1.02rem}
+  .fa-botao span{color:var(--sol)}
+  .fa-botao:hover{background:#000}
+  .fa{background:var(--bg);border-radius:24px;padding:clamp(24px,5vw,44px)}
+`;

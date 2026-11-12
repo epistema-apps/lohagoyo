@@ -62,7 +62,7 @@ service cloud.firestore {
             'id', 'slug', 'nomePublico', 'marca', 'oficio', 'lema', 'apresentacao', 'categoriaIds', 'regiaoId',
             'comunas', 'publicos', 'contatos', 'endereco', 'capa', 'retrato', 'fotos', 'layout', 'cartao', 'cor',
             'pagamentos', 'emiteBoleta', 'horario', 'tipoPessoa', 'status', 'criadoEm', 'atualizadoEm',
-            'aprovadoPor', 'aprovadoEm'])
+            'aprovadoPor', 'aprovadoEm', 'bloqueadoEm', 'motivoBloqueio'])
           && novo().id == uid
           && texto(novo().nomePublico, 80) && texto(novo().oficio, 80) && texto(novo().apresentacao, 1500)
           && novo().fotos is list && novo().fotos.size() <= 4
@@ -82,7 +82,9 @@ service cloud.firestore {
       allow create: if (eu(uid) && camposValidos() && novo().status in ['borrador', 'pendiente']
           && !('aprovadoPor' in novo()))
         || (moderador() && camposValidos()); // cadastro assistido
+      // Bloqueado (ex.: 5 avaliações ruins): só o administrador mexe.
       allow update: if (eu(uid) && camposValidos()
+          && resource.data.status != 'bloqueado'
           && novo().status in ['borrador', 'pendiente', 'pausado']
           && novo().get('aprovadoPor', null) == resource.data.get('aprovadoPor', null)
           && novo().get('aprovadoEm', null) == resource.data.get('aprovadoEm', null))

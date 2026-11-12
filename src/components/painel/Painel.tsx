@@ -131,6 +131,7 @@ const PAGOS = ['Transferencia', 'Efectivo', 'Tarjeta'];
 const STATUS: Record<Perfil['status'], string> = {
   borrador: 'Borrador: todavía no enviada', pendiente: 'En revisión: LoHagoYo.cl revisará tu página (o tus cambios) antes de publicarla',
   aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo.cl',
+  bloqueado: 'Bloqueada por evaluaciones de clientes: escribe a hola@lohagoyo.cl',
 };
 
 export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = false, aoVoltar }: Props & {

@@ -85,8 +85,39 @@ export const aoMudarAvaliacao = onDocumentWritten(
     const mudouVisivel = visivel(antes) !== visivel(depois)
       || (visivel(depois) && ['nome', 'nota', 'texto', 'resposta'].some((k) => antes?.[k] !== depois?.[k]));
     if (mudouVisivel) await publicar(`avaliação ${id}`);
+
+    // contou uma avaliação ruim confirmada? verifica o limite de bloqueio
+    if (depois && CONTAM.includes(depois.status) && !CONTAM.includes(antes?.status)) {
+      await verificarBloqueio(depois.perfilId);
+    }
   },
 );
+
+// ---------- bloqueio automático por avaliações ruins ----------
+// Regra: com LIMITE_MAS avaliações confirmadas de nota <= NOTA_MA (não recusadas pelo admin),
+// o perfil é bloqueado, sai do site e vai para a aba "Bloqueados" do admin.
+const NOTA_MA = 2;
+const LIMITE_MAS = 5;
+const CONTAM = ['pendiente', 'en_contestacion', 'aprobada'];
+
+async function verificarBloqueio(perfilId) {
+  const s = await db().collection('avaliacoes').where('perfilId', '==', perfilId).get();
+  const mas = s.docs.filter((d) => CONTAM.includes(d.get('status')) && Number(d.get('nota')) <= NOTA_MA).length;
+  if (mas < LIMITE_MAS) return;
+  const ref = db().doc(`perfis/${perfilId}`);
+  const p = await ref.get();
+  if (!p.exists || p.get('status') === 'bloqueado') return;
+  const agora = new Date().toISOString();
+  const motivo = `${mas} evaluaciones de ${NOTA_MA} estrellas o menos`;
+  const b = db().batch();
+  b.update(ref, { status: 'bloqueado', bloqueadoEm: agora, motivoBloqueio: motivo, atualizadoEm: agora });
+  b.delete(db().doc(`publicados/${perfilId}`)); // sai do site (aoMudarPublicado republica)
+  await b.commit();
+  logger.warn('perfil bloqueado', perfilId, motivo);
+  const { nome } = await nomeDoPerfil(perfilId);
+  await email(REMETENTE, `Bloqueado por evaluaciones: ${nome}`,
+    `${nome} fue bloqueado automáticamente (${motivo}) y salió del sitio.\n\nRevisa en el panel, pestaña Profesionales > Bloqueados:\n${SITE}/panel/admin/`);
+}
 
 // Link do e-mail: confirma a avaliação e manda para a moderação.
 export const confirmarAvaliacao = onRequest(async (req, res) => {
