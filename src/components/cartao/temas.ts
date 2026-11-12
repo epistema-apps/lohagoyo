@@ -3,8 +3,8 @@ import type { PapelLogo } from '../../marca/logo-dados';
 
 export const PALETA = {
   grafito: '#1A1918',
-  pizarra: '#2E2B28',
-  piedra: '#F3F1EE',
+  pizarra: '#3B3D40',
+  piedra: '#E6E6E4',
   branco: '#FFFFFF',
   tijolo: '#A23B2A',
   tijoloSuave: '#E28A72',
@@ -35,15 +35,15 @@ export const TEMAS: Record<TemaId, TemaCartao> = {
     acento: PALETA.tijoloSuave, painel: '#262422', circulo: '#262422', logo: LOGO_ESCURO,
   },
   pizarra: {
-    id: 'pizarra', nome: 'Pizarra', fundo: PALETA.pizarra, texto: '#FFFFFF', suave: '#B1ACA5',
-    acento: PALETA.tijoloSuave, painel: PALETA.grafito, circulo: '#3A3633', logo: LOGO_ESCURO,
+    id: 'pizarra', nome: 'Grafito medio', fundo: PALETA.pizarra, texto: '#FFFFFF', suave: '#B4B6B9',
+    acento: PALETA.tijoloSuave, painel: PALETA.grafito, circulo: '#4A4C50', logo: LOGO_ESCURO,
   },
   blanco: {
     id: 'blanco', nome: 'Blanco', fundo: PALETA.branco, texto: PALETA.grafito, suave: '#6F6A64',
     acento: PALETA.tijolo, painel: PALETA.grafito, circulo: PALETA.piedra, logo: LOGO_CLARO,
   },
   piedra: {
-    id: 'piedra', nome: 'Piedra', fundo: PALETA.piedra, texto: PALETA.grafito, suave: '#6F6A64',
-    acento: PALETA.tijolo, painel: PALETA.pizarra, circulo: '#E7E3DD', logo: LOGO_CLARO,
+    id: 'piedra', nome: 'Gris claro', fundo: PALETA.piedra, texto: PALETA.grafito, suave: '#6F6A64',
+    acento: PALETA.tijolo, painel: PALETA.pizarra, circulo: '#D6D6D4', logo: LOGO_CLARO,
   },
 };

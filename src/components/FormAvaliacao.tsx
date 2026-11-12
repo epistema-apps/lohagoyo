@@ -81,7 +81,7 @@ const css = `
         .fa-convite:hover{border-color:var(--ink)}
       
   .fa-raiz{margin-top:8px}
-  .fa-cta{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:var(--bg);border-radius:24px;padding:clamp(24px,5vw,44px)}
+  .fa-cta{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:var(--grafite-claro);border-radius:24px;padding:clamp(24px,5vw,44px)}
   .fa-cta h3{font-size:clamp(1.6rem,4vw,2.3rem);letter-spacing:-.045em;line-height:1.05;margin:0 0 .4em}
   .fa-cta p{color:var(--muted);margin:0;max-width:48ch}
   .fa-sobre{display:flex;align-items:center;gap:12px;font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin:0 0 14px!important}
@@ -90,5 +90,5 @@ const css = `
   .fa-botao{background:var(--ink);color:#fff;min-height:54px;padding:0 28px;font-size:1.02rem}
   .fa-botao span{color:var(--sol)}
   .fa-botao:hover{background:#000}
-  .fa{background:var(--bg);border-radius:24px;padding:clamp(24px,5vw,44px)}
+  .fa{background:var(--grafite-claro);border-radius:24px;padding:clamp(24px,5vw,44px)}
 `;
