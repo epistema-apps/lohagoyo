@@ -1,6 +1,6 @@
 // Desenho da tarjeta como lista de comandos (coordenadas em pontos, origem no canto
 // superior esquerdo da área de corte). O mesmo desenho vira PDF (gerarPdf) e prévia SVG (render-svg).
-// Estilo editorial, igual ao site do profissional: marca com ponto tijolo, sobretítulo com traço,
+// Estilo editorial, igual ao site do profissional: marca com ponto esmeralda, sobretítulo com traço,
 // muito respiro e o logo LoHagoYo.cl discreto.
 import QRCode from 'qrcode';
 import { LOGO } from '../../marca/logo-dados';
@@ -197,7 +197,7 @@ export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: Da
     const contato = [d.telefone, d.email].filter(Boolean).join('   ·   ');
     if (contato) cmds.push({ t: 'texto', x: M, y: H - F + 13.5, txt: contato, fonte: 'nome', tam: caber(medir, 'nome', contato, 7, larT), cor: '#FFFFFF' });
     if (d.endereco) cmds.push({ t: 'texto', x: M, y: H - F - 7, txt: d.endereco, fonte: 'reg', tam: caber(medir, 'reg', d.endereco, 5.4, larg), cor: tema.suave });
-    cmds.push({ t: 'texto', x: M, y: H - F + 23.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 6.4, larT), cor: '#E28A72' });
+    cmds.push({ t: 'texto', x: M, y: H - F + 23.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 6.4, larT), cor: '#5CC497' });
     cmds.push(...logo(W - M - lw, H - F / 2 - alturaLogo(lw) / 2, lw, LOGO_ESCURO));
   }
 

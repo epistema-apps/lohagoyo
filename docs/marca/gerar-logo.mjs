@@ -13,7 +13,7 @@ function fonte(arq) {
 const F600 = fonte('plus-jakarta-sans-latin-600-normal.woff');
 
 export const CORES = {
-  grafito: '#1A1918', tijolo: '#A23B2A', tijoloClaro: '#C4513B', tijoloSuave: '#E28A72', branco: '#FFFFFF', cinza: '#8A857E', cinzaClaro: '#A39E97',
+  grafito: '#1A1918', esmeralda: '#1F6B4E', esmeraldaPonto: '#2F9A6E', esmeraldaClaro: '#5CC497', branco: '#FFFFFF', cinza: '#8A857E', cinzaClaro: '#A39E97',
 };
 const S = 100; // tamanho base
 const TR = -0.035; // tracking
@@ -66,8 +66,8 @@ const svg = (cores) =>
     .join('')}</svg>`;
 
 export const TEMAS_LOGO = {
-  claro: { texto: CORES.grafito, yo: CORES.tijolo, ponto: CORES.tijoloClaro, dominio: CORES.cinza },
-  escuro: { texto: CORES.branco, yo: CORES.tijoloSuave, ponto: CORES.tijoloSuave, dominio: CORES.cinzaClaro },
+  claro: { texto: CORES.grafito, yo: CORES.esmeralda, ponto: CORES.esmeraldaPonto, dominio: CORES.cinza },
+  escuro: { texto: CORES.branco, yo: CORES.esmeraldaClaro, ponto: CORES.esmeraldaClaro, dominio: CORES.cinzaClaro },
 };
 
 mkdirSync('public/marca', { recursive: true });
@@ -83,7 +83,7 @@ writeFileSync('public/marca/logo-negativo.svg', svg(TEMAS_LOGO.escuro));
   const dx = (Q - w * k) / 2, dy = (Q - h * k) / 2 - y.minY * k;
   writeFileSync(
     'public/marca/icone.svg',
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Q} ${Q}" role="img" aria-label="LoHagoYo.cl"><rect width="${Q}" height="${Q}" rx="56" fill="#2E3033"/><g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) scale(${k.toFixed(4)})"><path fill="${CORES.branco}" d="${y.d}"/><path fill="${CORES.tijoloSuave}" d="${circulo(y.fim + 5 + r, -r, r)}"/></g></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Q} ${Q}" role="img" aria-label="LoHagoYo.cl"><rect width="${Q}" height="${Q}" rx="56" fill="#2E3033"/><g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) scale(${k.toFixed(4)})"><path fill="${CORES.branco}" d="${y.d}"/><path fill="${CORES.esmeraldaClaro}" d="${circulo(y.fim + 5 + r, -r, r)}"/></g></svg>`,
   );
   writeFileSync('public/favicon.svg', readFileSync('public/marca/icone.svg'));
 }

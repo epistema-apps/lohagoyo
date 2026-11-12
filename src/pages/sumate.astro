@@ -18,10 +18,10 @@ const capa = foto('general-2')!;
       <div class="acoes">
         {PAINEL_ATIVO ? (
           <>
-            <a class="btn btn-branco" href="/panel/">Crear mi página</a>
+            <a class="btn btn-sol" href="/panel/">Crear mi página</a>
           </>
         ) : (
-          <a class="btn btn-branco" href={linkCadastro()} target="_blank" rel="noopener">{CONTATO.whatsapp ? 'Quiero mi página (WhatsApp)' : 'Quiero mi página'}</a>
+          <a class="btn btn-sol" href={linkCadastro()} target="_blank" rel="noopener">{CONTATO.whatsapp ? 'Quiero mi página (WhatsApp)' : 'Quiero mi página'}</a>
         )}
       </div>
     </div>
@@ -47,8 +47,6 @@ const capa = foto('general-2')!;
   h1 { font-size: clamp(2.6rem, 8vw, 5rem); letter-spacing: -0.05em; line-height: 1; }
   .ponto { color: var(--sol); }
   .lead { color: rgba(255, 255, 255, 0.78); font-size: clamp(1.05rem, 2vw, 1.25rem); max-width: 44ch; margin-bottom: 2em; }
-  .btn-branco { background: #fff; color: var(--ink); }
-  .btn-branco:hover { background: var(--bg); }
   .bloco { padding-top: clamp(56px, 8vw, 96px); }
   .passos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); border-top: 1px solid var(--line); }
   .passos li { padding: 28px 28px 8px 0; }

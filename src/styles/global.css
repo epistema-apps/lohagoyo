@@ -5,16 +5,18 @@
 @font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2'); }
 
 :root {
-  /* Marca: grafito + piedra + un acento tijolo (ladrillo) */
+  /* Marca: grafito + piedra + acento esmeralda */
   --ink: #1a1918; /* grafito */
   --muted: #66686b;
   --bg: #eeeeed; /* cinza-grafite muito claro */
   --card: #ffffff;
   --line: #dcdcda;
-  --accent: #a23b2a; /* tijolo */
-  --accent-dark: #82301f;
-  --accent-soft: #f5e6e2;
-  --sol: #c4513b; /* tijolo claro (sobre fondo oscuro) */
+  --accent: #1f6b4e; /* esmeralda escuro (sobre fondo claro) */
+  --accent-dark: #17533c;
+  --accent-soft: #e2f2ea;
+  --sol: #5cc497; /* esmeralda claro (sobre fondo oscuro): botones, sobretítulos, puntos */
+  --sol-hover: #4db386;
+  --sobre-sol: #0e2a1e; /* texto sobre botón esmeralda claro */
   --ok: #1f8a4c;
   --fundo-escuro: #2e3033; /* grafite: todos os fundos escuros (não usar preto) */
   --fundo-escuro-hover: #25272a;
@@ -111,7 +113,9 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* destaque: a cor do "Yo" do logo, com o ponto amarelo */
 .destaque { color: var(--accent); }
-.ponto { color: var(--sol); }
+.ponto { color: var(--accent); }
+.btn-sol { background: var(--sol); color: var(--sobre-sol); }
+.btn-sol:hover { background: var(--sol-hover); }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
