@@ -1,16 +1,51 @@
 ---
 import Base from '../layouts/Base.astro';
+import { CONTATO } from '../config';
 ---
-<Base titulo="Privacidad" descricao="Cómo Lo Hago Yo cuida los datos de los profesionales y visitantes." noindex>
-  <section class="wrap" style="padding-top:48px;max-width:760px">
-    <h1>Privacidad</h1>
-    <p><strong>Borrador — texto legal pendiente de revisión</strong> (Leyes 19.628 y 21.719).</p>
+<Base titulo="Política de Privacidad" descricao="Cómo LoHagoYo.cl trata los datos personales de profesionales y usuarios, conforme a las Leyes 19.628 y 21.719." noindex>
+  <article class="wrap legal">
+    <p class="sobre"><span></span>Legal</p>
+    <h1>Política de Privacidad<span class="ponto">.</span></h1>
+    <p class="versao">Versión vigente desde el 12 de noviembre de 2026. Conforme a las Leyes N° 19.628 y N° 21.719 sobre protección de datos personales.</p>
+
+    <h2>1. Qué datos tratamos</h2>
     <ul>
-      <li>Solo publicamos los datos que cada profesional autoriza expresamente.</li>
-      <li>Los datos privados (documento, dirección) solo los ve el equipo que modera.</li>
-      <li>Puedes pedir ver, corregir o eliminar tus datos y tu cuenta en cualquier momento.</li>
-      <li>No vendemos ni compartimos datos con terceros.</li>
-      <li>Responsable: LoHagoYo.cl. Contacto: hola@lohagoyo.cl.</li>
+      <li><strong>Profesionales:</strong> nombre, nombre de su servicio, foto, dirección, comunas de atención, datos de contacto (WhatsApp, teléfono, correo), servicios, precios, fotos de trabajos y, de forma privada, nombre completo y correo de su cuenta.</li>
+      <li><strong>Personas que dejan una opinión:</strong> primer nombre (público), nota, comentario y correo electrónico (privado, solo para confirmar la opinión).</li>
+      <li><strong>Visitantes:</strong> no usamos cookies de publicidad ni herramientas de seguimiento.</li>
     </ul>
-  </section>
+
+    <h2>2. Para qué los usamos</h2>
+    <ul>
+      <li>Publicar la página del Profesional, con los datos que él mismo autoriza.</li>
+      <li>Confirmar y publicar opiniones, prevenir fraudes y moderar contenido.</li>
+      <li>Comunicarnos con Profesionales y personas que opinan sobre su cuenta, página u opiniones.</li>
+    </ul>
+    <p>Base de licitud: el <strong>consentimiento</strong> expreso que se registra al crear la página o confirmar una opinión. No vendemos ni cedemos datos a terceros con fines comerciales.</p>
+
+    <h2>3. Qué es público y qué es privado</h2>
+    <p>Es público solo lo que aparece en la página del Profesional (incluida su dirección, que es requisito para publicar). Son privados: nombre completo, correo de la cuenta, correos de quienes opinan y las conversaciones con la moderación.</p>
+
+    <h2>4. Dónde se guardan</h2>
+    <p>En servicios de Google Cloud / Firebase, con los datos y fotos alojados en Santiago de Chile (región southamerica-west1), con acceso restringido por reglas de seguridad.</p>
+
+    <h2>5. Tus derechos</h2>
+    <p>Puedes pedir en cualquier momento <strong>acceso, rectificación, supresión, oposición y portabilidad</strong> de tus datos, y retirar tu consentimiento, escribiendo a <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>. Los Profesionales pueden además editar o pausar su página desde su panel.</p>
+
+    <h2>6. Responsable y contacto</h2>
+    <p>Responsable del tratamiento: LoHagoYo.cl. Contacto: <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>.</p>
+
+    <p>Ver también los <a href="/terminos/">Términos y Condiciones</a>.</p>
+  </article>
 </Base>
+
+<style>
+  .legal { max-width: 760px; padding-top: 48px; }
+  .legal h1 { font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -0.045em; margin-bottom: 0.2em; }
+  .legal h2 { font-size: 1.25rem; margin: 2em 0 0.6em; letter-spacing: -0.02em; }
+  .legal li { margin-bottom: 0.6em; }
+  .versao { color: var(--muted); }
+  .sobre { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .sobre span { width: 28px; height: 1px; background: currentColor; }
+  .ponto { color: var(--accent); }
+</style>

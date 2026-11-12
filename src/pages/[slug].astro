@@ -287,8 +287,10 @@ const jsonLd = {
           <span>Página creada con</span>
           <img src="/marca/logo.svg?v=grafite" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
         </a>
+        <a class="acesso" href="/terminos/">Términos</a>
         <a class="acesso" href="/panel/">Acceso</a>
       </div>
+      <p class="pe-aviso">Página gestionada por {marca}, único responsable de sus servicios, precios e información. LoHagoYo.cl es una plataforma independiente de difusión: no presta ni intermedia estos servicios ni responde por ellos.</p>
     </footer>
 
   </div>
@@ -472,6 +474,7 @@ const jsonLd = {
 
   .pe { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 40px; padding-bottom: 40px; font-size: 0.82rem; color: var(--muted); }
   .pe p { margin: 0; }
+  .pe .pe-aviso { flex-basis: 100%; font-size: 0.76rem; line-height: 1.5; color: var(--muted); }
   .pe-dir { display: inline-flex; align-items: center; gap: 14px; }
   .acesso { color: var(--muted); font-size: 0.78rem; text-decoration: none; opacity: 0.7; border-left: 1px solid var(--line); padding-left: 14px; }
   .acesso:hover { opacity: 1; color: var(--ink); }

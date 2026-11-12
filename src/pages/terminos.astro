@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTATO } from '../config';
+const versao = '12 de noviembre de 2026';
+---
+<Base titulo="Términos y Condiciones" descricao="Términos y condiciones de uso de LoHagoYo.cl, plataforma gratuita de difusión de profesionales independientes." noindex>
+  <article class="wrap legal">
+    <p class="sobre"><span></span>Legal</p>
+    <h1>Términos y Condiciones<span class="ponto">.</span></h1>
+    <p class="versao">Versión vigente desde el {versao}.</p>
+
+    <h2>1. Qué es LoHagoYo.cl</h2>
+    <p>LoHagoYo.cl (la «Plataforma») es un sitio <strong>gratuito de difusión</strong> que permite a profesionales y trabajadores independientes (los «Profesionales») publicar una página con sus servicios, datos de contacto y opiniones de clientes, para que cualquier persona (los «Usuarios») pueda encontrarlos y contactarlos directamente.</p>
+    <p>La Plataforma <strong>no presta los servicios publicados</strong>, no es empleadora, agente, socia ni representante de los Profesionales, y <strong>no participa en los acuerdos</strong> que Usuarios y Profesionales celebren entre ellos. No cobra comisiones ni intermedia pagos.</p>
+
+    <h2>2. Responsabilidad por los servicios</h2>
+    <ul>
+      <li>Cada Profesional es <strong>el único responsable</strong> de los servicios que ofrece y presta: su calidad, seguridad, precios, plazos, garantías, materiales, permisos, certificaciones (por ejemplo, las exigidas por la SEC para trabajos eléctricos o de gas), obligaciones tributarias y laborales, y del cumplimiento de la ley aplicable.</li>
+      <li>La información de cada página (servicios, precios, fotos, dirección, condiciones) es <strong>ingresada por el propio Profesional</strong>, quien declara que es verdadera y que tiene derecho a publicarla. La Plataforma revisa las páginas antes de publicarlas, pero <strong>no verifica ni garantiza</strong> la idoneidad, experiencia, identidad o antecedentes de los Profesionales, ni el resultado de los trabajos.</li>
+      <li>Los acuerdos de precio, alcance, pago y garantía se hacen <strong>directamente entre el Usuario y el Profesional</strong>. Recomendamos acordar por escrito (por ejemplo, por WhatsApp) el trabajo y el precio, pedir boleta cuando corresponda y no pagar por adelantado montos que no se hayan acordado.</li>
+      <li>Cualquier reclamo por un servicio debe dirigirse al Profesional que lo prestó. La Plataforma podrá, a su criterio, mediar para facilitar una solución, sin que ello implique asumir responsabilidad por el servicio.</li>
+      <li>Nada en estos Términos limita los derechos que la ley, en especial la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores, otorga a los Usuarios frente a quien presta el servicio.</li>
+    </ul>
+
+    <h2>3. Opiniones y evaluaciones</h2>
+    <ul>
+      <li>Las opiniones son publicadas por Usuarios que confirman su correo electrónico, y reflejan <strong>únicamente la experiencia y opinión de quien las escribe</strong>, no la de la Plataforma.</li>
+      <li>En la página solo se muestra el primer nombre de quien opina, su nota y su comentario. El correo nunca se publica.</li>
+      <li>Está prohibido publicar opiniones falsas, ofensivas, discriminatorias, con datos personales de terceros o con fines distintos a evaluar un servicio. La Plataforma puede <strong>editar, retirar o eliminar</strong> opiniones que no cumplan estas reglas y conversar con el Profesional antes de decidir.</li>
+      <li>Un Profesional que acumule evaluaciones muy negativas puede ser <strong>suspendido</strong> de forma automática mientras la Plataforma revisa el caso.</li>
+    </ul>
+
+    <h2>4. Reglas para los Profesionales</h2>
+    <ul>
+      <li>Para publicar se exige una foto real de la persona, una dirección y datos de contacto verdaderos. La dirección se muestra en la página para dar confianza a los clientes y prevenir fraudes.</li>
+      <li>Está prohibido ofrecer servicios ilegales, usar fotos o textos de terceros sin autorización, suplantar a otra persona o usar la Plataforma para estafas.</li>
+      <li>La Plataforma puede <strong>revisar, rechazar, pausar, retirar o eliminar</strong> cualquier página o cuenta, en cualquier momento, si detecta incumplimientos o riesgos para los Usuarios, sin que ello genere derecho a indemnización, dado que el servicio es gratuito.</li>
+      <li>El Profesional autoriza a la Plataforma a mostrar su página, fotos y tarjeta de presentación, y puede pedir su eliminación en cualquier momento.</li>
+    </ul>
+
+    <h2>5. Responsabilidad total del Profesional e indemnidad</h2>
+    <p>Al crear su página, el Profesional acepta expresamente que:</p>
+    <ul>
+      <li>Tiene la <strong>gestión total</strong> de su página y de todo lo que publica y hace a través de la Plataforma, y es el <strong>único responsable</strong> de ello y de los servicios que presta.</li>
+      <li>La Plataforma <strong>no responde por ningún daño</strong> —material, personal o moral— que se origine en los servicios, trabajos, informaciones, precios o conductas del Profesional.</li>
+      <li>El Profesional <strong>responde personalmente por cualquier daño</strong> que cause a clientes, Usuarios o terceros, y se obliga a <strong>mantener indemne</strong> a la Plataforma y a quienes la administran frente a cualquier reclamo, demanda, multa o gasto (incluidos honorarios de abogados) derivado de sus servicios, de su contenido o del incumplimiento de estos Términos.</li>
+    </ul>
+    <p>Esta aceptación queda registrada con fecha y versión de los Términos.</p>
+
+    <h2>6. Disponibilidad y cambios</h2>
+    <p>El servicio se ofrece gratuitamente y «tal como está». Podemos modificar, interrumpir o terminar la Plataforma o estos Términos; los cambios se publicarán en esta página con su fecha. El uso posterior implica aceptación de la nueva versión.</p>
+
+    <h2>7. Datos personales</h2>
+    <p>El tratamiento de datos personales se rige por nuestra <a href="/privacidad/">Política de Privacidad</a>, conforme a las Leyes N° 19.628 y N° 21.719.</p>
+
+    <h2>8. Denuncias y contacto</h2>
+    <p>Si ves una página u opinión falsa, ofensiva o sospechosa de fraude, escríbenos a <a href={`mailto:${CONTATO.email}`}>{CONTATO.email}</a>. Revisaremos el caso a la brevedad.</p>
+
+    <h2>9. Ley aplicable</h2>
+    <p>Estos Términos se rigen por las leyes de la República de Chile. Cualquier controversia se someterá a los tribunales competentes de Santiago, sin perjuicio de los derechos que la ley reconozca a los consumidores. Las limitaciones de responsabilidad de estos Términos se aplican en la máxima medida permitida por la ley; si alguna cláusula fuera declarada inválida, las demás seguirán vigentes.</p>
+  </article>
+</Base>
+
+<style>
+  .legal { max-width: 760px; padding-top: 48px; }
+  .legal h1 { font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -0.045em; margin-bottom: 0.2em; }
+  .legal h2 { font-size: 1.25rem; margin: 2em 0 0.6em; letter-spacing: -0.02em; }
+  .legal li { margin-bottom: 0.6em; }
+  .versao { color: var(--muted); }
+  .sobre { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .sobre span { width: 28px; height: 1px; background: currentColor; }
+  .ponto { color: var(--accent); }
+</style>

@@ -58,7 +58,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
       <label>Tu comentario<textarea rows={4} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="¿Cómo fue el servicio?" /></label>
       <button className="btn fa-enviar" disabled={!nota || estado === 'enviando'}>{estado === 'enviando' ? 'Enviando…' : 'Enviar opinión'}</button>
       {estado === 'erro' && <p className="fa-erro">No se pudo enviar. Inténtalo de nuevo.</p>}
-      <p className="fa-nota">Recibirás un correo para confirmar tu opinión; al confirmarla se publica. LoHagoYo.cl puede retirar opiniones falsas u ofensivas.</p>
+      <p className="fa-nota">Recibirás un correo para confirmar tu opinión; al confirmarla se publica. LoHagoYo.cl puede retirar opiniones falsas u ofensivas. Al enviar aceptas los <a href="/terminos/">Términos</a> y la <a href="/privacidad/">Política de Privacidad</a>.</p>
     </form>
   );
   }

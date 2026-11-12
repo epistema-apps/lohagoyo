@@ -14,11 +14,11 @@ export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
 interface Props { categorias: { id: string; nome: string; sugeridos: string[] }[]; comunas: string[]; banco: FotoBanco[] }
 
-const VERSAO_TERMOS = '2026-11';
+const VERSAO_TERMOS = '2026-11-12';
 const TEXTO_ASISTIDO =
-  'Registro asistido: confirmo que el profesional autorizó a LoHagoYo.cl a publicar estos datos y fotos.';
+  'Registro asistido: confirmo que el profesional leyó y aceptó los Términos y Condiciones y la Política de Privacidad de LoHagoYo.cl, incluida su responsabilidad total por su página y sus servicios, y autorizó a publicar estos datos y fotos.';
 const TEXTO_CONSENTIMIENTO =
-  'Autorizo a LoHagoYo.cl a publicar en mi página los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos). Puedo modificarlos o pedir que se eliminen en cualquier momento.';
+  'Acepto los Términos y Condiciones y la Política de Privacidad de LoHagoYo.cl. Declaro que soy el único responsable de mi página, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo.cl no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo.cl frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
 
 export default function Painel(props: Props) {
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
@@ -464,6 +464,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
           <input type="checkbox" checked={aceito} onChange={(e) => setAceito(e.target.checked)} />
           {admin ? TEXTO_ASISTIDO : TEXTO_CONSENTIMIENTO}
         </label>
+        <p className="pn-dica">Lee los <a href="/terminos/" target="_blank" rel="noopener">Términos y Condiciones</a> y la <a href="/privacidad/" target="_blank" rel="noopener">Política de Privacidad</a>.</p>
         <button className="btn btn-primary pn-largo" disabled={salvando || pendencias.length > 0 || !aceito} onClick={enviar}>
           {admin ? 'Guardar y publicar' : 'Enviar a revisión'}
         </button>
