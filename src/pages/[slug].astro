@@ -7,7 +7,7 @@ import Base from '../layouts/Base.astro';
 import { dados } from '../dados';
 import { foto } from '../dados/fotos';
 import { linkWhatsApp, textoMateriais, textoPreco, textoPublico } from '../dominio/formato';
-import { textoEndereco, type Perfil } from '../dominio/tipos';
+import { textoEndereco, textoEnderecoCompleto, type Perfil } from '../dominio/tipos';
 import FormAvaliacao from '../components/FormAvaliacao';
 import { readFile } from 'node:fs/promises';
 import AcoesCartao from '../components/cartao/AcoesCartao';
@@ -26,8 +26,8 @@ const servicos = await dados.listarServicosDoPerfil(perfil.id);
 const avaliacoes = await dados.listarAvaliacoesDoPerfil(perfil.id);
 const media = avaliacoes.length ? avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length : 0;
 const mediaTxt = media.toLocaleString('es-CL', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
-const endereco = textoEndereco(perfil.endereco);
-const mapa = endereco ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco + ', Chile')}` : '';
+const endereco = textoEnderecoCompleto(perfil.endereco);
+const mapa = endereco ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(textoEndereco(perfil.endereco) + ', Chile')}` : '';
 const estrelas = (n: number) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
 const categoria = (await dados.listarCategorias()).find((c) => perfil.categoriaIds.includes(c.id));
 const marca = perfil.marca ?? perfil.nomePublico;
@@ -52,7 +52,7 @@ const dadosCartao: DadosCartao = {
   telefone: perfil.contatos.telefone ?? (perfil.contatos.whatsapp ? `+${perfil.contatos.whatsapp}` : ''),
   email: perfil.contatos.email ?? '',
   comunas: perfil.comunas.includes('Todo Santiago') ? 'Todo Santiago' : perfil.comunas.slice(0, 3).join(' · '),
-  url, urlCurta: `lohagoyo.cl/${perfil.slug}`,
+  url, urlCurta: `lohagoyo.cl/${perfil.slug}`, endereco: textoEndereco(perfil.endereco),
 };
 const medir = await criarMedidor((c) => readFile(`public${c}`));
 const svgCartao = cartaoSvg(desenharCartao(estruturaCartao, temaCartao, dadosCartao, medir, 0), `cartao-${perfil.slug}`);
@@ -74,7 +74,7 @@ const jsonLd = {
   url,
   ...(perfil.contatos.telefone && { telephone: perfil.contatos.telefone }),
   ...(capa && { image: new URL(capa, Astro.site).href }),
-  ...(perfil.endereco?.calle && { address: { '@type': 'PostalAddress', streetAddress: `${perfil.endereco.calle} ${perfil.endereco.numero}`, addressLocality: perfil.endereco.comuna, addressRegion: 'Región Metropolitana', addressCountry: 'CL' } }),
+  ...(perfil.endereco?.calle && { address: { '@type': 'PostalAddress', streetAddress: `${perfil.endereco.calle} ${perfil.endereco.numero}`, addressLocality: perfil.endereco.comuna, addressRegion: 'Región Metropolitana', ...(perfil.endereco.codigoPostal && { postalCode: perfil.endereco.codigoPostal }), addressCountry: 'CL' } }),
   ...(avaliacoes.length && { aggregateRating: { '@type': 'AggregateRating', ratingValue: media.toFixed(1), reviewCount: avaliacoes.length, bestRating: 5, worstRating: 1 } }),
   areaServed: perfil.comunas.map((c) => ({ '@type': 'City', name: c })),
   hasOfferCatalog: {

@@ -133,3 +133,6 @@
 .md-abas button { font: inherit; font-weight: 700; background: none; border: 0; padding: 10px 14px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .md-abas button.ativo { color: var(--ink); border-color: var(--ink); }
 .md-selo { display: inline-block; font-size: .74rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fff3d6; color: #6b5200; margin-left: 6px; }
+
+.pn-cp { display: flex; gap: 8px; align-items: center; }
+.pn-cp input { max-width: 160px; }

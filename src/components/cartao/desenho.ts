@@ -37,6 +37,7 @@ export interface DadosCartao {
   comunas: string;
   url: string; // vai no QR
   urlCurta: string; // texto impresso
+  endereco?: string; // 'Calle 123, Depto 4, Comuna' — pequeno, obrigatório para publicar
 }
 
 const M = 14; // margem de segurança (~5 mm)
@@ -91,8 +92,9 @@ function linhasContato(medir: Medir, d: DadosCartao, x: number, yUltima: number,
   if (d.telefone) linhas.push({ txt: d.telefone, fonte: 'nome', cor: c.texto, max: 7.6 });
   if (d.email) linhas.push({ txt: d.email, fonte: 'reg', cor: c.texto, max: 6.8 });
   if (d.comunas) linhas.push({ txt: d.comunas, fonte: 'reg', cor: c.suave, max: 6.4 });
+  if (d.endereco) linhas.push({ txt: d.endereco, fonte: 'reg', cor: c.suave, max: 5.4 });
   if (comUrl) linhas.push({ txt: d.urlCurta, fonte: 'neg', cor: c.acento, max: 6.4 });
-  const lh = 9.2;
+  const lh = linhas.length >= 5 ? 8.4 : 9.2;
   return linhas.map((l, i) => ({
     t: 'texto' as const, x, y: yUltima - (linhas.length - 1 - i) * lh, txt: l.txt, fonte: l.fonte,
     tam: caber(medir, l.fonte, l.txt, l.max, larg), cor: l.cor,
@@ -148,7 +150,7 @@ export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: Da
   const d: DadosCartao = {
     marca: limpar(dados.marca || dados.nome), nome: limpar(dados.nome), oficio: limpar(dados.oficio),
     telefone: limpar(dados.telefone), email: limpar(dados.email), comunas: limpar(dados.comunas),
-    url: dados.url, urlCurta: limpar(dados.urlCurta),
+    url: dados.url, urlCurta: limpar(dados.urlCurta), endereco: limpar(dados.endereco ?? ''),
   };
   const mostrarPessoa = d.nome && d.nome !== d.marca;
   const cmds: Cmd[] = [fundo(tema.fundo, b)];
@@ -194,6 +196,7 @@ export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: Da
     const larT = W - 2 * M - lw - 12;
     const contato = [d.telefone, d.email].filter(Boolean).join('   ·   ');
     if (contato) cmds.push({ t: 'texto', x: M, y: H - F + 13.5, txt: contato, fonte: 'nome', tam: caber(medir, 'nome', contato, 7, larT), cor: '#FFFFFF' });
+    if (d.endereco) cmds.push({ t: 'texto', x: M, y: H - F - 7, txt: d.endereco, fonte: 'reg', tam: caber(medir, 'reg', d.endereco, 5.4, larg), cor: tema.suave });
     cmds.push({ t: 'texto', x: M, y: H - F + 23.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 6.4, larT), cor: '#E28A72' });
     cmds.push(...logo(W - M - lw, H - F / 2 - alturaLogo(lw) / 2, lw, LOGO_ESCURO));
   }

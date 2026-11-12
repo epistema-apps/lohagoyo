@@ -8,8 +8,9 @@ import Conversa from './Conversa';
 import GeradorCartao from '../cartao/GeradorCartao';
 import { textoPreco } from '../../dominio/formato';
 import { gerarSlug, slugValido } from '../../dominio/slug';
+import { LINK_CORREOS, sugerirCodigoPostal } from '../../dados/codigo-postal';
 import { formatarRut, normalizarRut, rutValido } from '../../dominio/rut';
-import type { Avaliacao, Perfil, Publico, Servico, TipoPreco } from '../../dominio/tipos';
+import { textoEndereco, type Avaliacao, type Perfil, type Publico, type Servico, type TipoPreco } from '../../dominio/tipos';
 
 export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
@@ -145,6 +146,8 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [msg, setMsg] = useState<{ tipo: 'ok' | 'erro'; t: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [buscandoCp, setBuscandoCp] = useState(false);
+  const [cpAviso, setCpAviso] = useState('');
   const [slugLivre, setSlugLivre] = useState<boolean | null>(null);
   const [aceito, setAceito] = useState(false);
   const [editando, setEditando] = useState<Servico | 'novo' | null>(null);
@@ -177,6 +180,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
     if (!perfil.categoriaIds.length) f.push('Elige al menos una categoría');
     if (!perfil.comunas.length) f.push('Elige dónde atiendes');
     if (!perfil.endereco?.calle?.trim() || !perfil.endereco?.numero?.trim() || !perfil.endereco?.comuna?.trim()) f.push('Escribe tu dirección completa (calle, número y comuna)');
+    if (!/^\d{7}$/.test(perfil.endereco?.codigoPostal ?? '')) f.push('Escribe tu código postal (7 dígitos)');
     if (!perfil.contatos.whatsapp && !perfil.contatos.telefone) f.push('Agrega tu WhatsApp o teléfono');
     if (!servicos.length) f.push('Agrega al menos un servicio');
     if (!privado.nomeCompleto?.trim()) f.push('Escribe tu nombre completo');
@@ -216,6 +220,17 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
     } finally {
       setSalvando(false);
     }
+  }
+
+  async function buscarCp() {
+    if (!perfil?.endereco) { setCpAviso('Primero escribe calle, número y comuna.'); return; }
+    setBuscandoCp(true);
+    const cp = await sugerirCodigoPostal(perfil.endereco);
+    setBuscandoCp(false);
+    if (cp) {
+      set('endereco', { ...perfil.endereco, codigoPostal: cp });
+      setCpAviso(`Encontramos ${cp}. Revisa que sea correcto.`);
+    } else setCpAviso('No pudimos encontrarlo automáticamente. Escríbelo tú.');
   }
 
   async function enviar() {
@@ -353,6 +368,14 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
               onChange={(e) => set('endereco', { calle: '', numero: '', comuna: '', ...perfil.endereco, referencia: e.target.value || undefined })} />
           </Campo>
         </div>
+        <Campo rotulo="Código postal" ajuda="7 dígitos. Si no lo sabes, búscalo con el botón o en Correos de Chile.">
+          <div className="pn-cp">
+            <input value={perfil.endereco?.codigoPostal ?? ''} maxLength={7} inputMode="numeric" placeholder="7500000" autoComplete="postal-code"
+              onChange={(e) => set('endereco', { calle: '', numero: '', comuna: '', ...perfil.endereco, codigoPostal: e.target.value.replace(/\D/g, '') || undefined })} />
+            <button type="button" className="btn btn-ghost btn-sm" disabled={buscandoCp} onClick={buscarCp}>{buscandoCp ? 'Buscando…' : 'Buscar'}</button>
+          </div>
+          {cpAviso && <small className="pn-dica" style={{ display: 'block', marginTop: 6 }}>{cpAviso} <a href={LINK_CORREOS} target="_blank" rel="noopener">Ver en Correos de Chile</a></small>}
+        </Campo>
         <Campo rotulo="Horario (opcional)" ajuda="Ej: Lunes a sábado, 8:00 a 18:00">
           <input value={perfil.horario ?? ''} maxLength={80} onChange={(e) => set('horario', e.target.value)} />
         </Campo>
@@ -467,6 +490,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
             email: perfil.contatos.email ?? '',
             comunas: perfil.comunas.includes('Todo Santiago') ? 'Todo Santiago' : perfil.comunas.slice(0, 3).join(' · '),
             url: `https://lohagoyo.cl/${perfil.slug || 'tu-pagina'}/`,
+            endereco: textoEndereco(perfil.endereco),
             urlCurta: `lohagoyo.cl/${perfil.slug || 'tu-pagina'}`,
           }}
         />

@@ -3,7 +3,7 @@
 import Base from '../../layouts/Base.astro';
 import GeradorCartao from '../../components/cartao/GeradorCartao';
 import { dados } from '../../dados';
-import type { Perfil } from '../../dominio/tipos';
+import { textoEndereco, type Perfil } from '../../dominio/tipos';
 
 export async function getStaticPaths() {
   const perfis = await dados.listarPerfisPublicos();
@@ -31,6 +31,7 @@ const comunas = perfil.comunas.includes('Todo Santiago') ? 'Todo Santiago' : per
         email: perfil.contatos.email ?? '',
         comunas,
         url,
+        endereco: textoEndereco(perfil.endereco),
         urlCurta: `lohagoyo.cl/${perfil.slug}`,
       }}
     />

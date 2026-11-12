@@ -76,7 +76,8 @@ service cloud.firestore {
               && novo().get('endereco', null) is map
               && preenchido(novo().endereco.get('calle', ''), 120)
               && preenchido(novo().endereco.get('numero', ''), 20)
-              && preenchido(novo().endereco.get('comuna', ''), 60)));
+              && preenchido(novo().endereco.get('comuna', ''), 60)
+              && (novo().endereco.get('codigoPostal', '') == '' || novo().endereco.codigoPostal.matches('^[0-9]{7}$'))));
       }
 
       // O dono nunca aprova: salva como rascunho, envia para revisão ou pausa.

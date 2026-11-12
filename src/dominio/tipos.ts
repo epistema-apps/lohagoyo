@@ -112,6 +112,7 @@ export interface Endereco {
   numero: string;
   comuna: string;
   referencia?: string; // depto, block, etc.
+  codigoPostal?: string; // 7 dígitos; obrigatório para enviar à revisão (validado no painel)
 }
 
 export type StatusAvaliacao = 'por_confirmar' | 'pendiente' | 'en_contestacion' | 'aprobada' | 'rechazada';
@@ -130,7 +131,14 @@ export interface Avaliacao {
   criadoEm: string;
 }
 
+/** Endereço curto (calle número, depto, comuna) — usado na tarjeta e no link do mapa. */
 export function textoEndereco(e?: Endereco): string {
   if (!e?.calle) return '';
   return [`${e.calle} ${e.numero}`.trim(), e.referencia, e.comuna].filter(Boolean).join(', ');
+}
+
+/** Endereço completo com código postal — usado na página. */
+export function textoEnderecoCompleto(e?: Endereco): string {
+  const curto = textoEndereco(e);
+  return curto && e?.codigoPostal ? `${curto} · Código postal ${e.codigoPostal}` : curto;
 }
