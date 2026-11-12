@@ -62,7 +62,8 @@ npm run build
 ## Pendências do responsável humano
 1. ✅ Blaze (orçamento CLP 5.000), Authentication, Firestore e Storage em Santiago — feitos.
 2. Entrar em **lohagoyo.cl/panel/admin/**, criar a própria conta e copiar o identificador (uid) mostrado; criar no Firestore `config/moderadores` com `uids` (array) contendo esse uid.
-3. GitHub: criar o repositório vazio privado `epistema-apps/lohagoyo` (backup e publicação automática).
+3. ✅ GitHub `epistema-apps/lohagoyo` com publicação automática.
+3b. **Google Search Console**: validar `lohagoyo.cl` (registro TXT no DNS da Cloudez) e enviar `https://lohagoyo.cl/sitemap.xml`.
 4. Configurar "spend caps" (pausa automática ao atingir o orçamento) no Firebase.
 5. Opcional: apagar a aplicação Node.js antiga na Cloudez.
 6. Pendente legal: responsável pelos dados na política de privacidade (sem expor a Epistema).
