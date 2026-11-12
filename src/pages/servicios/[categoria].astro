@@ -32,6 +32,7 @@ const jsonLd = {
   descricao={`${categoria.descricao} Profesionales independientes en Santiago con contacto directo por WhatsApp.`}
   imagem={`/og/servicios-${categoria.id}.jpg`}
   jsonLd={jsonLd}
+  noindex={itens.length === 0}
 >
   <section class="cab">
     {f && <img src={f.src} alt="" fetchpriority="high" />}

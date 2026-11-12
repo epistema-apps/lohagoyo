@@ -2,7 +2,8 @@
 // e grava em data/publicado.json, usado pelo build. As fotos enviadas pelos profissionais
 // são baixadas para public/f/<uid>/ e servidas pelo próprio Hosting.
 // Uso: node scripts/sincronizar.mjs
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,14 +45,22 @@ async function consulta(colecao, campo, igual) {
   return linhas.filter((l) => l.document).map((l) => ({ ...objeto(l.document.fields ?? {}), _id: l.document.name.split('/').pop() }));
 }
 
+// Custo: cada foto é baixada UMA vez. O nome leva um hash da URL (que muda quando a foto é
+// trocada), e a pasta public/f fica em cache entre publicações (GitHub Actions cache).
+let baixadas = 0;
+let reaproveitadas = 0;
 async function baixarFoto(url, uid, nome) {
   if (!url || !/^(https:\/\/firebasestorage\.googleapis\.com|http:\/\/127\.0\.0\.1:9199)\//.test(url)) return url; // banco ou vazio
+  const h = createHash('sha1').update(url).digest('hex').slice(0, 10);
+  const arquivo = `${nome}-${h}.jpg`;
+  const dir = join(RAIZ, 'public', 'f', uid);
+  if (existsSync(join(dir, arquivo))) { reaproveitadas++; return `/f/${uid}/${arquivo}`; }
   const r = await fetch(url);
   if (!r.ok) return '';
-  const dir = join(RAIZ, 'public', 'f', uid);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, `${nome}.jpg`), Buffer.from(await r.arrayBuffer()));
-  return `/f/${uid}/${nome}.jpg`;
+  writeFileSync(join(dir, arquivo), Buffer.from(await r.arrayBuffer()));
+  baixadas++;
+  return `/f/${uid}/${arquivo}`;
 }
 
 // Lista todos os documentos de uma coleção (leitura pública), com paginação.
@@ -95,4 +104,4 @@ try {
 
 mkdirSync(join(RAIZ, 'data'), { recursive: true });
 writeFileSync(join(RAIZ, 'data', 'publicado.json'), JSON.stringify({ perfis, servicos, avaliacoes }, null, 2));
-console.log(`sincronizar: ${perfis.length} perfis publicados, ${servicos.length} serviços, ${avaliacoes.length} avaliações`);
+console.log(`sincronizar: ${perfis.length} perfis publicados, ${servicos.length} serviços, ${avaliacoes.length} avaliações; fotos: ${baixadas} baixadas, ${reaproveitadas} do cache`);

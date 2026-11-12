@@ -8,7 +8,8 @@ export const GET: APIRoute = async ({ site }) => {
   const urls = [
     { loc: `${base}/`, lastmod: undefined as string | undefined },
     { loc: `${base}/sumate/`, lastmod: undefined },
-    ...categorias.map((c) => ({ loc: `${base}/servicios/${c.id}/`, lastmod: undefined })),
+    // categorias vazias ficam fora do sitemap (e com noindex) até terem profissionais
+    ...categorias.filter((c) => perfis.some((p) => p.categoriaIds.includes(c.id))).map((c) => ({ loc: `${base}/servicios/${c.id}/`, lastmod: undefined })),
     ...perfis.map((p) => ({ loc: `${base}/${p.slug}/`, lastmod: p.atualizadoEm.slice(0, 10) })),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

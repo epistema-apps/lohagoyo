@@ -40,6 +40,14 @@ jobs:
       - name: Testes
         run: npm test
 
+      # Fotos dos profissionais: guardadas entre publicações para não baixar tudo de novo (custo).
+      - name: Cache das fotos
+        uses: actions/cache@v4
+        with:
+          path: public/f
+          key: fotos-${{ github.run_id }}
+          restore-keys: fotos-
+
       - name: Dados aprovados (Firestore) e imagens de prévia
         run: |
           node scripts/sincronizar.mjs
