@@ -6,11 +6,12 @@ Atualizado em 12/11/2026 · versão 0.1.0 · **Fase 1 concluída (com dados fict
 - Projeto Astro 7 + React 19 + TypeScript (`~/Epistema/lohagoyo`), Node portátil 24.
 - Decisões registradas em `docs/DECISOES.md`.
 - Tipos do domínio (`src/dominio/`), contrato de dados e adaptador local com semilla fictícia (`src/dados/`).
-- Páginas públicas estáticas: home com busca (sem acento) e filtro por comuna; `/servicios/<categoria>/`; perfil `/<slug>/` com **3 layouts** (`foto`, `claro`, `compacto`); `/sumate/`; `/privacidad/` (rascunho); 404; `sitemap.xml`; `robots.txt`.
+- Páginas públicas estáticas: home do portal com busca (sem acento) e filtro por comuna; `/servicios/<categoria>/`; `/sumate/`; `/privacidad/` (rascunho); 404; `sitemap.xml`; `robots.txt`.
+- **Site próprio de cada profissional** em `/<slug>/`: sem cabeçalho/rodapé do portal; topo com a marca dele (`marca`), portada com a foto escolhida (`capa`) e filtro escuro, faixa de dados, Servicios, Sobre mí (`retrato`), Trabajos, Contacto (WhatsApp/llamar/correo) e só no rodapé "Página creada con LoHagoYo.cl".
 - SEO: canonical, Open Graph, JSON-LD (`WebSite`, `BreadcrumbList`, `LocalBusiness` com catálogo de serviços).
 - Serviços com preço opcional (7 tipos), mão de obra × materiais, temporadas, extras, botão "Cotizar por WhatsApp" com mensagem pronta.
-- **Tarjeta de presentación em PDF** no navegador: **4 estruturas** (Clásica, Dividida, Franja, Punto) × **4 cores da paleta** (Azul, Noche, Blanco, Amarillo); logo discreto no canto; QR vetorial; fontes da marca embutidas; 9 × 5 cm com sangria 3 mm e marcas de corte, ou folha A4 com 10. Prévia instantânea no perfil (mesmo desenho do PDF, `src/components/cartao/desenho.ts`).
-- **Marca LoHagoYo.cl**: logo em curvas, Plus Jakarta Sans 600, `LoHago` tinta + `Yo` cobalto + ponto amarelo + `cl` pequeno (`public/marca/logo.svg`, `logo-negativo.svg`, `icone.svg` "Yo."). Paleta cobalto `#2433C8`, amarelo `#FFC61A`, tinta `#0E1230`. Títulos em Plus Jakarta Sans, texto em Atkinson Hyperlegible, **fontes servidas pelo próprio site**. Gerador: `node docs/marca/gerar-logo.mjs`.
+- **Tarjeta de presentación em PDF** no navegador: **4 estruturas** (Clásica, Dividida, Franja, Punto) × **4 cores da paleta** (Grafito, Pizarra, Blanco, Piedra); logo discreto no canto; QR vetorial; fontes da marca embutidas; 9 × 5 cm com sangria 3 mm e marcas de corte, ou folha A4 com 10. Prévia instantânea em `/tarjeta/<slug>/` (temporário, noindex; a interface será refeita no painel) (mesmo desenho do PDF, `src/components/cartao/desenho.ts`).
+- **Marca LoHagoYo.cl**: logo em curvas, Plus Jakarta Sans 600, `LoHago` grafito + `Yo` ocre + ponto ocre + `cl` pequeno (`public/marca/logo.svg`, `logo-negativo.svg`, `icone.svg` "Yo."). **Paleta sóbria:** grafito `#15171C`, piedra `#F4F3F0`, branco, acento ocre `#9C7636`. Títulos em Plus Jakarta Sans, texto em Atkinson Hyperlegible, fontes servidas pelo próprio site. Gerador: `node docs/marca/gerar-logo.mjs`.
 - Rascunho de `firestore.rules` e `storage.rules`, `firebase.json` (Hosting + emuladores).
 - Testes: `npm test` (11 passando). Build: 11 páginas.
 

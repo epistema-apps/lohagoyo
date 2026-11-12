@@ -30,7 +30,7 @@ async function criarMedidorCanvas(): Promise<Medir> {
 
 export default function GeradorCartao({ dados }: { dados: DadosCartao }) {
   const [estrutura, setEstrutura] = useState<EstruturaId>('clasica');
-  const [tema, setTema] = useState<TemaId>('cobalto');
+  const [tema, setTema] = useState<TemaId>('grafito');
   const [medir, setMedir] = useState<Medir | null>(null);
   const [gerando, setGerando] = useState<SaidaCartao | null>(null);
   const [erro, setErro] = useState('');

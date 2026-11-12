@@ -7,11 +7,16 @@ interface Props {
   imagem?: string;
   jsonLd?: object | object[];
   noindex?: boolean;
+  /** false = página própria do profissional, sem cabeçalho/rodapé do portal. */
+  moldura?: boolean;
+  /** Usa o título como está (sem " · Lo Hago Yo"). */
+  tituloExato?: boolean;
+  corTema?: string;
 }
-const { titulo, descricao, imagem, jsonLd, noindex = false } = Astro.props;
+const { titulo, descricao, imagem, jsonLd, noindex = false, moldura = true, tituloExato = false, corTema = '#15171c' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const og = imagem ? new URL(imagem, Astro.site).href : new URL('/og.svg', Astro.site).href;
-const tituloCompleto = titulo === 'Lo Hago Yo' ? titulo : `${titulo} · Lo Hago Yo`;
+const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${titulo} · LoHagoYo.cl`;
 ---
 <!doctype html>
 <html lang="es-CL">
@@ -23,20 +28,21 @@ const tituloCompleto = titulo === 'Lo Hago Yo' ? titulo : `${titulo} · Lo Hago 
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Lo Hago Yo" />
+    <meta property="og:site_name" content={moldura ? 'LoHagoYo.cl' : titulo.split(' · ')[0]} />
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descricao.slice(0, 155)} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={og} />
     <meta property="og:locale" content="es_CL" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#2433c8" />
+    <meta name="theme-color" content={corTema} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/plus-jakarta-sans-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/atkinson-hyperlegible-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body>
+    {moldura && (
     <header class="topo">
       <div class="wrap topo-in">
         <a href="/" class="logo">
@@ -48,7 +54,9 @@ const tituloCompleto = titulo === 'Lo Hago Yo' ? titulo : `${titulo} · Lo Hago 
         </nav>
       </div>
     </header>
+    )}
     <main><slot /></main>
+    {moldura && (
     <footer class="rodape">
       <div class="wrap">
         <p class="rodape-marca"><img src="/marca/logo-negativo.svg" alt="LoHagoYo.cl" width="190" height="40" loading="lazy" /></p>
@@ -58,6 +66,7 @@ const tituloCompleto = titulo === 'Lo Hago Yo' ? titulo : `${titulo} · Lo Hago 
         </p>
       </div>
     </footer>
+    )}
   </body>
 </html>
 
@@ -66,7 +75,7 @@ const tituloCompleto = titulo === 'Lo Hago Yo' ? titulo : `${titulo} · Lo Hago 
     position: sticky;
     top: 0;
     z-index: 10;
-    background: rgba(244, 245, 250, 0.95);
+    background: rgba(244, 243, 240, 0.95);
     border-bottom: 1px solid var(--line);
   }
   .topo-in { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 12px; }

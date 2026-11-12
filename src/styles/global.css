@@ -5,20 +5,20 @@
 @font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; font-display: swap; src: url('/fonts/atkinson-hyperlegible-latin-700-normal.woff2') format('woff2'); }
 
 :root {
-  /* Marca: azul de overol + amarillo de herramienta */
-  --ink: #0e1230;
-  --muted: #545a78;
-  --bg: #f4f5fa;
+  /* Marca: grafito + piedra + un acento ocre discreto */
+  --ink: #15171c; /* grafito */
+  --muted: #6b6e76;
+  --bg: #f4f3f0; /* piedra */
   --card: #ffffff;
-  --line: #dfe2ef;
-  --accent: #2433c8; /* cobalto */
-  --accent-dark: #1a2596;
-  --accent-soft: #e4e7fb;
-  --sol: #ffc61a; /* amarillo */
+  --line: #e3e1dc;
+  --accent: #9c7636; /* ocre */
+  --accent-dark: #7d5d27;
+  --accent-soft: #f3ece0;
+  --sol: #c79b4b; /* ocre claro (el punto del logo) */
   --ok: #1f8a4c;
-  --wa: #1fa855;
-  --radius: 14px;
-  --shadow: 0 2px 10px rgba(29, 36, 51, 0.07);
+  --wa: #15171c;
+  --radius: 6px;
+  --shadow: 0 1px 2px rgba(21, 23, 28, 0.04);
   --wrap: 1120px;
   --gutter: clamp(16px, 4vw, 32px);
   --font-head: 'Plus Jakarta Sans', system-ui, sans-serif;
@@ -71,9 +71,10 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .btn:active { transform: scale(0.97); }
 .btn-wa { background: var(--wa); color: #fff; }
-.btn-wa:hover { background: #17904a; }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-dark); }
+.btn-wa::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #25d366; }
+.btn-wa:hover { background: #000; }
+.btn-primary { background: var(--ink); color: #fff; }
+.btn-primary:hover { background: #000; }
 .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--ink); }
 
@@ -81,8 +82,9 @@ img { max-width: 100%; height: auto; display: block; }
   display: inline-block;
   padding: 0.3em 0.8em;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-dark);
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
   font-size: 0.85rem;
   font-weight: 700;
   text-decoration: none;

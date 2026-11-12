@@ -1,17 +1,19 @@
-// Cores da tarjeta, todas da paleta LoHagoYo.cl.
+// Cores da tarjeta, todas da paleta LoHagoYo.cl (sóbria: grafito, piedra, ocre).
 import type { PapelLogo } from '../../marca/logo-dados';
 
 export const PALETA = {
-  cobalto: '#2433C8',
-  amarelo: '#FFC61A',
-  tinta: '#0E1230',
+  grafito: '#15171C',
+  pizarra: '#2B2F36',
+  piedra: '#F4F3F0',
   branco: '#FFFFFF',
+  ocre: '#9C7636',
+  ocreSuave: '#D9B87A',
 };
 
 export type CoresLogo = Record<PapelLogo, string>;
 
-export const LOGO_ESCURO: CoresLogo = { texto: '#FFFFFF', yo: '#FFC61A', ponto: '#FFC61A', dominio: '#C9CEF5' };
-export const LOGO_CLARO: CoresLogo = { texto: '#0E1230', yo: '#2433C8', ponto: '#FFC61A', dominio: '#6A7090' };
+export const LOGO_ESCURO: CoresLogo = { texto: '#FFFFFF', yo: '#D9B87A', ponto: '#D9B87A', dominio: '#A5A8AE' };
+export const LOGO_CLARO: CoresLogo = { texto: '#15171C', yo: '#9C7636', ponto: '#C79B4B', dominio: '#8A8D94' };
 
 export interface TemaCartao {
   id: TemaId;
@@ -25,24 +27,23 @@ export interface TemaCartao {
   logo: CoresLogo; // logo sobre o fundo
 }
 
-export type TemaId = 'cobalto' | 'tinta' | 'blanco' | 'amarillo';
+export type TemaId = 'grafito' | 'pizarra' | 'blanco' | 'piedra';
 
 export const TEMAS: Record<TemaId, TemaCartao> = {
-  cobalto: {
-    id: 'cobalto', nome: 'Azul', fundo: PALETA.cobalto, texto: '#FFFFFF', suave: '#C9CEF5',
-    acento: PALETA.amarelo, painel: PALETA.tinta, circulo: PALETA.amarelo, logo: LOGO_ESCURO,
+  grafito: {
+    id: 'grafito', nome: 'Grafito', fundo: PALETA.grafito, texto: '#FFFFFF', suave: '#A5A8AE',
+    acento: PALETA.ocreSuave, painel: '#24272E', circulo: '#24272E', logo: LOGO_ESCURO,
   },
-  tinta: {
-    id: 'tinta', nome: 'Noche', fundo: PALETA.tinta, texto: '#FFFFFF', suave: '#A3A8C3',
-    acento: PALETA.amarelo, painel: PALETA.cobalto, circulo: PALETA.cobalto, logo: LOGO_ESCURO,
+  pizarra: {
+    id: 'pizarra', nome: 'Pizarra', fundo: PALETA.pizarra, texto: '#FFFFFF', suave: '#B3B6BC',
+    acento: PALETA.ocreSuave, painel: PALETA.grafito, circulo: '#3A3F48', logo: LOGO_ESCURO,
   },
   blanco: {
-    id: 'blanco', nome: 'Blanco', fundo: PALETA.branco, texto: PALETA.tinta, suave: '#6A7090',
-    acento: PALETA.cobalto, painel: PALETA.cobalto, circulo: PALETA.amarelo, logo: LOGO_CLARO,
+    id: 'blanco', nome: 'Blanco', fundo: PALETA.branco, texto: PALETA.grafito, suave: '#6B6E76',
+    acento: PALETA.ocre, painel: PALETA.grafito, circulo: PALETA.piedra, logo: LOGO_CLARO,
   },
-  amarillo: {
-    id: 'amarillo', nome: 'Amarillo', fundo: PALETA.amarelo, texto: PALETA.tinta, suave: '#5C4A00',
-    acento: PALETA.cobalto, painel: PALETA.tinta, circulo: PALETA.cobalto,
-    logo: { texto: PALETA.tinta, yo: PALETA.cobalto, ponto: '#FFFFFF', dominio: '#5C4A00' },
+  piedra: {
+    id: 'piedra', nome: 'Piedra', fundo: PALETA.piedra, texto: PALETA.grafito, suave: '#6B6E76',
+    acento: PALETA.ocre, painel: PALETA.pizarra, circulo: '#E8E5DE', logo: LOGO_CLARO,
   },
 };

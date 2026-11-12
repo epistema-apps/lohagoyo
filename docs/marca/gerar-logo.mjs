@@ -13,7 +13,7 @@ function fonte(arq) {
 const F600 = fonte('plus-jakarta-sans-latin-600-normal.woff');
 
 export const CORES = {
-  cobalto: '#2433C8', amarelo: '#FFC61A', tinta: '#0E1230', branco: '#FFFFFF', cinza: '#6A7090', azulClaro: '#C9CEF5',
+  grafito: '#15171C', ocre: '#9C7636', ocreClaro: '#C79B4B', ocreSuave: '#D9B87A', branco: '#FFFFFF', cinza: '#8A8D94', cinzaClaro: '#A5A8AE',
 };
 const S = 100; // tamanho base
 const TR = -0.035; // tracking
@@ -66,15 +66,15 @@ const svg = (cores) =>
     .join('')}</svg>`;
 
 export const TEMAS_LOGO = {
-  claro: { texto: CORES.tinta, yo: CORES.cobalto, ponto: CORES.amarelo, dominio: CORES.cinza },
-  escuro: { texto: CORES.branco, yo: CORES.amarelo, ponto: CORES.amarelo, dominio: CORES.azulClaro },
+  claro: { texto: CORES.grafito, yo: CORES.ocre, ponto: CORES.ocreClaro, dominio: CORES.cinza },
+  escuro: { texto: CORES.branco, yo: CORES.ocreSuave, ponto: CORES.ocreSuave, dominio: CORES.cinzaClaro },
 };
 
 mkdirSync('public/marca', { recursive: true });
 writeFileSync('public/marca/logo.svg', svg(TEMAS_LOGO.claro));
 writeFileSync('public/marca/logo-negativo.svg', svg(TEMAS_LOGO.escuro));
 
-// Ícone: "Yo." em quadrado cobalto
+// Ícone: "Yo." em quadrado grafito
 {
   const Q = 256;
   const y = texto(F600, 'Yo', 0, 0, S, TR);
@@ -83,7 +83,7 @@ writeFileSync('public/marca/logo-negativo.svg', svg(TEMAS_LOGO.escuro));
   const dx = (Q - w * k) / 2, dy = (Q - h * k) / 2 - y.minY * k;
   writeFileSync(
     'public/marca/icone.svg',
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Q} ${Q}" role="img" aria-label="LoHagoYo.cl"><rect width="${Q}" height="${Q}" rx="56" fill="${CORES.cobalto}"/><g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) scale(${k.toFixed(4)})"><path fill="${CORES.branco}" d="${y.d}"/><path fill="${CORES.amarelo}" d="${circulo(y.fim + 5 + r, -r, r)}"/></g></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Q} ${Q}" role="img" aria-label="LoHagoYo.cl"><rect width="${Q}" height="${Q}" rx="56" fill="${CORES.grafito}"/><g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) scale(${k.toFixed(4)})"><path fill="${CORES.branco}" d="${y.d}"/><path fill="${CORES.ocreSuave}" d="${circulo(y.fim + 5 + r, -r, r)}"/></g></svg>`,
   );
   writeFileSync('public/favicon.svg', readFileSync('public/marca/icone.svg'));
 }

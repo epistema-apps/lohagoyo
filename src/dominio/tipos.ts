@@ -71,14 +71,18 @@ export interface Perfil {
   id: Id;
   slug: string; // 'manu-piscinas'
   nomePublico: string; // 'Manuel Araneda'
+  marca?: string; // nome do negócio no topo do site: 'Manu Piscinas' (padrão: nomePublico)
   oficio: string; // 'Mantención de piscinas'
+  lema?: string; // frase curta da portada
   apresentacao: string;
   categoriaIds: Id[];
   regiaoId: Id; // 'santiago'
   comunas: string[];
   publicos: Publico[];
   contatos: Contatos;
-  fotos: string[]; // URLs (copiadas ao Hosting no build)
+  capa?: string; // foto escolhida para a portada (padrão: fotos[0])
+  retrato?: string; // foto da pessoa (seção "Sobre mí")
+  fotos: string[]; // trabalhos — URLs (copiadas ao Hosting no build)
   layout: Layout;
   cor?: string; // cor de destaque opcional
   pagamentos: string[]; // 'Transferencia', 'Efectivo'

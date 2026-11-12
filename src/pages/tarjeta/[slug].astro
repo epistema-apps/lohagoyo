@@ -1,0 +1,32 @@
+---
+// TEMPORÁRIO: gerador de tarjeta fora da página pública do profissional.
+// Vai para o painel do profissional na Fase 2 (interface a redesenhar).
+import Base from '../../layouts/Base.astro';
+import GeradorCartao from '../../components/cartao/GeradorCartao';
+import { dados } from '../../dados';
+import type { Perfil } from '../../dominio/tipos';
+
+export async function getStaticPaths() {
+  const perfis = await dados.listarPerfisPublicos();
+  return perfis.map((perfil) => ({ params: { slug: perfil.slug }, props: { perfil } }));
+}
+const { perfil } = Astro.props as { perfil: Perfil };
+const url = new URL(`/${perfil.slug}/`, Astro.site).href;
+---
+<Base titulo={`Tarjeta de ${perfil.marca ?? perfil.nomePublico}`} descricao="Tarjeta de presentación lista para imprimir." noindex>
+  <section class="wrap" style="padding-top:40px">
+    <h1>Tu tarjeta de presentación</h1>
+    <GeradorCartao
+      client:load
+      dados={{
+        nome: perfil.nomePublico,
+        oficio: perfil.oficio,
+        telefone: perfil.contatos.telefone ?? (perfil.contatos.whatsapp ? `+${perfil.contatos.whatsapp}` : ''),
+        email: perfil.contatos.email ?? '',
+        comunas: perfil.comunas.slice(0, 3).join(' · '),
+        url,
+        urlCurta: `lohagoyo.cl/${perfil.slug}`,
+      }}
+    />
+  </section>
+</Base>

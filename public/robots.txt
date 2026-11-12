@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /panel/
+Disallow: /tarjeta/
 
 Sitemap: https://lohagoyo.cl/sitemap.xml

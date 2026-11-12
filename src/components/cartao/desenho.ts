@@ -123,7 +123,7 @@ function qr(url: string, x: number, y: number, tam: number): Cmd[] {
   const pad = tam * 0.07;
   return [
     { t: 'rect', x, y, w: tam, h: tam, cor: '#FFFFFF', r: 3.5 },
-    { t: 'path', d, x: x + pad, y: y + pad, escala: (tam - 2 * pad) / n, cor: '#0E1230' },
+    { t: 'path', d, x: x + pad, y: y + pad, escala: (tam - 2 * pad) / n, cor: '#15171C' },
   ];
 }
 
@@ -180,7 +180,7 @@ export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: Da
     const larT = W - 2 * M - lw - 10;
     const contato = [d.telefone, d.email].filter(Boolean).join('  ·  ');
     if (contato) cmds.push({ t: 'texto', x: M, y: H - F + 14, txt: contato, fonte: 'nome', tam: caber(medir, 'nome', contato, 7, larT), cor: '#FFFFFF' });
-    cmds.push({ t: 'texto', x: M, y: H - F + 24.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 7, larT), cor: '#FFC61A' });
+    cmds.push({ t: 'texto', x: M, y: H - F + 24.5, txt: d.urlCurta, fonte: 'reg', tam: caber(medir, 'reg', d.urlCurta, 7, larT), cor: '#D9B87A' });
     cmds.push(...logo(W - M - lw, H - F / 2 - alturaLogo(lw) / 2, lw, LOGO_ESCURO));
   }
 

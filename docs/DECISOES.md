@@ -6,7 +6,7 @@ Registrado em 12/11/2026. Segue o **Padrão tecnológico do ecossistema Epistema
 
 Plataforma **gratuita** onde profissionais independentes de serviços gerais (piscinas, jardim, limpeza, reparos…) se cadastram, montam seus serviços e ganham uma página pública com contato por WhatsApp. A home é uma busca por serviço e comuna. Começa em Santiago; multi-cidade depois.
 
-- **Marca:** LoHagoYo.cl — *una iniciativa Epistema*. Domínio único: `lohagoyo.cl`. Logo sóbrio (Plus Jakarta Sans), `Yo` em cobalto, ponto amarelo e `.cl` pequeno; paleta cobalto/amarelo/tinta.
+- **Marca:** LoHagoYo.cl — *una iniciativa Epistema*. Domínio único: `lohagoyo.cl`. Logo sóbrio (Plus Jakarta Sans), `Yo` em ocre, ponto e `.cl` pequeno; paleta sóbria e elegante: grafito, piedra, branco e acento ocre (nada de cores vibrantes ou lúdicas).
 - **Responsável pelos dados:** Epistema (termos e política de privacidade em nome dela).
 - **Interface:** espanhol do Chile. Trabalho e documentação: português.
 
@@ -41,6 +41,10 @@ Plataforma **gratuita** onde profissionais independentes de serviços gerais (pi
 Cada serviço tem: nome, descrição, itens incluídos e **preço opcional** com tipo:
 `fijo` · `desde` · `por_visita` · `por_hora` · `por_m2` · `mensual` · `a_cotizar`.
 Mais: insumos incluídos ou à parte, mão de obra e materiais separados (opcional), extras com custo à parte, frequência por temporada, público (casas / edifícios / empresas).
+
+## Página de cada profissional
+
+É **o site da pessoa**, não uma ficha do portal: marca e nome dela no topo, portada com a foto que ela escolheu (com filtro para ficar sempre bonita), serviços, sobre mim, trabalhos e contato. O portal aparece apenas discreto no rodapé ("Página creada con LoHagoYo.cl"). A tarjeta não aparece na página pública (é ferramenta do profissional, vai para o painel).
 
 ## URLs
 
