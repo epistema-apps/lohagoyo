@@ -1,12 +1,13 @@
 # Lo Hago Yo — regras do projeto
 
-Plataforma gratuita de serviços de profissionais independentes (Santiago, Chile). **Uma iniciativa Epistema.** Decisões em `docs/DECISOES.md`; situação atual em `docs/ESTADO-ATUAL.md` (atualizar a cada marco).
+Plataforma gratuita de serviços de profissionais independentes (Santiago, Chile). Iniciativa filantrópica mantida internamente pela Epistema, **que nunca aparece publicamente**. Decisões em `docs/DECISOES.md`; situação atual em `docs/ESTADO-ATUAL.md` (atualizar a cada marco).
 
 ## Ambiente
 - Node portátil: `export PATH=~/.local/node-v24.22.2-darwin-arm64/bin:$PATH` antes de qualquer comando npm.
 - `npm run dev` (desenvolvimento) · `npm run build` · `npm test`.
 
 ## Regras
+- **A marca Epistema nunca aparece em nada público** (site, páginas, PDFs, metadados, e-mails, textos, créditos, código enviado ao navegador). Regra para tudo que é filantrópico: só a marca LoHagoYo.cl. A menção à Epistema fica restrita a documentação interna e infraestrutura privada.
 - Trabalho em português; **interface em espanhol do Chile** (tú, não vos/usted; termos locais: comuna, cotización, mantención).
 - **Nenhum import de `firebase` fora de `src/dados/` e `src/auth/`.** A interface só usa as funções do contrato (`src/dados/contrato.ts`).
 - Tipos do domínio em `src/dominio/tipos.ts`, sem nada do banco.

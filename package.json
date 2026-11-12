@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Lo Hago Yo — plataforma gratuita de servicios de profesionales independientes. Una iniciativa Epistema.",
+  "description": "LoHagoYo.cl — plataforma gratuita de servicios de profesionales independientes.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
