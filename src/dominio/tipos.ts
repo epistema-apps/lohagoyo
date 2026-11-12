@@ -19,6 +19,7 @@ export interface Categoria {
   id: Id; // slug, ex.: 'piscinas'
   nome: string; // 'Piscinas'
   descricao: string;
+  foto?: string; // id em src/dados/fotos.ts
   servicosSugeridos: string[];
 }
 

@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import TarjetaPerfil from '../../components/TarjetaPerfil.astro';
 import { dados } from '../../dados';
+import { foto } from '../../dados/fotos';
 import type { Categoria } from '../../dominio/tipos';
 
 export async function getStaticPaths() {
@@ -15,6 +16,7 @@ const perfis = (await dados.listarPerfisPublicos()).filter((p) => p.categoriaIds
 const itens = await Promise.all(
   perfis.map(async (perfil) => ({ perfil, servicos: await dados.listarServicosDoPerfil(perfil.id) })),
 );
+const f = foto(categoria.foto ?? '');
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -28,23 +30,28 @@ const jsonLd = {
 <Base
   titulo={`${categoria.nome} en Santiago`}
   descricao={`${categoria.descricao} Profesionales independientes en Santiago con contacto directo por WhatsApp.`}
+  imagem={f?.src}
   jsonLd={jsonLd}
 >
-  <section class="wrap cab">
-    <a href="/" class="volta">← Todos los servicios</a>
-    <h1>{categoria.nome} en Santiago</h1>
-    <p class="lead">{categoria.descricao}</p>
+  <section class="cab">
+    {f && <img src={f.src} alt="" fetchpriority="high" />}
+    <div class="filtro" aria-hidden="true"></div>
+    <div class="wrap cab-in">
+      <a href="/" class="volta">← Todos los servicios</a>
+      <h1>{categoria.nome} en Santiago</h1>
+      <p class="lead">{categoria.descricao}</p>
+    </div>
+  </section>
+  <section class="wrap lista">
     <nav class="cats" aria-label="Otras categorías">
       {categorias.map((c) => <a class="chip" href={`/servicios/${c.id}/`} aria-current={c.id === categoria.id ? 'page' : undefined}>{c.nome}</a>)}
     </nav>
-  </section>
-  <section class="wrap">
     {itens.length ? (
       <div class="grade">
         {itens.map(({ perfil, servicos }) => <TarjetaPerfil perfil={perfil} servicos={servicos} categorias={categorias} />)}
       </div>
     ) : (
-      <div class="vazio card">
+      <div class="vazio">
         <p>Todavía no hay profesionales de {categoria.nome.toLowerCase()} publicados.</p>
         <a class="btn btn-primary" href="/sumate/">¿Lo haces tú? Crea tu página gratis</a>
       </div>
@@ -53,11 +60,16 @@ const jsonLd = {
 </Base>
 
 <style>
-  .cab { padding: 40px var(--gutter) 24px; }
-  .volta { display: inline-block; margin-bottom: 16px; font-weight: 700; text-decoration: none; }
-  .lead { color: var(--muted); font-size: 1.15rem; }
-  .cats { display: flex; flex-wrap: wrap; gap: 8px; }
-  .cats [aria-current] { background: var(--accent); color: #fff; }
-  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-  .vazio { padding: 32px; text-align: center; }
+  .cab { position: relative; background: var(--ink); color: #fff; overflow: hidden; }
+  .cab img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.6); }
+  .filtro { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(21, 23, 28, 0.92), rgba(21, 23, 28, 0.45)); }
+  .cab-in { position: relative; padding-top: 72px; padding-bottom: 64px; }
+  .volta { display: inline-block; margin-bottom: 20px; color: rgba(255, 255, 255, 0.75); font-weight: 700; text-decoration: none; font-size: 0.92rem; }
+  .cab h1 { font-size: clamp(2rem, 6vw, 3.4rem); letter-spacing: -0.04em; }
+  .lead { color: rgba(255, 255, 255, 0.8); font-size: 1.15rem; max-width: 46ch; margin: 0; }
+  .lista { padding-top: 32px; }
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .cats [aria-current] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px; }
+  .vazio { padding: 40px 24px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); }
 </style>

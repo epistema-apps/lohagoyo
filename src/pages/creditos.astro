@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import { FOTOS } from '../dados/fotos';
+---
+<Base titulo="Créditos de fotos" descricao="Fotografías usadas en LoHagoYo.cl y sus autores." noindex>
+  <section class="wrap" style="padding-top:48px;max-width:760px">
+    <h1>Créditos de fotos</h1>
+    <p>Las fotos de categorías son de <a href="https://unsplash.com/license">Unsplash</a>. Gracias a sus autores:</p>
+    <ul>
+      {Object.values(FOTOS).map((f) => <li>{f.alt}: <a href={f.url} rel="noopener">{f.autor}</a></li>)}
+    </ul>
+  </section>
+</Base>

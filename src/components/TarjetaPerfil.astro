@@ -1,6 +1,7 @@
 ---
 import type { Perfil, Servico, Categoria } from '../dominio/tipos';
-import { textoPreco, normalizar } from '../dominio/formato';
+import { linkWhatsApp, normalizar, textoPreco } from '../dominio/formato';
+import { foto, miniatura } from '../dados/fotos';
 
 interface Props {
   perfil: Perfil;
@@ -9,39 +10,50 @@ interface Props {
 }
 const { perfil, servicos, categorias } = Astro.props;
 const cats = categorias.filter((c) => perfil.categoriaIds.includes(c.id));
-const principal = servicos[0];
+const marca = perfil.marca ?? perfil.nomePublico;
+const imagem = perfil.capa ?? perfil.fotos[0] ?? foto(cats[0]?.foto ?? '')?.thumb;
+const comPreco = servicos.find((s) => s.preco.mostrar && s.preco.tipo !== 'a_cotizar' && s.preco.valor != null);
+const wa = linkWhatsApp(perfil.contatos, perfil.nomePublico);
 const busca = normalizar(
-  [perfil.nomePublico, perfil.oficio, ...perfil.comunas, ...servicos.map((s) => s.nome), ...cats.map((c) => c.nome)].join(' '),
+  [marca, perfil.nomePublico, perfil.oficio, ...perfil.comunas, ...servicos.map((s) => s.nome), ...cats.map((c) => c.nome)].join(' '),
 );
-const inicial = perfil.nomePublico.charAt(0);
 ---
-<a
-  href={`/${perfil.slug}/`}
-  class="tarjeta card"
+<article
+  class="tarjeta"
   data-busca={busca}
   data-categorias={perfil.categoriaIds.join(' ')}
   data-comunas={perfil.comunas.map(normalizar).join('|')}
 >
-  <div class="foto" style={perfil.cor ? `--c:${perfil.cor}` : ''}>
-    {perfil.fotos[0] ? <img src={perfil.fotos[0]} alt="" loading="lazy" width="400" height="260" /> : <span class="inicial">{inicial}</span>}
-  </div>
+  <a href={`/${perfil.slug}/`} class="foto" tabindex="-1" aria-hidden="true">
+    {imagem && <img src={miniatura(imagem)} alt="" loading="lazy" width="640" height="400" />}
+  </a>
   <div class="corpo">
     <p class="oficio">{perfil.oficio}</p>
-    <h3>{perfil.nomePublico}</h3>
-    <p class="comunas">{perfil.comunas.slice(0, 3).join(', ')}{perfil.comunas.length > 3 && ` y ${perfil.comunas.length - 3} más`}</p>
-    {principal && <p class="preco">{principal.nome}: <strong>{textoPreco(principal.preco)}</strong></p>}
+    <h3><a href={`/${perfil.slug}/`}>{marca}</a></h3>
+    <p class="comunas">{perfil.comunas.join(' · ')}</p>
+    <div class="rodape-card">
+      <span class="preco">{comPreco ? textoPreco(comPreco.preco) : 'A cotizar'}</span>
+      {wa && <a class="wa" href={wa} target="_blank" rel="noopener" aria-label={`WhatsApp de ${marca}`}>WhatsApp</a>}
+    </div>
   </div>
-</a>
+</article>
 
 <style>
-  .tarjeta { display: flex; flex-direction: column; overflow: hidden; text-decoration: none; color: var(--ink); transition: transform 0.15s ease; }
-  .tarjeta:hover { transform: translateY(-3px); }
-  .foto { aspect-ratio: 400 / 260; background: var(--c, var(--accent)); display: grid; place-items: center; }
-  .foto img { width: 100%; height: 100%; object-fit: cover; }
-  .inicial { font: 800 4rem var(--font-head); color: rgba(255, 255, 255, 0.9); }
-  .corpo { padding: 16px 18px 18px; }
-  .oficio { margin: 0 0 4px; color: var(--accent-dark); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
-  h3 { margin: 0 0 6px; }
-  .comunas { margin: 0 0 8px; color: var(--muted); font-size: 0.95rem; }
-  .preco { margin: 0; font-size: 0.95rem; }
+  .tarjeta { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s ease, transform 0.2s ease; }
+  .tarjeta:hover { border-color: #c9c6bf; transform: translateY(-2px); }
+  .foto { display: block; aspect-ratio: 16 / 10; background: var(--bg); overflow: hidden; }
+  .foto img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.75); transition: transform 0.5s ease; }
+  .tarjeta:hover .foto img { transform: scale(1.03); }
+  .corpo { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+  .oficio { margin: 0 0 4px; color: var(--accent-dark); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; }
+  h3 { margin: 0 0 4px; font-size: 1.2rem; }
+  h3 a { color: var(--ink); text-decoration: none; }
+  h3 a::after { content: ''; position: absolute; inset: 0; }
+  .tarjeta { position: relative; }
+  .comunas { margin: 0 0 14px; color: var(--muted); font-size: 0.92rem; }
+  .rodape-card { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .preco { font-weight: 700; font-size: 0.95rem; }
+  .wa { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; color: var(--ink); text-decoration: none; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; }
+  .wa::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #25d366; }
+  .wa:hover { border-color: var(--ink); }
 </style>

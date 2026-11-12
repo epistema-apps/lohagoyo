@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TarjetaPerfil from '../components/TarjetaPerfil.astro';
 import { dados } from '../dados';
+import { foto } from '../dados/fotos';
 
 const categorias = await dados.listarCategorias();
 const regioes = await dados.listarRegioes();
@@ -10,6 +11,12 @@ const itens = await Promise.all(
   perfis.map(async (perfil) => ({ perfil, servicos: await dados.listarServicosDoPerfil(perfil.id) })),
 );
 const comunas = [...new Set(regioes.flatMap((r) => r.comunas))].sort((a, b) => a.localeCompare(b, 'es'));
+const contagem = (id: string) => perfis.filter((p) => p.categoriaIds.includes(id)).length;
+const capaHome = foto('general-1')!;
+const capaSumate = foto('general-2')!;
+
+// Sugestões da busca: categorias + serviços sugeridos.
+const sugestoes = [...new Set([...categorias.map((c) => c.nome), ...categorias.flatMap((c) => c.servicosSugeridos)])];
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -21,94 +28,207 @@ const jsonLd = {
 ---
 <Base
   titulo="LoHagoYo.cl"
-  descricao="Encuentra profesionales independientes de tu barrio en Santiago: piscinas, jardinería, limpieza y reparaciones. Contacto directo por WhatsApp, sin intermediarios."
+  descricao="Encuentra profesionales independientes en Santiago: piscinas, jardinería, limpieza, gasfitería, electricidad y más. Contacto directo por WhatsApp, sin comisiones."
   jsonLd={jsonLd}
 >
   <section class="hero">
-    <div class="wrap">
-      <p class="pre">Santiago · gratis · sin intermediarios</p>
-      <h1>¿Quién lo hace?<br /><span class="destaque">Lo hago yo</span><span class="ponto">.</span></h1>
-      <p class="lead">Profesionales independientes de tu barrio, con contacto directo por WhatsApp.</p>
+    <img class="hero-img" src={capaHome.src} alt="" fetchpriority="high" />
+    <div class="hero-filtro" aria-hidden="true"></div>
+    <div class="wrap hero-in">
+      <p class="sobretitulo">Santiago · Profesionales independientes</p>
+      <h1>Encuentra a quien lo hace, cerca de ti<span class="ponto">.</span></h1>
+      <p class="lead">Contacto directo por WhatsApp. Sin intermediarios ni comisiones.</p>
 
-      <form id="buscar" class="busca card" role="search" onsubmit="return false">
-        <label class="campo">
-          <span class="sr-only">¿Qué necesitas?</span>
-          <input id="q" type="search" placeholder="¿Qué necesitas? Ej: piscina, pasto, gasfiter" autocomplete="off" />
+      <form id="buscar" class="busca" role="search" action="#resultados">
+        <label class="campo campo-q">
+          <span class="rotulo">¿Qué necesitas?</span>
+          <input id="q" name="q" type="search" placeholder="Ej: mantención de piscina" autocomplete="off" list="sugestoes" />
         </label>
-        <label class="campo">
-          <span class="sr-only">Comuna</span>
-          <select id="comuna">
-            <option value="">Todas las comunas</option>
+        <label class="campo campo-c">
+          <span class="rotulo">Comuna</span>
+          <select id="comuna" name="comuna">
+            <option value="">Todas</option>
             {comunas.map((c) => <option value={c}>{c}</option>)}
           </select>
         </label>
+        <button class="btn btn-buscar" type="submit">Buscar</button>
+        <datalist id="sugestoes">{sugestoes.map((s) => <option value={s} />)}</datalist>
       </form>
-
-      <nav class="cats" aria-label="Categorías">
-        {categorias.map((c) => <a class="chip" href={`/servicios/${c.id}/`} data-cat={c.id}>{c.nome}</a>)}
-      </nav>
+      <p class="populares">
+        <span>Populares:</span>
+        {categorias.slice(0, 4).map((c) => <a href={`/servicios/${c.id}/`}>{c.nome}</a>)}
+      </p>
     </div>
   </section>
 
-  <section class="wrap">
-    <p id="contador" class="contador" aria-live="polite">{itens.length} profesionales</p>
+  <section class="wrap bloco">
+    <div class="titulo-bloco">
+      <div>
+        <p class="sobretitulo">Servicios</p>
+        <h2>¿En qué te podemos ayudar?</h2>
+      </div>
+    </div>
+    <div class="cats">
+      {categorias.map((c) => {
+        const f = foto(c.foto ?? '');
+        const n = contagem(c.id);
+        return (
+          <a class="cat" href={`/servicios/${c.id}/`}>
+            {f && <img src={f.thumb} alt="" loading="lazy" width="640" height="427" />}
+            <span class="cat-txt">
+              <strong>{c.nome}</strong>
+              <small>{n > 0 ? `${n} profesional${n === 1 ? '' : 'es'}` : 'Próximamente'}</small>
+            </span>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="wrap bloco" id="resultados">
+    <div class="titulo-bloco">
+      <div>
+        <p class="sobretitulo">Profesionales</p>
+        <h2 id="titulo-resultados">En Santiago</h2>
+      </div>
+      <p id="contador" class="contador" aria-live="polite">{itens.length} profesionales</p>
+    </div>
     <div class="grade" id="grade">
       {itens.map(({ perfil, servicos }) => <TarjetaPerfil perfil={perfil} servicos={servicos} categorias={categorias} />)}
     </div>
-    <p id="vazio" class="vazio" hidden>No encontramos a nadie con esa búsqueda todavía. Prueba con otra palabra o comuna.</p>
+    <div id="vazio" class="vazio" hidden>
+      <p><strong>Todavía no hay nadie con esa búsqueda.</strong> Prueba con otra palabra o comuna.</p>
+      <button type="button" class="btn btn-ghost" id="limpar">Ver todos</button>
+    </div>
   </section>
 
-  <section class="wrap sumate card">
-    <div>
-      <h2>¿Ofreces un servicio?</h2>
-      <p>Crea tu página gratis, con tus servicios, fotos y tu WhatsApp. Te damos también tu tarjeta de presentación lista para imprimir.</p>
+  <section class="wrap bloco como">
+    <p class="sobretitulo">Cómo funciona</p>
+    <h2>Simple y directo</h2>
+    <ol class="passos">
+      <li><span>01</span><h3>Busca</h3><p>Elige el servicio y tu comuna. Ves sus servicios, precios y condiciones.</p></li>
+      <li><span>02</span><h3>Conversa</h3><p>Escríbele directo por WhatsApp. Sin formularios ni intermediarios.</p></li>
+      <li><span>03</span><h3>Listo</h3><p>Acuerdan el trabajo entre ustedes. LoHagoYo.cl no cobra comisión.</p></li>
+    </ol>
+  </section>
+
+  <section class="sumate">
+    <img src={capaSumate.src} alt="" loading="lazy" />
+    <div class="sumate-filtro" aria-hidden="true"></div>
+    <div class="wrap sumate-in">
+      <p class="sobretitulo">Para profesionales</p>
+      <h2>¿Ofreces un servicio?<br />Tu página, gratis.</h2>
+      <p>Tus servicios, tus fotos y tu WhatsApp en una página propia, con tarjeta de presentación lista para imprimir.</p>
+      <a href="/sumate/" class="btn btn-claro">Quiero mi página</a>
     </div>
-    <a href="/sumate/" class="btn btn-primary">Quiero mi página</a>
   </section>
 </Base>
 
 <script>
   import { normalizar } from '../dominio/formato';
+  const form = document.getElementById('buscar') as HTMLFormElement;
   const q = document.getElementById('q') as HTMLInputElement;
   const comuna = document.getElementById('comuna') as HTMLSelectElement;
-  const cards = [...document.querySelectorAll<HTMLElement>('#grade > a')];
+  const cards = [...document.querySelectorAll<HTMLElement>('#grade > article')];
   const contador = document.getElementById('contador')!;
+  const titulo = document.getElementById('titulo-resultados')!;
   const vazio = document.getElementById('vazio')!;
 
+  // sinônimos: quem busca escreve do jeito que fala
+  const sinonimos: Record<string, string> = {
+    gasfiter: 'gasfiteria', plomero: 'gasfiteria', pasto: 'jardineria', jardinero: 'jardineria',
+    electrico: 'electricidad', electricista: 'electricidad', pintor: 'pintura', carpintero: 'carpinteria',
+    mudanza: 'fletes', flete: 'fletes', piscina: 'piscinas', aseo: 'limpieza',
+  };
+
   function filtrar() {
-    const termos = normalizar(q.value).split(/\s+/).filter(Boolean);
+    const termos = normalizar(q.value).split(/\s+/).filter(Boolean).map((t) => sinonimos[t] ?? t);
     const c = normalizar(comuna.value);
     let n = 0;
     for (const card of cards) {
-      const texto = card.dataset.busca ?? '';
+      const texto = `${card.dataset.busca ?? ''} ${card.dataset.categorias ?? ''}`;
       const comunas = (card.dataset.comunas ?? '').split('|');
       const ok = termos.every((t) => texto.includes(t)) && (!c || comunas.includes(c));
       card.hidden = !ok;
       if (ok) n++;
     }
     contador.textContent = `${n} profesional${n === 1 ? '' : 'es'}`;
+    titulo.textContent = q.value || comuna.value ? `Resultados${comuna.value ? ` en ${comuna.value}` : ''}` : 'En Santiago';
     vazio.hidden = n > 0;
   }
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    filtrar();
+    document.getElementById('resultados')!.scrollIntoView({ behavior: 'smooth' });
+  });
   q.addEventListener('input', filtrar);
   comuna.addEventListener('change', filtrar);
+  document.getElementById('limpar')!.addEventListener('click', () => { q.value = ''; comuna.value = ''; filtrar(); });
 </script>
 
 <style>
-  .hero { padding: 48px 0 32px; }
-  .pre { color: var(--accent-dark); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.6em; }
-  .lead { font-size: 1.2rem; color: var(--muted); max-width: 36ch; }
-  .busca { display: grid; grid-template-columns: 1fr 220px; gap: 8px; padding: 8px; margin: 24px 0 16px; }
-  .campo input, .campo select {
-    width: 100%; min-height: 52px; padding: 0 16px; border: 1px solid var(--line); border-radius: 10px;
-    font: 1rem var(--font-body); background: #fff; color: var(--ink);
+  .sobretitulo { margin: 0 0 0.6em; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-dark); }
+
+  /* topo com foto e busca */
+  .hero { position: relative; color: #fff; background: var(--ink); overflow: hidden; }
+  .hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.05); opacity: 0.55; }
+  .hero-filtro { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(21, 23, 28, 0.95) 0%, rgba(21, 23, 28, 0.75) 45%, rgba(21, 23, 28, 0.35) 100%); }
+  .hero-in { position: relative; padding-top: clamp(64px, 12vw, 128px); padding-bottom: clamp(56px, 10vw, 104px); }
+  .hero .sobretitulo { color: var(--sol); }
+  .hero h1 { font-size: clamp(2.2rem, 6.5vw, 4.2rem); line-height: 1.04; letter-spacing: -0.045em; max-width: 15ch; }
+  .ponto { color: var(--sol); }
+  .lead { font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: rgba(255, 255, 255, 0.78); max-width: 44ch; margin-bottom: 1.8em; }
+
+  .busca { display: grid; grid-template-columns: 1fr 220px auto; background: #fff; border-radius: 10px; padding: 6px; max-width: 760px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25); }
+  .campo { display: flex; flex-direction: column; justify-content: center; padding: 6px 16px; min-height: 60px; }
+  .campo-c { border-left: 1px solid var(--line); }
+  .rotulo { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .campo input, .campo select { border: 0; padding: 2px 0 0; font: 1.05rem var(--font-body); color: var(--ink); background: transparent; outline: none; width: 100%; }
+  .campo:focus-within { box-shadow: inset 0 -2px 0 var(--accent); }
+  .btn-buscar { background: var(--ink); color: #fff; border-radius: 8px; padding: 0 28px; min-height: 60px; }
+  .btn-buscar:hover { background: #000; }
+  @media (max-width: 680px) {
+    .busca { grid-template-columns: 1fr; }
+    .campo-c { border-left: 0; border-top: 1px solid var(--line); }
+    .btn-buscar { min-height: 52px; margin-top: 6px; }
   }
-  @media (max-width: 640px) { .busca { grid-template-columns: 1fr; } }
-  .cats { display: flex; flex-wrap: wrap; gap: 8px; }
-  .contador { color: var(--muted); font-weight: 700; margin: 16px 0; }
-  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .populares { margin: 18px 0 0; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.92rem; color: rgba(255, 255, 255, 0.6); }
+  .populares a { color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.35); }
+  .populares a:hover { border-color: #fff; }
+
+  .bloco { padding-top: clamp(64px, 9vw, 104px); }
+  .titulo-bloco { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+  .titulo-bloco h2 { margin: 0; font-size: clamp(1.7rem, 4vw, 2.4rem); letter-spacing: -0.035em; }
+
+  .cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .cats { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+  .cat { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--ink); color: #fff; text-decoration: none; }
+  .cat img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.7); opacity: 0.9; transition: transform 0.6s ease, opacity 0.3s ease; }
+  .cat::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(21, 23, 28, 0.85)); }
+  .cat:hover img { transform: scale(1.05); opacity: 1; }
+  .cat-txt { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 1; display: flex; flex-direction: column; }
+  .cat-txt strong { font: 700 clamp(0.98rem, 2vw, 1.2rem) var(--font-head); letter-spacing: -0.02em; }
+  .cat-txt small { color: rgba(255, 255, 255, 0.7); font-size: 0.8rem; }
+
+  .contador { margin: 0; color: var(--muted); font-weight: 700; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px; }
   .grade > [hidden] { display: none; }
-  .vazio { padding: 24px; text-align: center; color: var(--muted); }
-  .sumate { margin-top: 56px; padding: 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: var(--accent-soft); border-color: transparent; }
-  .sumate h2 { margin-bottom: 0.3em; }
-  .sumate p { margin: 0; max-width: 52ch; }
+  .vazio { padding: 40px 24px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); }
+
+  .como h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); letter-spacing: -0.035em; }
+  .passos { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); border-top: 1px solid var(--line); }
+  .passos li { padding: 28px 28px 8px 0; }
+  .passos span { font: 700 0.85rem var(--font-head); color: var(--accent); }
+  .passos h3 { margin: 10px 0 6px; font-size: 1.3rem; }
+  .passos p { color: var(--muted); }
+
+  .sumate { position: relative; margin-top: clamp(64px, 9vw, 104px); background: var(--ink); color: #fff; overflow: hidden; }
+  .sumate > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); opacity: 0.35; }
+  .sumate-filtro { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(21, 23, 28, 0.95), rgba(21, 23, 28, 0.55)); }
+  .sumate-in { position: relative; padding-top: 80px; padding-bottom: 80px; }
+  .sumate .sobretitulo { color: var(--sol); }
+  .sumate h2 { font-size: clamp(1.8rem, 4.5vw, 2.8rem); letter-spacing: -0.04em; }
+  .sumate p { color: rgba(255, 255, 255, 0.75); max-width: 48ch; margin-bottom: 1.6em; }
+  .btn-claro { background: #fff; color: var(--ink); }
+  .btn-claro:hover { background: var(--bg); }
 </style>
