@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { criarConta, emulador, entrarComGoogle, entrarComSenha, mensagemErro, observarUsuario, recuperarSenha, sair, type Usuario } from '../../auth';
 import {
-  apagarServico, carregarMeusDados, enviarParaRevisao, salvarPerfil, salvarPrivado, salvarServico, slugDisponivel,
-  subirFoto, type NomeFoto, type Privado,
+  apagarServico, carregarMeusDados, enviarParaRevisao, marcarParaRevisao, minhasAvaliacoes, responderAvaliacao,
+  salvarPerfil, salvarPrivado, salvarServico, slugDisponivel, subirFoto, type NomeFoto, type Privado,
 } from '../../dados/painel';
+import Conversa from './Conversa';
 import GeradorCartao from '../cartao/GeradorCartao';
 import { textoPreco } from '../../dominio/formato';
 import { gerarSlug, slugValido } from '../../dominio/slug';
-import type { Perfil, Publico, Servico, TipoPreco } from '../../dominio/tipos';
+import type { Avaliacao, Perfil, Publico, Servico, TipoPreco } from '../../dominio/tipos';
 
 export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
@@ -17,7 +18,7 @@ const VERSAO_TERMOS = '2026-11';
 const TEXTO_ASISTIDO =
   'Registro asistido: confirmo que el profesional autorizó a LoHagoYo.cl a publicar estos datos y fotos.';
 const TEXTO_CONSENTIMIENTO =
-  'Autorizo a LoHagoYo.cl a publicar en mi página los datos y fotos que ingresé (nombre, servicios, comunas, contacto y fotos). Puedo modificarlos o pedir que se eliminen en cualquier momento.';
+  'Autorizo a LoHagoYo.cl a publicar en mi página los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos). Puedo modificarlos o pedir que se eliminen en cualquier momento.';
 
 export default function Painel(props: Props) {
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
@@ -128,7 +129,7 @@ const PUBLICOS: { id: Publico; nome: string }[] = [
 ];
 const PAGOS = ['Transferencia', 'Efectivo', 'Tarjeta'];
 const STATUS: Record<Perfil['status'], string> = {
-  borrador: 'Borrador: todavía no enviada', pendiente: 'En revisión: te avisaremos al publicarla',
+  borrador: 'Borrador: todavía no enviada', pendiente: 'En revisión: LoHagoYo.cl revisará tu página (o tus cambios) antes de publicarla',
   aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo.cl',
 };
 
@@ -173,6 +174,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
     if (!perfil.oficio) f.push('Escribe a qué te dedicas');
     if (!perfil.categoriaIds.length) f.push('Elige al menos una categoría');
     if (!perfil.comunas.length) f.push('Elige dónde atiendes');
+    if (!perfil.endereco?.calle?.trim() || !perfil.endereco?.numero?.trim() || !perfil.endereco?.comuna?.trim()) f.push('Escribe tu dirección completa (calle, número y comuna)');
     if (!perfil.contatos.whatsapp && !perfil.contatos.telefone) f.push('Agrega tu WhatsApp o teléfono');
     if (!servicos.length) f.push('Agrega al menos un servicio');
     return f;
@@ -191,14 +193,14 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
     try {
       const slug = perfil.slug || gerarSlug(perfil.marca || perfil.nomePublico);
       if (!slugValido(slug)) throw new Error('slug');
-      const st = status ?? perfil.status;
+      const st = status ?? (!admin && perfil.status === 'aprobado' ? 'pendiente' : perfil.status);
       const novo = { ...perfil, id: alvo, slug, status: st,
         ...(admin && st === 'aprobado' && !perfil.aprovadoPor ? { aprovadoPor: usuario.uid, aprovadoEm: new Date().toISOString() } : {}) };
       await salvarPerfil(novo, slugOriginal || undefined);
       await salvarPrivado(alvo, privado);
       setPerfil(novo);
       setSlugOriginal(slug);
-      setMsg({ tipo: 'ok', t: 'Cambios guardados.' });
+      setMsg({ tipo: 'ok', t: !admin && perfil.status === 'aprobado' ? 'Cambios guardados. Quedan en revisión; tu página sigue publicada como estaba.' : 'Cambios guardados.' });
       return true;
     } catch (e) {
       const m = e instanceof Error && e.message === 'slug-ocupado' ? 'Esa dirección ya está en uso. Elige otra.'
@@ -213,11 +215,11 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
 
   async function enviar() {
     if (pendencias.length || !aceito) return;
-    if (!(await guardar(admin || perfil!.status === 'aprobado' ? 'aprobado' : 'pendiente'))) return;
+    if (!(await guardar(admin ? 'aprobado' : 'pendiente'))) return;
     try {
       await enviarParaRevisao(alvo, VERSAO_TERMOS, admin ? TEXTO_ASISTIDO : TEXTO_CONSENTIMIENTO, admin ? usuario.uid : undefined);
       if (admin) { setMsg({ tipo: 'ok', t: 'Perfil aprobado. Aparecerá en la próxima publicación.' }); return; }
-      setMsg({ tipo: 'ok', t: perfil!.status === 'aprobado' ? 'Cambios guardados. Tu página se actualizará pronto.' : '¡Listo! Revisaremos tu página y te avisaremos al publicarla.' });
+      setMsg({ tipo: 'ok', t: '¡Listo! LoHagoYo.cl revisará tu página y la publicará cuando esté aprobada.' });
     } catch {
       setMsg({ tipo: 'erro', t: 'No se pudo enviar. Inténtalo de nuevo.' });
     }
@@ -299,7 +301,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       </Secao>
 
       {/* 3. Onde e para quem */}
-      <Secao n="03" titulo="Dónde y para quién">
+      <Secao n="03" titulo="Dirección, dónde y para quién" ajuda="La dirección es obligatoria y aparece en tu página: da confianza a los clientes y nos ayuda a evitar fraudes.">
         <Campo rotulo="Comunas donde atiendes">
           <div className="pn-chips">
             {['Todo Santiago', ...comunas].map((c) => (
@@ -318,6 +320,27 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
             ))}
           </div>
         </Campo>
+        <div className="pn-linha">
+          <Campo rotulo="Calle" ajuda="Tu dirección aparece en tu página.">
+            <input value={perfil.endereco?.calle ?? ''} maxLength={120} autoComplete="address-line1"
+              onChange={(e) => set('endereco', { calle: '', numero: '', comuna: '', ...perfil.endereco, calle: e.target.value })} />
+          </Campo>
+          <Campo rotulo="Número">
+            <input value={perfil.endereco?.numero ?? ''} maxLength={20} inputMode="numeric"
+              onChange={(e) => set('endereco', { calle: '', numero: '', comuna: '', ...perfil.endereco, numero: e.target.value })} />
+          </Campo>
+        </div>
+        <div className="pn-linha">
+          <Campo rotulo="Comuna">
+            <input value={perfil.endereco?.comuna ?? ''} maxLength={60} list="pn-comunas"
+              onChange={(e) => set('endereco', { calle: '', numero: '', comuna: '', ...perfil.endereco, comuna: e.target.value })} />
+            <datalist id="pn-comunas">{comunas.map((c) => <option key={c} value={c} />)}</datalist>
+          </Campo>
+          <Campo rotulo="Depto / referencia (opcional)">
+            <input value={perfil.endereco?.referencia ?? ''} maxLength={60}
+              onChange={(e) => set('endereco', { calle: '', numero: '', comuna: '', ...perfil.endereco, referencia: e.target.value || undefined })} />
+          </Campo>
+        </div>
         <Campo rotulo="Horario (opcional)" ajuda="Ej: Lunes a sábado, 8:00 a 18:00">
           <input value={perfil.horario ?? ''} maxLength={80} onChange={(e) => set('horario', e.target.value)} />
         </Campo>
@@ -381,6 +404,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
                 const id = await salvarServico(base ? { ...s, id: base.id } : s);
                 setServicos(base ? servicos.map((x) => (x.id === id ? { ...s, id } : x)) : [...servicos, { ...s, id }]);
                 setEditando(null);
+                if (!admin && perfil.status === 'aprobado') { await marcarParaRevisao(alvo); set('status', 'pendiente'); }
               } catch {
                 setMsg({ tipo: 'erro', t: 'No se pudo guardar el servicio. Primero guarda tu página (botón Guardar).' });
               }
@@ -410,6 +434,8 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         </div>
       </Secao>
 
+ {!admin && perfil.status !== 'borrador' && <Opinioes uid={alvo} />}
+
  {/* 7. Tarjeta */}
       <Secao n="07" titulo="Tu tarjeta de presentación" ajuda="Elige el diseño. Aparece al final de tu página para que la descarguen o compartan, y puedes imprimirla.">
         <GeradorCartao
@@ -429,7 +455,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       </Secao>
 
       {/* 8. Enviar */}
-      <Secao n="08" titulo={admin || perfil.status === 'aprobado' ? 'Guardar y publicar cambios' : 'Enviar a revisión'}>
+      <Secao n="08" titulo={admin ? 'Guardar y publicar' : 'Enviar a revisión'}>
         {pendencias.length > 0 && (
           <ul className="pn-pendencias">{pendencias.map((p) => <li key={p}>{p}</li>)}</ul>
         )}
@@ -438,7 +464,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
           {admin ? TEXTO_ASISTIDO : TEXTO_CONSENTIMIENTO}
         </label>
         <button className="btn btn-primary pn-largo" disabled={salvando || pendencias.length > 0 || !aceito} onClick={enviar}>
-          {admin || perfil.status === 'aprobado' ? 'Guardar y publicar' : 'Enviar a revisión'}
+          {admin ? 'Guardar y publicar' : 'Enviar a revisión'}
         </button>
       </Secao>
 
@@ -597,5 +623,45 @@ function ServicoForm({ inicial, sugeridos, aoSalvar, aoCancelar, aoApagar }: {
         {aoApagar && <button type="button" className="pn-link pn-perigo" onClick={() => confirm('¿Eliminar este servicio?') && aoApagar()}>Eliminar</button>}
       </div>
     </form>
+  );
+}
+
+// ---------------- opiniões (visão do profissional) ----------------
+
+function Opinioes({ uid }: { uid: string }) {
+  const [lista, setLista] = useState<Avaliacao[] | null>(null);
+  const [aberta, setAberta] = useState<string | null>(null);
+  const [resposta, setResposta] = useState<Record<string, string>>({});
+  const [ok, setOk] = useState('');
+  useEffect(() => { minhasAvaliacoes(uid).then(setLista).catch(() => setLista([])); }, [uid]);
+  if (!lista?.length) return null;
+  return (
+    <Secao n="★" titulo="Opiniones de tus clientes" ajuda="LoHagoYo.cl revisa cada opinión antes de publicarla. Si te enviamos una para revisar, puedes conversar con nosotros y dejar una respuesta pública.">
+      <div className="av-lista">
+        {lista.map((a) => (
+          <article key={a.id} className="av-item">
+            <div className="av-topo">
+              <strong>{a.nome}</strong>
+              <span className="av-estrelas">{'★'.repeat(a.nota) + '☆'.repeat(5 - a.nota)}</span>
+            </div>
+            <p className="av-texto">{a.texto}</p>
+            <p className="pn-dica" style={{ margin: 0 }}>{a.status === 'aprobada' ? 'Publicada en tu página' : 'LoHagoYo.cl quiere conversar contigo antes de publicarla'}</p>
+            {a.status === 'en_contestacion' && (
+              <>
+                <Campo rotulo="Respuesta pública (opcional)" ajuda="Si se publica la opinión, tu respuesta aparece debajo.">
+                  <textarea rows={2} maxLength={1000} value={resposta[a.id] ?? a.resposta ?? ''} onChange={(e) => setResposta({ ...resposta, [a.id]: e.target.value })} />
+                </Campo>
+                <div className="pn-form-acoes">
+                  <button className="btn btn-ghost btn-sm" onClick={async () => { await responderAvaliacao(a.id, resposta[a.id] ?? a.resposta ?? '', a.contestacao ?? ''); setOk('Respuesta guardada.'); }}>Guardar respuesta</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setAberta(aberta === a.id ? null : a.id)}>{aberta === a.id ? 'Cerrar conversación' : 'Conversar con LoHagoYo.cl'}</button>
+                </div>
+                {aberta === a.id && <Conversa avaliacaoId={a.id} autor="profissional" autorUid={uid} />}
+              </>
+            )}
+          </article>
+        ))}
+      </div>
+      {ok && <p className="pn-msg pn-msg-ok">{ok}</p>}
+    </Secao>
   );
 }

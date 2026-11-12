@@ -1,9 +1,12 @@
 rules_version = '2';
 // Regras do LoHagoYo.cl. Toda mudança aqui exige `npm run test:regras` passando.
-// Papéis:
-//  - visitante (sem login): lê só perfis aprovados e seus serviços, categorias, e cria denúncias.
-//  - profissional (logado): edita só o próprio perfil (id = uid), dados privados e serviços.
-//  - moderador: uid listado em config/moderadores.uids; aprova, pausa e lê tudo.
+//
+// CURADORIA: o site público lê só `publicados/{uid}` (cópia aprovada), que só o
+// administrador grava. O profissional edita `perfis` e `servicos` (cópia de trabalho);
+// nada vai ao ar sem aprovação. Avaliações também passam pelo administrador.
+//
+// Papéis: visitante (sem login), profissional (dono: id = uid) e
+// moderador (claim `mod` ou uid em config/moderadores.uids).
 service cloud.firestore {
   match /databases/{database}/documents {
     function logado() { return request.auth != null; }
@@ -17,15 +20,13 @@ service cloud.firestore {
     }
     function novo() { return request.resource.data; }
     function texto(v, max) { return v is string && v.size() <= max; }
+    function preenchido(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
     // getAfter: o slug pode ser reservado na mesma operação atômica que salva o perfil.
     function slugDono(slug, uid) {
       return existsAfter(/databases/$(database)/documents/slugs/$(slug))
         && getAfter(/databases/$(database)/documents/slugs/$(slug)).data.uid == uid;
     }
-    function perfilAprovado(uid) {
-      return exists(/databases/$(database)/documents/perfis/$(uid))
-        && get(/databases/$(database)/documents/perfis/$(uid)).data.status == 'aprobado';
-    }
+    function publicado(uid) { return exists(/databases/$(database)/documents/publicados/$(uid)); }
 
     match /config/{doc} {
       allow read: if moderador();
@@ -35,7 +36,6 @@ service cloud.firestore {
     match /categorias/{id} { allow read: if true; allow write: if moderador(); }
     match /regioes/{id}    { allow read: if true; allow write: if moderador(); }
 
-    // Reserva de endereço lohagoyo.cl/<slug>: único, do dono.
     match /slugs/{slug} {
       allow read: if true;
       allow create: if logado() && novo().keys().hasOnly(['uid', 'criadoEm'])
@@ -45,7 +45,6 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // Dados privados do profissional.
     match /profissionais/{uid} {
       allow read: if eu(uid) || moderador();
       allow create, update: if (eu(uid) || moderador())
@@ -54,42 +53,46 @@ service cloud.firestore {
       allow delete: if eu(uid) || moderador();
     }
 
-    // Perfil público. id = uid do dono.
+    // Cópia de trabalho do perfil. id = uid do dono. NÃO é lida pelo público.
     match /perfis/{uid} {
-      allow read: if resource.data.status == 'aprobado' || eu(uid) || moderador();
+      allow read: if eu(uid) || moderador();
 
       function camposValidos() {
         return novo().keys().hasOnly([
             'id', 'slug', 'nomePublico', 'marca', 'oficio', 'lema', 'apresentacao', 'categoriaIds', 'regiaoId',
-            'comunas', 'publicos', 'contatos', 'capa', 'retrato', 'fotos', 'layout', 'cartao', 'cor', 'pagamentos',
-            'emiteBoleta', 'horario', 'tipoPessoa', 'status', 'criadoEm', 'atualizadoEm', 'aprovadoPor', 'aprovadoEm'])
+            'comunas', 'publicos', 'contatos', 'endereco', 'capa', 'retrato', 'fotos', 'layout', 'cartao', 'cor',
+            'pagamentos', 'emiteBoleta', 'horario', 'tipoPessoa', 'status', 'criadoEm', 'atualizadoEm',
+            'aprovadoPor', 'aprovadoEm'])
           && novo().id == uid
           && texto(novo().nomePublico, 80) && texto(novo().oficio, 80) && texto(novo().apresentacao, 1500)
           && novo().fotos is list && novo().fotos.size() <= 4
           && novo().categoriaIds is list && novo().categoriaIds.size() <= 3
-          && (novo().status in ['borrador', 'pausado'] || novo().categoriaIds.size() >= 1)
           && slugDono(novo().slug, uid)
-          // foto da pessoa é obrigatória para ir à revisão ou ficar publicado
-          && (novo().status in ['borrador', 'pausado'] || (novo().get('retrato', '') is string && novo().get('retrato', '').size() > 0));
+          // para revisão ou publicação: categoria, foto da pessoa e endereço completo
+          && (novo().status in ['borrador', 'pausado'] || (
+              novo().categoriaIds.size() >= 1
+              && novo().get('retrato', '') is string && novo().get('retrato', '').size() > 0
+              && novo().get('endereco', null) is map
+              && preenchido(novo().endereco.get('calle', ''), 120)
+              && preenchido(novo().endereco.get('numero', ''), 20)
+              && preenchido(novo().endereco.get('comuna', ''), 60)));
       }
 
-      // O dono cria como rascunho ou pendente; nunca se aprova.
+      // O dono nunca aprova: salva como rascunho, envia para revisão ou pausa.
       allow create: if (eu(uid) && camposValidos() && novo().status in ['borrador', 'pendiente']
-        && !('aprovadoPor' in novo()))
+          && !('aprovadoPor' in novo()))
         || (moderador() && camposValidos()); // cadastro assistido
-      // O dono edita: não pode mudar para 'aprobado' nem tocar nos campos de aprovação.
-      // Se já estava aprovado, pode continuar aprovado (edições seguem publicadas) ou pausar.
       allow update: if (eu(uid) && camposValidos()
-          && (novo().status in ['borrador', 'pendiente', 'pausado'] || (novo().status == 'aprobado' && resource.data.status == 'aprobado'))
+          && novo().status in ['borrador', 'pendiente', 'pausado']
           && novo().get('aprovadoPor', null) == resource.data.get('aprovadoPor', null)
           && novo().get('aprovadoEm', null) == resource.data.get('aprovadoEm', null))
         || moderador();
       allow delete: if eu(uid) || moderador();
     }
 
-    // Serviços (públicos quando o perfil está aprovado).
+    // Serviços (cópia de trabalho). Públicos só via publicados.
     match /servicos/{id} {
-      allow read: if perfilAprovado(resource.data.perfilId) || eu(resource.data.perfilId) || moderador();
+      allow read: if eu(resource.data.perfilId) || moderador();
       function servicoValido() {
         return (novo().perfilId == request.auth.uid || moderador())
           && texto(novo().nome, 80) && texto(novo().descricao, 1000)
@@ -101,7 +104,53 @@ service cloud.firestore {
       allow delete: if (logado() && resource.data.perfilId == request.auth.uid) || moderador();
     }
 
-    // Consentimentos: só se criam; nunca se alteram.
+    // Versão APROVADA que vai ao site. Só o administrador grava.
+    match /publicados/{uid} {
+      allow read: if true;
+      allow write: if moderador();
+    }
+
+    // Avaliações: por_confirmar (e-mail) -> pendiente (admin) -> en_contestacion
+    // (profissional responde/contesta) -> aprobada | rechazada.
+    match /avaliacoes/{id} {
+      allow read: if resource.data.status == 'aprobada'
+        || moderador()
+        || (eu(resource.data.perfilId) && resource.data.status in ['en_contestacion', 'aprobada']);
+      allow create: if (novo().keys().hasOnly(['perfilId', 'nome', 'nota', 'texto', 'status', 'criadoEm'])
+          && novo().status == 'por_confirmar'
+          && preenchido(novo().nome, 60) && texto(novo().texto, 1000)
+          && novo().nota is int && novo().nota >= 1 && novo().nota <= 5
+          && publicado(novo().perfilId)
+          && existsAfter(/databases/$(database)/documents/avaliacoesPrivado/$(id)))
+        || moderador(); // o administrador também pode inserir
+      allow update: if moderador()
+        || (eu(resource.data.perfilId) && resource.data.status == 'en_contestacion'
+          && novo().diff(resource.data).affectedKeys().hasOnly(['resposta', 'contestacao', 'respondidoEm'])
+          && texto(novo().get('resposta', ''), 1000) && texto(novo().get('contestacao', ''), 2000));
+      allow delete: if moderador();
+
+      // Conversa privada entre a moderação e o profissional sobre esta avaliação.
+      function donoDaAvaliacao() {
+        return eu(get(/databases/$(database)/documents/avaliacoes/$(id)).data.perfilId);
+      }
+      match /mensagens/{msg} {
+        allow read: if moderador() || donoDaAvaliacao();
+        allow create: if novo().keys().hasOnly(['autor', 'autorUid', 'texto', 'criadoEm'])
+          && preenchido(novo().texto, 2000) && novo().autorUid == request.auth.uid
+          && ((moderador() && novo().autor == 'admin') || (donoDaAvaliacao() && novo().autor == 'profissional'));
+        allow update, delete: if false;
+      }
+    }
+
+    // E-mail e token de quem avalia: nunca públicos.
+    match /avaliacoesPrivado/{id} {
+      allow create: if novo().keys().hasOnly(['email', 'token', 'criadoEm'])
+        && preenchido(novo().email, 120) && novo().email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && preenchido(novo().token, 64)
+        && existsAfter(/databases/$(database)/documents/avaliacoes/$(id));
+      allow read, update, delete: if moderador();
+    }
+
     match /consentimentos/{id} {
       allow create: if logado()
         && (novo().uid == request.auth.uid || (moderador() && novo().registradoPor == request.auth.uid))
@@ -110,7 +159,6 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Denúncias: qualquer pessoa cria; só moderação lê.
     match /denuncias/{id} {
       allow create: if novo().keys().hasOnly(['perfilId', 'motivo', 'criadoEm'])
         && texto(novo().perfilId, 128) && texto(novo().motivo, 1000);

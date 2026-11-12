@@ -65,6 +65,15 @@
           }
         ]
       }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/confirmar",
+        "function": {
+          "functionId": "confirmarAvaliacao",
+          "region": "southamerica-west1"
+        }
+      }
     ]
   },
   "firestore": {

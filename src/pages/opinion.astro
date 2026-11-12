@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base titulo="Tu opinión" descricao="Confirmación de opinión en LoHagoYo.cl." noindex>
+  <section class="wrap" style="padding:64px var(--gutter);max-width:640px">
+    <h1 id="titulo">Tu opinión<span style="color:var(--accent)">.</span></h1>
+    <p id="texto" style="font-size:1.15rem;color:var(--muted)">Revisando…</p>
+    <a class="btn btn-primary" href="/">Volver a LoHagoYo.cl</a>
+  </section>
+</Base>
+<script>
+  const estado = new URLSearchParams(location.search).get('estado');
+  const t = document.getElementById('texto')!;
+  const h = document.getElementById('titulo')!;
+  if (estado === 'confirmada') { h.firstChild!.textContent = '¡Gracias! Opinión confirmada'; t.textContent = 'LoHagoYo.cl la revisará antes de publicarla en la página del profesional.'; }
+  else if (estado === 'invalido') { h.firstChild!.textContent = 'Enlace no válido'; t.textContent = 'El enlace expiró o ya fue usado. Si el problema continúa, escríbenos a hola@lohagoyo.cl.'; }
+  else { h.firstChild!.textContent = 'Algo salió mal'; t.textContent = 'No pudimos confirmar tu opinión. Inténtalo de nuevo más tarde.'; }
+</script>

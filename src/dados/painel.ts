@@ -1,12 +1,12 @@
 // Dados do painel do profissional e da moderação (Firestore + Storage).
 // A interface usa só estas funções; nada de Firebase fora de src/dados e src/auth.
 import {
-  addDoc, collection, connectFirestoreEmulator, deleteDoc, doc, getDoc, getDocs, getFirestore,
-  query, runTransaction, setDoc, updateDoc, where, type Firestore,
+  addDoc, collection, connectFirestoreEmulator, orderBy, deleteDoc, doc, getDoc, getDocs, getFirestore,
+  query, runTransaction, setDoc, updateDoc, where, writeBatch, type Firestore,
 } from 'firebase/firestore';
 import { connectStorageEmulator, getDownloadURL, getStorage, ref, uploadBytes, type FirebaseStorage } from 'firebase/storage';
 import { app, emulador } from '../auth';
-import type { Perfil, Servico } from '../dominio/tipos';
+import type { Avaliacao, Perfil, Servico, StatusAvaliacao } from '../dominio/tipos';
 
 let _db: Firestore | null = null;
 let _st: FirebaseStorage | null = null;
@@ -159,4 +159,105 @@ export async function mudarStatus(uid: string, status: Perfil['status'], moderad
     atualizadoEm: agora(),
     ...(status === 'aprobado' ? { aprovadoPor: moderadorUid, aprovadoEm: agora() } : {}),
   });
+}
+
+// ---------- curadoria: o que vai ao site ----------
+
+/** Copia a versão atual (perfil + serviços ativos) para `publicados` e marca como aprovado. Só administrador. */
+export async function publicarPerfil(uid: string, moderadorUid: string): Promise<void> {
+  const [p, sv] = await Promise.all([
+    getDoc(doc(db(), 'perfis', uid)),
+    getDocs(query(collection(db(), 'servicos'), where('perfilId', '==', uid))),
+  ]);
+  if (!p.exists()) throw new Error('perfil-inexistente');
+  const t = agora();
+  const perfil = { ...(p.data() as Perfil), status: 'aprobado' as const, aprovadoPor: moderadorUid, aprovadoEm: t };
+  const servicos = sv.docs.map((d) => ({ ...(d.data() as Servico), id: d.id })).filter((s) => s.ativo !== false);
+  const b = writeBatch(db());
+  b.set(doc(db(), 'publicados', uid), limpo({ perfil, servicos, publicadoEm: t, publicadoPor: moderadorUid }));
+  b.update(doc(db(), 'perfis', uid), { status: 'aprobado', aprovadoPor: moderadorUid, aprovadoEm: t, atualizadoEm: t });
+  await b.commit();
+}
+
+/** Tira do site (apaga a versão publicada) e pausa. Só administrador. */
+export async function despublicarPerfil(uid: string): Promise<void> {
+  const b = writeBatch(db());
+  b.delete(doc(db(), 'publicados', uid));
+  b.update(doc(db(), 'perfis', uid), { status: 'pausado', atualizadoEm: agora() });
+  await b.commit();
+}
+
+/** Uids com versão publicada (para o admin saber o que já está no ar). */
+export async function idsPublicados(): Promise<Set<string>> {
+  const s = await getDocs(collection(db(), 'publicados'));
+  return new Set(s.docs.map((d) => d.id));
+}
+
+/** Profissional mexeu num perfil já aprovado: volta para revisão (o site segue com a versão anterior). */
+export async function marcarParaRevisao(uid: string): Promise<void> {
+  const p = await getDoc(doc(db(), 'perfis', uid));
+  if (p.exists() && p.data().status === 'aprobado') await updateDoc(doc(db(), 'perfis', uid), { status: 'pendiente', atualizadoEm: agora() });
+}
+
+// ---------- avaliações ----------
+
+const token = () => Array.from(crypto.getRandomValues(new Uint8Array(20)), (b) => b.toString(16).padStart(2, '0')).join('');
+
+/** Visitante deixa uma avaliação. Fica "por confirmar" até clicar no link do e-mail. */
+export async function enviarAvaliacao(a: { perfilId: string; nome: string; email: string; nota: number; texto: string }): Promise<void> {
+  const ref = doc(collection(db(), 'avaliacoes'));
+  const t = agora();
+  const b = writeBatch(db());
+  b.set(ref, { perfilId: a.perfilId, nome: a.nome.trim(), nota: a.nota, texto: a.texto.trim(), status: 'por_confirmar', criadoEm: t });
+  b.set(doc(db(), 'avaliacoesPrivado', ref.id), { email: a.email.trim().toLowerCase(), token: token(), criadoEm: t });
+  await b.commit();
+}
+
+export type AvaliacaoAdmin = Avaliacao & { email?: string };
+
+export async function listarAvaliacoesAdmin(): Promise<AvaliacaoAdmin[]> {
+  const [av, pr] = await Promise.all([getDocs(collection(db(), 'avaliacoes')), getDocs(collection(db(), 'avaliacoesPrivado'))]);
+  const emails = new Map(pr.docs.map((d) => [d.id, d.data().email as string]));
+  return av.docs
+    .map((d) => ({ ...(d.data() as Avaliacao), id: d.id, email: emails.get(d.id) }))
+    .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+}
+
+export async function atualizarAvaliacao(id: string, dados: Partial<Pick<Avaliacao, 'status' | 'texto' | 'nome' | 'nota' | 'resposta'>>): Promise<void> {
+  await updateDoc(doc(db(), 'avaliacoes', id), limpo(dados));
+}
+
+export async function apagarAvaliacao(id: string): Promise<void> {
+  const b = writeBatch(db());
+  b.delete(doc(db(), 'avaliacoes', id));
+  b.delete(doc(db(), 'avaliacoesPrivado', id));
+  await b.commit();
+}
+
+/** Administrador insere uma avaliação (ex.: recebida por WhatsApp). */
+export async function criarAvaliacaoAdmin(a: { perfilId: string; nome: string; nota: number; texto: string; status: StatusAvaliacao }): Promise<void> {
+  await addDoc(collection(db(), 'avaliacoes'), { ...a, criadoEm: agora() });
+}
+
+/** Avaliações que o administrador enviou ao profissional, e as já publicadas. */
+export async function minhasAvaliacoes(uid: string): Promise<Avaliacao[]> {
+  const s = await getDocs(query(collection(db(), 'avaliacoes'), where('perfilId', '==', uid), where('status', 'in', ['en_contestacion', 'aprobada'])));
+  return s.docs.map((d) => ({ ...(d.data() as Avaliacao), id: d.id })).sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+}
+
+export async function responderAvaliacao(id: string, resposta: string, contestacao: string): Promise<void> {
+  await updateDoc(doc(db(), 'avaliacoes', id), { resposta: resposta.trim(), contestacao: contestacao.trim(), respondidoEm: agora() });
+}
+
+// ---------- conversa privada sobre uma avaliação ----------
+
+export interface Mensagem { id: string; autor: 'admin' | 'profissional'; texto: string; criadoEm: string }
+
+export async function listarMensagens(avaliacaoId: string): Promise<Mensagem[]> {
+  const s = await getDocs(query(collection(db(), 'avaliacoes', avaliacaoId, 'mensagens'), orderBy('criadoEm')));
+  return s.docs.map((d) => ({ ...(d.data() as Mensagem), id: d.id }));
+}
+
+export async function enviarMensagem(avaliacaoId: string, autor: 'admin' | 'profissional', autorUid: string, texto: string): Promise<void> {
+  await addDoc(collection(db(), 'avaliacoes', avaliacaoId, 'mensagens'), { autor, autorUid, texto: texto.trim(), criadoEm: agora() });
 }

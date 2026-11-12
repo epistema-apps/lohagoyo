@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { atualizarPermissoes, observarUsuario, sair, type Usuario } from '../../auth';
-import { listarParaModerar, mudarStatus, novoIdAssistido, souModerador, type Privado } from '../../dados/painel';
+import { despublicarPerfil, idsPublicados, listarParaModerar, novoIdAssistido, publicarPerfil, souModerador, type Privado } from '../../dados/painel';
+import AdminAvaliacoes from './AdminAvaliacoes';
 import { textoPreco, textoPublico } from '../../dominio/formato';
 import type { Perfil, Servico } from '../../dominio/tipos';
 import { Editor, Entrar, type PropsPainel } from './Painel';
@@ -21,6 +22,8 @@ export default function Admin(props: PropsPainel) {
   const [aberto, setAberto] = useState<string | null>(null);
   const [aviso, setAviso] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
+  const [aba, setAba] = useState<'perfis' | 'avaliacoes'>('perfis');
+  const [noAr, setNoAr] = useState<Set<string>>(new Set());
 
   useEffect(() => observarUsuario(setUsuario), []);
   useEffect(() => {
@@ -32,7 +35,8 @@ export default function Admin(props: PropsPainel) {
   }, [usuario?.uid]);
 
   async function carregar() {
-    const l = await listarParaModerar();
+    const [l, pub] = await Promise.all([listarParaModerar(), idsPublicados()]);
+    setNoAr(pub);
     l.sort((a, b) => (b.perfil.atualizadoEm ?? '').localeCompare(a.perfil.atualizadoEm ?? ''));
     setItens(l);
   }
@@ -45,10 +49,15 @@ export default function Admin(props: PropsPainel) {
   const visiveis = (itens ?? []).filter((i) => filtro === 'todos' || i.perfil.status === filtro);
 
   async function mudar(item: Item, status: Perfil['status']) {
-    await mudarStatus(item.perfil.id, status, usuario!.uid);
-    setAviso(status === 'aprobado'
-      ? `${item.perfil.marca || item.perfil.nomePublico} aprobado. Aparecerá en lohagoyo.cl/${item.perfil.slug} en la próxima publicación.`
-      : `Estado actualizado: ${status}.`);
+    try {
+      if (status === 'aprobado') await publicarPerfil(item.perfil.id, usuario!.uid);
+      else await despublicarPerfil(item.perfil.id);
+      setAviso(status === 'aprobado'
+        ? `${item.perfil.marca || item.perfil.nomePublico} aprobado. Estará en lohagoyo.cl/${item.perfil.slug} en unos minutos.`
+        : `${item.perfil.marca || item.perfil.nomePublico} retirado del sitio.`);
+    } catch {
+      setAviso('No se pudo publicar: revisa que tenga foto, categoría y dirección completa.');
+    }
     await carregar();
   }
 
@@ -89,6 +98,11 @@ export default function Admin(props: PropsPainel) {
         </div>
       </header>
 
+      <div className="md-abas" role="tablist">
+        <button role="tab" aria-selected={aba === 'perfis'} className={aba === 'perfis' ? 'ativo' : ''} onClick={() => setAba('perfis')}>Profesionales</button>
+        <button role="tab" aria-selected={aba === 'avaliacoes'} className={aba === 'avaliacoes' ? 'ativo' : ''} onClick={() => setAba('avaliacoes')}>Evaluaciones</button>
+      </div>
+      {aba === 'avaliacoes' ? <AdminAvaliacoes perfis={(itens ?? []).map((i) => i.perfil)} moderadorUid={usuario.uid} /> : (<>
       <div className="md-filtros" style={{ marginTop: 20 }}>
         {FILTROS.map((f) => (
           <button key={f.id} type="button" className={`pn-chip${filtro === f.id ? ' ativo' : ''}`} onClick={() => setFiltro(f.id)}>
@@ -115,7 +129,11 @@ export default function Admin(props: PropsPainel) {
                   <div>
                     <strong>{nome}</strong>
                     <div className="pn-dica" style={{ margin: 0 }}>{p.nomePublico} · {p.oficio} · {p.comunas.join(', ')}</div>
-                    <div className={`pn-status pn-status-${p.status}`}>{FILTROS.find((f) => f.id === p.status)?.nome ?? p.status}</div>
+                    <div className={`pn-status pn-status-${p.status}`}>
+                      {FILTROS.find((f) => f.id === p.status)?.nome ?? p.status}
+                      {p.status === 'pendiente' && noAr.has(p.id) && <span className="md-selo">Cambios en página publicada</span>}
+                    </div>
+                    {p.endereco?.calle && <div className="pn-dica" style={{ margin: 0 }}>{p.endereco.calle} {p.endereco.numero}, {p.endereco.comuna}</div>}
                   </div>
                 </header>
 
@@ -146,18 +164,18 @@ export default function Admin(props: PropsPainel) {
 
                 <div className="md-acoes">
                   {p.status !== 'aprobado' && (
-                    <button type="button" className="btn btn-primary" disabled={!p.retrato} onClick={() => mudar(item, 'aprobado')}>
+                    <button type="button" className="btn btn-primary" disabled={!p.retrato || !p.endereco?.calle} title={!p.endereco?.calle ? 'Falta la dirección' : undefined} onClick={() => mudar(item, 'aprobado')}>
                       Aprobar y publicar
                     </button>
                   )}
-                  {p.status === 'aprobado' && <button type="button" className="btn btn-ghost" onClick={() => mudar(item, 'pausado')}>Pausar</button>}
-                  {p.status === 'pausado' && <button type="button" className="btn btn-ghost" onClick={() => mudar(item, 'aprobado')}>Reactivar</button>}
+                  {noAr.has(p.id) && <button type="button" className="btn btn-ghost" onClick={() => confirm('¿Retirar esta página del sitio?') && mudar(item, 'pausado')}>Retirar del sitio</button>}
                 </div>
               </article>
             );
           })}
         </div>
       )}
+      </>)}
     </div>
   );
 }

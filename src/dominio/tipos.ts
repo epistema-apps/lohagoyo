@@ -81,6 +81,7 @@ export interface Perfil {
   comunas: string[];
   publicos: Publico[];
   contatos: Contatos;
+  endereco?: Endereco; // obrigatório para publicar; aparece na página
   capa?: string; // foto escolhida para a portada (padrão: fotos[0])
   retrato?: string; // foto da pessoa (seção "Sobre mí")
   fotos: string[]; // trabalhos — URLs (copiadas ao Hosting no build)
@@ -102,4 +103,32 @@ export interface Regiao {
   id: Id;
   nome: string;
   comunas: string[];
+}
+
+export interface Endereco {
+  calle: string;
+  numero: string;
+  comuna: string;
+  referencia?: string; // depto, block, etc.
+}
+
+export type StatusAvaliacao = 'por_confirmar' | 'pendiente' | 'en_contestacion' | 'aprobada' | 'rechazada';
+
+/** Avaliação de um cliente. O e-mail de quem avalia fica em outra coleção, privada. */
+export interface Avaliacao {
+  id: Id;
+  perfilId: Id;
+  nome: string;
+  nota: number; // 1..5
+  texto: string;
+  status: StatusAvaliacao;
+  resposta?: string; // resposta pública do profissional
+  contestacao?: string; // mensagem privada do profissional para a moderação
+  respondidoEm?: string;
+  criadoEm: string;
+}
+
+export function textoEndereco(e?: Endereco): string {
+  if (!e?.calle) return '';
+  return [`${e.calle} ${e.numero}`.trim(), e.referencia, e.comuna].filter(Boolean).join(', ');
 }

@@ -1,12 +1,12 @@
 // Adaptador com dados fictícios em memória (desenvolvimento).
 // Perfis REAIS para teste local podem ficar em data/perfis-locais.json (fora do git).
-import type { Perfil, Servico } from '../dominio/tipos';
+import type { Avaliacao, Perfil, Servico } from '../dominio/tipos';
 import type { FonteDados } from './contrato';
 import * as semilla from './semilla';
 
 // data/perfis-locais.json: perfis cadastrados à mão. data/publicado.json: aprovados no painel
 // (gerado por scripts/sincronizar.mjs). Os dois ficam fora do git; o do painel tem prioridade.
-type Lote = { default: { perfis: Perfil[]; servicos: Servico[] } };
+type Lote = { default: { perfis: Perfil[]; servicos: Servico[]; avaliacoes?: Avaliacao[] } };
 const lotes = import.meta.glob<Lote>(['/data/perfis-locais.json', '/data/publicado.json'], { eager: true });
 const lLocal = lotes['/data/perfis-locais.json']?.default ?? { perfis: [], servicos: [] };
 const lPainel = lotes['/data/publicado.json']?.default ?? { perfis: [], servicos: [] };
@@ -33,6 +33,11 @@ export const adaptadorLocal: FonteDados = {
   },
   async buscarPerfilPorSlug(slug) {
     return perfis.find((p) => p.slug === slug && p.status === 'aprobado') ?? null;
+  },
+  async listarAvaliacoesDoPerfil(perfilId) {
+    return (lPainel.avaliacoes ?? [])
+      .filter((a) => a.perfilId === perfilId && a.status === 'aprobada')
+      .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
   },
   async listarServicosDoPerfil(perfilId) {
     return servicos

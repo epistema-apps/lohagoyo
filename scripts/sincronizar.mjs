@@ -54,22 +54,45 @@ async function baixarFoto(url, uid, nome) {
   return `/f/${uid}/${nome}.jpg`;
 }
 
+// Lista todos os documentos de uma coleção (leitura pública), com paginação.
+async function listar(colecao) {
+  const out = [];
+  let pagina = '';
+  do {
+    const r = await fetch(`${API}/${colecao}?pageSize=300${pagina ? `&pageToken=${pagina}` : ''}`);
+    if (!r.ok) throw new Error(`Firestore ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    const j = await r.json();
+    out.push(...(j.documents ?? []).map((d) => ({ ...objeto(d.fields ?? {}), _id: d.name.split('/').pop() })));
+    pagina = j.nextPageToken ?? '';
+  } while (pagina);
+  return out;
+}
+
+// CURADORIA: só o que o administrador aprovou (coleção publicados) vai ao site.
 let perfis = [];
 let servicos = [];
+let avaliacoes = [];
 try {
-  perfis = await consulta('perfis', 'status', 'aprobado');
-  for (const p of perfis) {
-    delete p._id;
+  const publicados = await listar('publicados');
+  for (const pub of publicados) {
+    const p = { ...pub.perfil, status: 'aprobado' };
     p.retrato = await baixarFoto(p.retrato, p.id, 'retrato');
     p.capa = await baixarFoto(p.capa, p.id, 'capa');
     p.fotos = await Promise.all((p.fotos ?? []).map((f, i) => baixarFoto(f, p.id, `trabajo-${i + 1}`)));
-    const s = await consulta('servicos', 'perfilId', p.id);
-    servicos.push(...s.map(({ _id, ...x }) => ({ ...x, id: _id })));
+    perfis.push(p);
+    servicos.push(...(pub.servicos ?? []).map((sv) => ({ ...sv, perfilId: p.id, ativo: sv.ativo !== false })));
   }
+  const ids = new Set(perfis.map((p) => p.id));
+  avaliacoes = (await consulta('avaliacoes', 'status', 'aprobada'))
+    .filter((a) => ids.has(a.perfilId))
+    // Público: só o primeiro nome de quem avaliou, a nota e o comentário (e a resposta do profissional).
+    .map(({ _id, nome, nota, texto, resposta, perfilId, criadoEm }) => ({
+      id: _id, perfilId, nome: String(nome ?? '').trim().split(/\s+/)[0], nota, texto, resposta, status: 'aprobada', criadoEm,
+    }));
 } catch (e) {
   console.warn('sincronizar: Firestore indisponível —', e.message, '(seguindo só com dados locais)');
 }
 
 mkdirSync(join(RAIZ, 'data'), { recursive: true });
-writeFileSync(join(RAIZ, 'data', 'publicado.json'), JSON.stringify({ perfis, servicos }, null, 2));
-console.log(`sincronizar: ${perfis.length} perfis aprovados, ${servicos.length} serviços`);
+writeFileSync(join(RAIZ, 'data', 'publicado.json'), JSON.stringify({ perfis, servicos, avaliacoes }, null, 2));
+console.log(`sincronizar: ${perfis.length} perfis publicados, ${servicos.length} serviços, ${avaliacoes.length} avaliações`);

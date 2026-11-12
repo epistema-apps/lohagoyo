@@ -108,3 +108,24 @@
 .md-detalhes p { margin: 0; }
 .md-fotos { display: flex; gap: 8px; flex-wrap: wrap; }
 .md-fotos img { width: 120px; height: 80px; border-radius: 8px; object-fit: cover; }
+
+/* conversa privada */
+.cv { display: grid; gap: 10px; background: var(--bg); border-radius: 12px; padding: 14px; }
+.cv-lista { display: grid; gap: 8px; max-height: 320px; overflow-y: auto; }
+.cv-msg { background: #fff; border: 1px solid var(--line); border-radius: 12px 12px 12px 4px; padding: 10px 12px; max-width: 85%; justify-self: start; }
+.cv-msg.meu { justify-self: end; background: var(--ink); color: #fff; border-color: var(--ink); border-radius: 12px 12px 4px 12px; }
+.cv-msg span { display: block; font-size: .74rem; opacity: .7; margin-bottom: 2px; }
+.cv-msg p { margin: 0; white-space: pre-wrap; }
+.cv-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+.cv-form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: 1rem var(--font-body); resize: vertical; }
+
+/* avaliações */
+.av-lista { display: grid; gap: 14px; }
+.av-item { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
+.av-topo { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.av-estrelas { color: var(--accent); letter-spacing: 2px; }
+.av-texto { margin: 0; white-space: pre-wrap; }
+.md-abas { display: flex; gap: 6px; margin: 20px 0 4px; border-bottom: 1px solid var(--line); }
+.md-abas button { font: inherit; font-weight: 700; background: none; border: 0; padding: 10px 14px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.md-abas button.ativo { color: var(--ink); border-color: var(--ink); }
+.md-selo { display: inline-block; font-size: .74rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fff3d6; color: #6b5200; margin-left: 6px; }

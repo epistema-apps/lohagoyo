@@ -1,5 +1,5 @@
 // Contrato da camada de dados. A interface só conhece estas funções.
-import type { Categoria, Perfil, Regiao, Servico } from '../dominio/tipos';
+import type { Avaliacao, Categoria, Perfil, Regiao, Servico } from '../dominio/tipos';
 
 export interface FonteDados {
   listarCategorias(): Promise<Categoria[]>;
@@ -9,4 +9,6 @@ export interface FonteDados {
   buscarPerfilPorSlug(slug: string): Promise<Perfil | null>;
   /** Só serviços ativos, ordenados. */
   listarServicosDoPerfil(perfilId: string): Promise<Servico[]>;
+  /** Só avaliações aprovadas pela moderação. */
+  listarAvaliacoesDoPerfil(perfilId: string): Promise<Avaliacao[]>;
 }

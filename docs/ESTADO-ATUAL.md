@@ -41,6 +41,13 @@ npm run build
 - Testado de ponta a ponta nos emuladores (conta, foto, serviço, banco, envio, aprovação, sincronização, página gerada).
 - Regras: 18 testes (`npm run test:regras`, Java portátil em `~/.local/jre21`).
 
+## Curadoria, endereço e avaliações (12/11/2026)
+- **Nada vai ao ar sem aprovação**: o site lê só `publicados/{uid}` (cópia aprovada, gravada pelo botão "Aprobar y publicar"). Edição de perfil já publicado volta para "Por revisar" (selo "Cambios en página publicada") e o site segue com a versão anterior. "Retirar del sitio" apaga a versão publicada.
+- **Endereço completo obrigatório** (calle, número, comuna) e público na página, com link para o mapa.
+- **Avaliações**: visitante deixa nome, e-mail (privado), nota e comentário → confirma pelo e-mail (`/api/confirmar` → função) → "Por revisar" no admin (aba Evaluaciones) → opcional "Enviar al profesional" com **conversa privada** no painel dos dois (aviso por e-mail a cada mensagem) → Publicar / Editar / Rechazar / Eliminar / "+ Agregar evaluación". No site: só primeiro nome, nota, comentário e resposta pública; seção, link e nota média só aparecem a partir da primeira aprovada.
+- Funções: `aoMudarPublicado`, `aoMudarAvaliacao`, `confirmarAvaliacao`, `aoNovaMensagem` (e-mails via SMTP hola@lohagoyo.cl, segredo `SMTP_SENHA`).
+- Após `importar-perfil.mjs`, rodar `node scripts/publicar-snapshot.mjs <slug>` (ou aprovar no admin).
+
 ## Cadastro assistido (sem o profissional precisar entrar)
 - `node scripts/importar-perfil.mjs <slug> [--foto arquivo.jpg] [--nome-completo "..."]`: copia um perfil de `data/perfis-locais.json` para o Firestore real, já aprovado (usa a sessão do firebase-tools de hola@lohagoyo.cl). Dono provisório `lhy…`; quando o profissional quiser editar, criar a conta dele com esse uid.
 - `node scripts/subir-retrato.mjs <slug> <arquivo.jpg>`: coloca/troca a foto pessoal.
