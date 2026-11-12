@@ -1,15 +1,15 @@
 rules_version = '2';
-// RASCUNHO (Fase 1). Fotos: perfis/<uid>/<arquivo>. Máx. 4 fotos de até 2 MB, só imagem.
-// O limite de quantidade é conferido no painel e na moderação; aqui, tamanho e tipo.
+// Fotos do profissional: perfis/<uid>/<arquivo>. Só imagem, até 2 MB.
+// Nomes permitidos: capa, retrato, trabajo-1..4 (jpg/webp/png). Leitura pública.
 service firebase.storage {
   match /b/{bucket}/o {
     match /perfis/{uid}/{arquivo} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == uid
+      allow create, update: if request.auth != null && request.auth.uid == uid
         && request.resource.size < 2 * 1024 * 1024
         && request.resource.contentType.matches('image/(jpeg|png|webp)')
-        && arquivo.matches('foto-[1-4]\\.(jpg|png|webp)');
-      allow delete: if request.auth != null && (request.auth.uid == uid || request.auth.token.mod == true);
+        && arquivo.matches('^(capa|retrato|trabajo-[1-4])\\.(jpg|webp|png)$');
+      allow delete: if request.auth != null && request.auth.uid == uid;
     }
   }
 }

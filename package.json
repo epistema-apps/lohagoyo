@@ -11,7 +11,8 @@
     "test": "vitest run",
     "og": "python3 scripts/gerar-og.py",
     "build:prod": "python3 scripts/gerar-og.py && astro build",
-    "publicar": "npm run build:prod && firebase deploy --only hosting --project lohagoyo-prod --account hola@lohagoyo.cl"
+    "publicar": "npm run build:prod && firebase deploy --only hosting --project lohagoyo-prod --account hola@lohagoyo.cl",
+    "test:regras": "JAVA_HOME=$HOME/.local/jre21/Contents/Home PATH=$HOME/.local/jre21/Contents/Home/bin:$PATH firebase emulators:exec --only firestore,storage --project demo-lohagoyo 'vitest run --config vitest.regras.config.ts'"
   },
   "dependencies": {
     "@astrojs/react": "7.1.8",
@@ -24,6 +25,7 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
     "@fontsource/atkinson-hyperlegible": "5.3.0",
     "@fontsource/plus-jakarta-sans": "5.3.0",
     "@types/qrcode": "1.5.6",

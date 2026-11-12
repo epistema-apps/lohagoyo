@@ -1,49 +1,110 @@
 rules_version = '2';
-// RASCUNHO (Fase 1). Antes de publicar: testes no emulador para cada papel (Fase 3).
-// Papéis: visitante (anônimo), profissional (dono do perfil), moderador (custom claim `mod`).
+// Regras do LoHagoYo.cl. Toda mudança aqui exige `npm run test:regras` passando.
+// Papéis:
+//  - visitante (sem login): lê só perfis aprovados e seus serviços, categorias, e cria denúncias.
+//  - profissional (logado): edita só o próprio perfil (id = uid), dados privados e serviços.
+//  - moderador: uid listado em config/moderadores.uids; aprova, pausa e lê tudo.
 service cloud.firestore {
   match /databases/{database}/documents {
     function logado() { return request.auth != null; }
-    function moderador() { return logado() && request.auth.token.mod == true; }
-    function dono(uid) { return logado() && request.auth.uid == uid; }
+    function eu(uid) { return logado() && request.auth.uid == uid; }
+    function moderador() {
+      return logado() && exists(/databases/$(database)/documents/config/moderadores)
+        && request.auth.uid in get(/databases/$(database)/documents/config/moderadores).data.uids;
+    }
+    function novo() { return request.resource.data; }
+    function texto(v, max) { return v is string && v.size() <= max; }
+    function slugDono(slug, uid) {
+      return exists(/databases/$(database)/documents/slugs/$(slug))
+        && get(/databases/$(database)/documents/slugs/$(slug)).data.uid == uid;
+    }
+    function perfilAprovado(uid) {
+      return exists(/databases/$(database)/documents/perfis/$(uid))
+        && get(/databases/$(database)/documents/perfis/$(uid)).data.status == 'aprobado';
+    }
 
-    // Público: categorias e regiões (escrita só moderação).
+    match /config/{doc} {
+      allow read: if moderador();
+      allow write: if false; // só pelo console
+    }
+
     match /categorias/{id} { allow read: if true; allow write: if moderador(); }
     match /regioes/{id}    { allow read: if true; allow write: if moderador(); }
 
-    // Privado: só o próprio e a moderação.
+    // Reserva de endereço lohagoyo.cl/<slug>: único, do dono.
+    match /slugs/{slug} {
+      allow read: if true;
+      allow create: if logado() && novo().keys().hasOnly(['uid', 'criadoEm'])
+        && novo().uid == request.auth.uid
+        && slug.matches('^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$');
+      allow delete: if eu(resource.data.uid) || moderador();
+      allow update: if false;
+    }
+
+    // Dados privados do profissional.
     match /profissionais/{uid} {
-      allow read, write: if dono(uid) || moderador();
+      allow read: if eu(uid) || moderador();
+      allow create, update: if eu(uid)
+        && novo().keys().hasOnly(['nomeCompleto', 'email', 'telefone', 'documento', 'notas', 'criadoEm', 'atualizadoEm'])
+        && texto(novo().nomeCompleto, 120);
+      allow delete: if eu(uid) || moderador();
     }
 
-    // Perfil público: id do documento = uid do dono.
-    // O dono edita, mas nunca aprova a si mesmo (status só 'borrador'/'pendiente'/'pausado').
+    // Perfil público. id = uid do dono.
     match /perfis/{uid} {
-      allow read: if resource.data.status == 'aprobado' || dono(uid) || moderador();
-      allow create: if dono(uid) && request.resource.data.status in ['borrador', 'pendiente'];
-      allow update: if moderador() ||
-        (dono(uid) && request.resource.data.status in ['borrador', 'pendiente', 'pausado']);
-      allow delete: if dono(uid) || moderador();
+      allow read: if resource.data.status == 'aprobado' || eu(uid) || moderador();
+
+      function camposValidos() {
+        return novo().keys().hasOnly([
+            'id', 'slug', 'nomePublico', 'marca', 'oficio', 'lema', 'apresentacao', 'categoriaIds', 'regiaoId',
+            'comunas', 'publicos', 'contatos', 'capa', 'retrato', 'fotos', 'layout', 'cor', 'pagamentos',
+            'emiteBoleta', 'horario', 'tipoPessoa', 'status', 'criadoEm', 'atualizadoEm', 'aprovadoPor', 'aprovadoEm'])
+          && novo().id == uid
+          && texto(novo().nomePublico, 80) && texto(novo().oficio, 80) && texto(novo().apresentacao, 1500)
+          && novo().fotos is list && novo().fotos.size() <= 4
+          && novo().categoriaIds is list && novo().categoriaIds.size() >= 1 && novo().categoriaIds.size() <= 3
+          && slugDono(novo().slug, uid);
+      }
+
+      // O dono cria como rascunho ou pendente; nunca se aprova.
+      allow create: if eu(uid) && camposValidos() && novo().status in ['borrador', 'pendiente']
+        && !('aprovadoPor' in novo());
+      // O dono edita: não pode mudar para 'aprobado' nem tocar nos campos de aprovação.
+      // Se já estava aprovado, pode continuar aprovado (edições seguem publicadas) ou pausar.
+      allow update: if (eu(uid) && camposValidos()
+          && (novo().status in ['borrador', 'pendiente', 'pausado'] || (novo().status == 'aprobado' && resource.data.status == 'aprobado'))
+          && novo().get('aprovadoPor', null) == resource.data.get('aprovadoPor', null)
+          && novo().get('aprovadoEm', null) == resource.data.get('aprovadoEm', null))
+        || moderador();
+      allow delete: if eu(uid) || moderador();
     }
 
+    // Serviços (públicos quando o perfil está aprovado).
     match /servicos/{id} {
-      allow read: if true; // filtrado no build pelos perfis aprovados
-      allow create: if logado() && request.resource.data.perfilId == request.auth.uid;
-      allow update, delete: if moderador() || (logado() && resource.data.perfilId == request.auth.uid
-        && (request.resource == null || request.resource.data.perfilId == request.auth.uid));
+      allow read: if perfilAprovado(resource.data.perfilId) || eu(resource.data.perfilId) || moderador();
+      function servicoValido() {
+        return novo().perfilId == request.auth.uid
+          && texto(novo().nome, 80) && texto(novo().descricao, 1000)
+          && novo().incluye is list && novo().incluye.size() <= 12
+          && novo().preco is map && novo().preco.tipo in ['fijo', 'desde', 'por_visita', 'por_hora', 'por_m2', 'mensual', 'a_cotizar'];
+      }
+      allow create: if logado() && servicoValido();
+      allow update: if (logado() && resource.data.perfilId == request.auth.uid && servicoValido()) || moderador();
+      allow delete: if (logado() && resource.data.perfilId == request.auth.uid) || moderador();
     }
 
-    // Consentimentos: só se cria; nunca se altera.
+    // Consentimentos: só se criam; nunca se alteram.
     match /consentimentos/{id} {
-      allow create: if logado() && request.resource.data.uid == request.auth.uid;
+      allow create: if logado() && novo().uid == request.auth.uid
+        && novo().keys().hasOnly(['uid', 'versao', 'texto', 'criadoEm', 'registradoPor']);
       allow read: if moderador() || (logado() && resource.data.uid == request.auth.uid);
       allow update, delete: if false;
     }
 
     // Denúncias: qualquer pessoa cria; só moderação lê.
     match /denuncias/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['perfilId', 'motivo', 'criadoEm'])
-        && request.resource.data.motivo is string && request.resource.data.motivo.size() <= 1000;
+      allow create: if novo().keys().hasOnly(['perfilId', 'motivo', 'criadoEm'])
+        && texto(novo().perfilId, 128) && texto(novo().motivo, 1000);
       allow read, update, delete: if moderador();
     }
   }
