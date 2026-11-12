@@ -29,8 +29,8 @@ export const ESTRUTURAS: { id: EstruturaId; nome: string }[] = [
 ];
 
 export interface DadosCartao {
-  marca: string; // 'Manu Piscinas'
-  nome: string; // pessoa: 'Manuel Araneda'
+  marca: string; // 'Pedro Piscinas'
+  nome: string; // pessoa: 'Pedro Soto'
   oficio: string;
   telefone: string;
   email: string;

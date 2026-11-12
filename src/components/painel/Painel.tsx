@@ -262,10 +262,10 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
 
       {/* 2. Quem é */}
       <Secao n="02" titulo="Quién eres y qué haces">
-        <Campo rotulo="Tu nombre" ajuda="Como quieres que te conozcan. Ej: Manuel Araneda">
+        <Campo rotulo="Tu nombre" ajuda="Como quieres que te conozcan. Ej: Pedro Soto">
           <input value={perfil.nomePublico} maxLength={80} onChange={(e) => set('nomePublico', e.target.value)} />
         </Campo>
-        <Campo rotulo="Nombre de tu servicio (opcional)" ajuda="Aparece grande en tu página. Ej: Manu Piscinas">
+        <Campo rotulo="Nombre de tu servicio (opcional)" ajuda="Aparece grande en tu página. Ej: Pedro Piscinas">
           <input value={perfil.marca ?? ''} maxLength={60} onChange={(e) => {
             const marca = e.target.value;
             setPerfil({ ...perfil, marca, slug: !slugOriginal && (!perfil.slug || perfil.slug === gerarSlug(perfil.marca || perfil.nomePublico)) ? gerarSlug(marca || perfil.nomePublico) : perfil.slug });

@@ -71,8 +71,8 @@ export type StatusPerfil = 'borrador' | 'pendiente' | 'aprobado' | 'pausado';
 export interface Perfil {
   id: Id;
   slug: string; // 'manu-piscinas'
-  nomePublico: string; // 'Manuel Araneda'
-  marca?: string; // nome do negócio no topo do site: 'Manu Piscinas' (padrão: nomePublico)
+  nomePublico: string; // 'Pedro Soto'
+  marca?: string; // nome do negócio no topo do site: 'Pedro Piscinas' (padrão: nomePublico)
   oficio: string; // 'Mantención de piscinas'
   lema?: string; // frase curta da portada
   apresentacao: string;
