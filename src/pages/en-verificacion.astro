@@ -5,9 +5,14 @@ import Base from '../layouts/Base.astro';
 ---
 <Base titulo="Página en verificación" descricao="Esta página está temporalmente fuera del aire." noindex>
   <section class="wrap" style="padding:72px var(--gutter);max-width:640px">
-    <p class="sobretitulo">Temporalmente fuera del aire</p>
+    <p class="sobre"><span></span>Temporalmente fuera del aire</p>
     <h1>Esta página está en verificación<span class="ponto">.</span></h1>
     <p style="font-size:1.1rem;color:var(--muted)">Según las <a href="/normas/">Normas de calidad</a> de LoHagoYo.cl, algunas páginas salen del aire por un tiempo mientras se verifican. Vuelve más tarde o busca otro profesional.</p>
     <a class="btn btn-primary" href="/">Buscar profesionales</a>
   </section>
 </Base>
+
+<style>
+  .sobre { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .sobre span { width: 28px; height: 1px; background: currentColor; }
+</style>
