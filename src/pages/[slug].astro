@@ -88,10 +88,14 @@ const jsonLd = {
     <header class="cab">
       <div class="wrap cab-in">
         <a href="#inicio" class="marca">{marca}<span class="ponto">.</span></a>
-        <nav class="menu" aria-label="Secciones">
+        <button class="menu-botao" type="button" aria-expanded="false" aria-controls="menu-secoes">
+          <span class="menu-icone" aria-hidden="true"></span>Menú
+        </button>
+        <nav class="menu" id="menu-secoes" aria-label="Secciones">
           <a href="#servicios">Servicios</a>
           {extras.length > 0 && <a href="#trabajos">Trabajos</a>}
           <a href="#sobre">Sobre mí</a>
+          <a href="#tarjeta">Mi tarjeta</a>
           <a href="#contacto">Contacto</a>
         </nav>
         {wa ? <a class="btn btn-escuro btn-sm" href={wa} target="_blank" rel="noopener">WhatsApp</a>
@@ -244,6 +248,20 @@ const jsonLd = {
   </div>
 </Base>
 
+<script>
+  const botao = document.querySelector<HTMLButtonElement>('.menu-botao');
+  const menu = document.getElementById('menu-secoes');
+  if (botao && menu) {
+    const fechar = () => { menu.classList.remove('aberto'); botao.setAttribute('aria-expanded', 'false'); };
+    botao.addEventListener('click', () => {
+      const aberto = menu.classList.toggle('aberto');
+      botao.setAttribute('aria-expanded', String(aberto));
+    });
+    menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', fechar));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fechar(); });
+  }
+</script>
+
 <style>
   .sitio { background: #fff; color: var(--ink); }
   .ponto { color: var(--accent); }
@@ -271,7 +289,23 @@ const jsonLd = {
   .menu a { position: relative; color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 700; }
   .menu a + a::before { content: ''; position: absolute; left: -17px; top: 50%; width: 4px; height: 4px; border-radius: 50%; background: var(--line); }
   .menu a:hover { color: var(--ink); }
-  @media (max-width: 820px) { .menu { display: none; } }
+  .menu-botao { display: none; align-items: center; gap: 10px; font: 700 0.92rem var(--font-body); color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+  .menu-icone, .menu-icone::before, .menu-icone::after { display: block; width: 14px; height: 1.5px; background: currentColor; position: relative; transition: transform 0.2s ease; }
+  .menu-icone::before, .menu-icone::after { content: ''; position: absolute; left: 0; }
+  .menu-icone::before { top: -4.5px; }
+  .menu-icone::after { top: 4.5px; }
+  .menu-botao[aria-expanded='true'] .menu-icone { background: transparent; }
+  .menu-botao[aria-expanded='true'] .menu-icone::before { transform: translateY(4.5px) rotate(45deg); }
+  .menu-botao[aria-expanded='true'] .menu-icone::after { transform: translateY(-4.5px) rotate(-45deg); }
+  @media (max-width: 820px) {
+    .menu-botao { display: inline-flex; }
+    .menu { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0;
+      background: #fff; border-bottom: 1px solid var(--line); box-shadow: 0 16px 30px rgba(21, 23, 28, 0.08); padding: 8px var(--gutter) 16px; }
+    .menu.aberto { display: flex; }
+    .menu a { padding: 14px 0; font-size: 1.05rem; color: var(--ink); border-bottom: 1px solid var(--line); }
+    .menu a:last-child { border-bottom: 0; }
+    .menu a + a::before { display: none; }
+  }
 
   /* portada */
   .hero { background: linear-gradient(180deg, #fff 0%, var(--bg) 100%); overflow: hidden; }

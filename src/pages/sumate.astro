@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { CONTATO, linkCadastro } from '../config';
+import { CONTATO, PAINEL_ATIVO, linkCadastro } from '../config';
 import { foto } from '../dados/fotos';
 const capa = foto('general-2')!;
 ---
@@ -16,8 +16,14 @@ const capa = foto('general-2')!;
       <h1>Tu página, gratis<span class="ponto">.</span></h1>
       <p class="lead">Una página propia con tus servicios, tus fotos y tu WhatsApp. Sin comisiones y sin intermediarios: los clientes te escriben directo.</p>
       <div class="acoes">
-        <a class="btn btn-branco" href="/panel/">Crear mi página</a>
-        <a class="link-ajuda" href={linkCadastro()} target="_blank" rel="noopener">¿Necesitas ayuda? Escríbenos</a>
+        {PAINEL_ATIVO ? (
+          <>
+            <a class="btn btn-branco" href="/panel/">Crear mi página</a>
+            <a class="link-ajuda" href={linkCadastro()} target="_blank" rel="noopener">¿Necesitas ayuda? Escríbenos</a>
+          </>
+        ) : (
+          <a class="btn btn-branco" href={linkCadastro()} target="_blank" rel="noopener">{CONTATO.whatsapp ? 'Quiero mi página (WhatsApp)' : 'Quiero mi página'}</a>
+        )}
       </div>
     </div>
   </section>
@@ -28,7 +34,7 @@ const capa = foto('general-2')!;
       <li><span>02</span><h3>Sube tu foto</h3><p>Una foto tuya (obligatoria) y, si quieres, de tus trabajos. Si no tienes, eliges del banco de fotos de tu rubro.</p></li>
       <li><span>03</span><h3>Revisamos y publicamos</h3><p>Queda en <strong>lohagoyo.cl/tu-nombre</strong>, con tu tarjeta de presentación lista para imprimir.</p></li>
     </ol>
-    <p class="nota">Lo haces tú mismo desde tu celular en pocos minutos. Revisamos cada página antes de publicarla. Si prefieres, te ayudamos.</p>
+    <p class="nota">{PAINEL_ATIVO ? 'Lo haces tú mismo desde tu celular en pocos minutos. Revisamos cada página antes de publicarla. Si prefieres, te ayudamos.' : 'Por ahora te ayudamos personalmente a crear tu página. Muy pronto podrás hacerlo tú mismo desde tu celular.'}</p>
   </section>
 </Base>
 
