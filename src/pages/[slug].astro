@@ -242,10 +242,13 @@ const jsonLd = {
 
     <footer class="wrap pe">
       <p>© {marca} · {zona}, Chile</p>
-      <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo.cl">
-        <span>Página creada con</span>
-        <img src="/marca/logo.svg" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
-      </a>
+      <div class="pe-dir">
+        <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo.cl">
+          <span>Página creada con</span>
+          <img src="/marca/logo.svg" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
+        </a>
+        <a class="acesso" href="/panel/">Acceso</a>
+      </div>
     </footer>
 
   </div>
@@ -412,6 +415,9 @@ const jsonLd = {
 
   .pe { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 40px; padding-bottom: 40px; font-size: 0.82rem; color: var(--muted); }
   .pe p { margin: 0; }
+  .pe-dir { display: inline-flex; align-items: center; gap: 14px; }
+  .acesso { color: var(--muted); font-size: 0.78rem; text-decoration: none; opacity: 0.7; border-left: 1px solid var(--line); padding-left: 14px; }
+  .acesso:hover { opacity: 1; color: var(--ink); }
   .plataforma { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; opacity: 0.8; }
   .plataforma:hover { opacity: 1; }
   .plataforma img { width: 84px; height: auto; }

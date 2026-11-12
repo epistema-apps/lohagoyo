@@ -52,6 +52,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
         </a>
         <nav class="nav">
           <a href="/#resultados">Profesionales</a>
+          <a href="/panel/" class="entrar">Entrar</a>
           <a href="/sumate/" class="btn btn-primary btn-sm">Ofrece tu servicio</a>
         </nav>
       </div>
@@ -64,7 +65,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
         <p class="rodape-marca"><img src="/marca/logo-negativo.svg" alt="LoHagoYo.cl" width="190" height="40" loading="lazy" /></p>
         <p>Plataforma gratuita para profesionales independientes.</p>
         <p class="rodape-links">
-          <a href="/sumate/">Ofrece tu servicio</a> · <a href="/privacidad/">Privacidad</a> · <a href="/creditos/">Créditos de fotos</a>
+          <a href="/sumate/">Ofrece tu servicio</a> · <a href="/panel/">Acceso profesionales</a> · <a href="/privacidad/">Privacidad</a> · <a href="/creditos/">Créditos de fotos</a>
         </p>
       </div>
     </footer>
@@ -87,8 +88,14 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
   .nav { display: flex; align-items: center; gap: 16px; }
   .nav > a:not(.btn) { color: var(--ink); text-decoration: none; font-weight: 700; }
   .btn-sm { min-height: 40px; padding: 0.45em 1em; font-size: 0.92rem; }
+  .nav > a.entrar { color: var(--muted); font-weight: 400; font-size: 0.92rem; }
+  .nav > a.entrar:hover { color: var(--ink); }
+  .btn-sm { white-space: nowrap; }
   @media (max-width: 480px) {
-    .nav > a:not(.btn) { display: none; }
+    .nav > a:not(.btn):not(.entrar) { display: none; }
+    .nav { gap: 12px; }
+    .logo img { width: 128px; }
+    .btn-sm { padding: 0.45em 0.85em; font-size: 0.86rem; }
   }
   main.com-moldura { padding-bottom: 64px; }
   main.com-moldura:has(> .sumate:last-child) { padding-bottom: 0; }
