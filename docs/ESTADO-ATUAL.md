@@ -16,6 +16,12 @@ Atualizado em 12/11/2026 · versão 0.1.0 · **Fase 1 concluída (com dados fict
 - Rascunho de `firestore.rules` e `storage.rules`, `firebase.json` (Hosting + emuladores).
 - Testes: `npm test` (11 passando). Build: 11 páginas.
 
+## Publicação (Firebase Hosting, plano grátis)
+- `npm run publicar` = gera imagens de prévia (`scripts/gerar-og.py`) + build de produção + `firebase deploy --only hosting --project lohagoyo-prod`.
+- Produção publica **só perfis reais** (`data/perfis-locais.json`, fora do git); fictícios só em dev ou com `LHY_DEMO=1`.
+- Publicado a partir do Mac (os dados reais não vão para o git).
+- Contato público da plataforma em `src/config.ts`.
+
 ## Comandos
 ```
 export PATH=~/.local/node-v24.22.2-darwin-arm64/bin:$PATH

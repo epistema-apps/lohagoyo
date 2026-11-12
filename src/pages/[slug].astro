@@ -61,7 +61,7 @@ const jsonLd = {
   titulo={`${marca} · ${perfil.oficio} en ${zona}`}
   tituloExato
   descricao={`${perfil.lema ?? perfil.oficio}. ${perfil.apresentacao}`}
-  imagem={capa}
+  imagem={`/og/${perfil.slug}.jpg`}
   jsonLd={jsonLd}
   moldura={false}
 >

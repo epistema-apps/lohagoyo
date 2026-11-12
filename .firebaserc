@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "prod": "lohagoyo-prod",
+    "dev": "lohagoyo-dev"
+  }
+}

@@ -6,8 +6,10 @@ import * as semilla from './semilla';
 
 const locais = import.meta.glob<{ default: { perfis: Perfil[]; servicos: Servico[] } }>('/data/perfis-locais.json', { eager: true });
 const extra = Object.values(locais)[0]?.default ?? { perfis: [], servicos: [] };
-const perfis = [...semilla.perfis, ...extra.perfis];
-const servicos = [...semilla.servicos, ...extra.servicos];
+// Perfis fictícios só em desenvolvimento/testes ou com LHY_DEMO=1; em produção, só os reais.
+const demo = import.meta.env.DEV || import.meta.env.MODE === 'test' || process.env.LHY_DEMO === '1';
+const perfis = [...(demo ? semilla.perfis : []), ...extra.perfis];
+const servicos = [...(demo ? semilla.servicos : []), ...extra.servicos];
 
 export const adaptadorLocal: FonteDados = {
   async listarCategorias() {

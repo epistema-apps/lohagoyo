@@ -21,3 +21,7 @@ ui-debug.log
 
 # perfis reais só para testes locais (fotos e dados pessoais)
 public/locais/
+
+# imagens de prévia por profissional (dados reais)
+public/og/*.jpg
+!public/og/servicios-*.jpg

@@ -91,7 +91,7 @@ const jsonLd = {
         <p class="sobretitulo">Profesionales</p>
         <h2 id="titulo-resultados">En Santiago</h2>
       </div>
-      <p id="contador" class="contador" aria-live="polite">{itens.length} profesionales</p>
+      <p id="contador" class="contador" aria-live="polite">{itens.length} profesional{itens.length === 1 ? '' : 'es'}</p>
     </div>
     <div class="grade" id="grade">
       {itens.map(({ perfil, servicos }) => <TarjetaPerfil perfil={perfil} servicos={servicos} categorias={categorias} />)}
@@ -119,7 +119,7 @@ const jsonLd = {
       <p class="sobretitulo">Para profesionales</p>
       <h2>¿Ofreces un servicio?<br />Tu página, gratis.</h2>
       <p>Tus servicios, tus fotos y tu WhatsApp en una página propia, con tarjeta de presentación lista para imprimir.</p>
-      <a href="/sumate/" class="btn btn-claro">Quiero mi página</a>
+      <a href="/sumate/" class="btn btn-claro">Ver cómo funciona</a>
     </div>
   </section>
 </Base>
