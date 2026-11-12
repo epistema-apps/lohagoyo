@@ -19,6 +19,7 @@ const SMTP_SENHA = defineSecret('SMTP_SENHA');
 const REPO = 'epistema-apps/lohagoyo';
 const SITE = 'https://lohagoyo.cl';
 const REMETENTE = 'hola@lohagoyo.cl';
+// Servidor SMTP da Cloudez: usar o nome do certificado dele (mail.lohagoyo.cl não está no certificado).
 const db = () => getFirestore();
 
 async function publicar(motivo) {
@@ -33,7 +34,7 @@ async function publicar(motivo) {
 
 async function email(para, assunto, texto) {
   if (!para) return logger.warn('sem destinatário para', assunto);
-  const t = nodemailer.createTransport({ host: 'mail.lohagoyo.cl', port: 465, secure: true, auth: { user: REMETENTE, pass: SMTP_SENHA.value() } });
+  const t = nodemailer.createTransport({ host: 'ip-45-79-0-64.cloudezapp.io', port: 465, secure: true, auth: { user: REMETENTE, pass: SMTP_SENHA.value() } });
   await t.sendMail({ from: `LoHagoYo.cl <${REMETENTE}>`, to: para, subject: assunto, text: `${texto}\n\n—\nLoHagoYo.cl · ${SITE}` });
   logger.info('e-mail enviado', assunto);
 }
