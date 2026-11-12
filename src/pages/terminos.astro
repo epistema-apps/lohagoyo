@@ -27,8 +27,11 @@ const versao = '12 de noviembre de 2026';
       <li>Las opiniones son publicadas por Usuarios que confirman su correo electrónico, y reflejan <strong>únicamente la experiencia y opinión de quien las escribe</strong>, no la de la Plataforma.</li>
       <li>En la página solo se muestra el primer nombre de quien opina, su nota y su comentario. El correo nunca se publica.</li>
       <li>Está prohibido publicar opiniones falsas, ofensivas, discriminatorias, con datos personales de terceros o con fines distintos a evaluar un servicio. La Plataforma puede <strong>editar, retirar o eliminar</strong> opiniones que no cumplan estas reglas y conversar con el Profesional antes de decidir.</li>
-      <li>Se aplican las <a href="/normas/">Normas de calidad</a>: <strong>si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, la página sale del aire de forma automática y pasa a una auditoría</strong> con revisión humana, en la que el Profesional puede responder. Mientras dura, en su dirección se muestra solo un aviso neutro.</li>
     </ul>
+    <aside class="atencao" role="note">
+      <svg class="atencao-icone" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/></svg>
+      <p>Se aplican las <a href="/normas/">Normas de calidad</a>: <strong>si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, la página sale del aire de forma automática y pasa a una auditoría</strong> con revisión humana, en la que el Profesional puede responder. Mientras dura, en su dirección se muestra solo un aviso neutro.</p>
+    </aside>
 
     <h2>4. Reglas para los Profesionales</h2>
     <ul>
@@ -71,4 +74,8 @@ const versao = '12 de noviembre de 2026';
   .sobre { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
   .sobre span { width: 28px; height: 1px; background: currentColor; }
   .ponto { color: var(--accent); }
+  .atencao { display: flex; gap: 14px; align-items: flex-start; margin: 20px 0 8px; padding: 18px 20px; border-radius: 12px; background: var(--accent-soft); border: 1px solid #b7dcc9; color: #14422f; }
+  .atencao p { margin: 0; line-height: 1.55; }
+  .atencao a { color: #14422f; font-weight: 700; }
+  .atencao-icone { flex: none; color: var(--accent); margin-top: 1px; }
 </style>
