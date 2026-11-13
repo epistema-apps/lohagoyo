@@ -19,6 +19,6 @@ export async function enviarOpiniao(o: NovaOpiniao): Promise<void> {
     await httpsCallable(fns, 'enviarOpiniao')(o);
   } catch (e) {
     const err = e as { code?: string; message?: string };
-    throw new Error(err.code === 'functions/failed-precondition' && err.message ? err.message : 'No se pudo enviar. Inténtalo de nuevo.');
+    throw new Error(err.code === 'functions/failed-precondition' && err.message ? err.message.replace(/\s*\[\d+\]\s*$/, '') : 'No se pudo enviar. Inténtalo de nuevo.');
   }
 }

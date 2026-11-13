@@ -50,8 +50,8 @@ export function linkWhatsApp(c: Contatos, nome: string, servico?: string): strin
   if (!c.whatsapp) return null;
   const primeiro = nome.split(' ')[0];
   const msg = servico
-    ? `Hola ${primeiro}, vi tu perfil en Lo Hago Yo y quiero cotizar: ${servico}.`
-    : `Hola ${primeiro}, vi tu perfil en Lo Hago Yo y quiero hacerte una consulta.`;
+    ? `Hola ${primeiro}, vi tu perfil en LoHagoYo y quiero cotizar: ${servico}.`
+    : `Hola ${primeiro}, vi tu perfil en LoHagoYo y quiero hacerte una consulta.`;
   return `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msg)}`;
 }
 
