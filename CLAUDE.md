@@ -7,7 +7,7 @@ Plataforma gratuita de serviços de profissionais independentes (Santiago, Chile
 - `npm run dev` (desenvolvimento) · `npm run build` · `npm test`.
 
 ## Regras
-- **A marca Epistema nunca aparece em nada público** (site, páginas, PDFs, metadados, e-mails, textos, créditos, código enviado ao navegador). Regra para tudo que é filantrópico: só a marca LoHagoYo.cl. A menção à Epistema fica restrita a documentação interna e infraestrutura privada.
+- **A marca Epistema nunca aparece em nada público** (site, páginas, PDFs, metadados, e-mails, textos, créditos, código enviado ao navegador). Regra para tudo que é filantrópico: só a marca LoHagoYo (sem ".cl" na marca; o domínio continua lohagoyo.cl). A menção à Epistema fica restrita a documentação interna e infraestrutura privada.
 - Trabalho em português; **interface em espanhol do Chile** (tú, não vos/usted; termos locais: comuna, cotización, mantención).
 - **Nenhum import de `firebase` fora de `src/dados/` e `src/auth/`.** A interface só usa as funções do contrato (`src/dados/contrato.ts`).
 - Tipos do domínio em `src/dominio/tipos.ts`, sem nada do banco.

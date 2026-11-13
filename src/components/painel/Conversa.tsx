@@ -29,7 +29,7 @@ export default function Conversa({ avaliacaoId, autor, autorUid }: { avaliacaoId
     }
   }
 
-  const rotulo = (a: Mensagem['autor']) => (a === autor ? 'Tú' : a === 'admin' ? 'LoHagoYo.cl' : 'Profesional');
+  const rotulo = (a: Mensagem['autor']) => (a === autor ? 'Tú' : a === 'admin' ? 'LoHagoYo' : 'Profesional');
 
   return (
     <div className="cv">

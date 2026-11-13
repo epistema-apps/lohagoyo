@@ -1,4 +1,4 @@
-// Funções do LoHagoYo.cl (região Santiago).
+// Funções do LoHagoYo (região Santiago).
 // - Publicação automática: quando muda o que está APROVADO (publicados) ou uma avaliação aprovada.
 // - Avaliações: e-mail de confirmação para quem avalia; avisos ao profissional e à moderação.
 // - Conversa privada: aviso por e-mail a cada nova mensagem.
@@ -10,6 +10,7 @@ import { onDocumentCreated, onDocumentWritten } from 'firebase-functions/v2/fire
 import { onRequest } from 'firebase-functions/v2/https';
 import { logger, setGlobalOptions } from 'firebase-functions/v2';
 import nodemailer from 'nodemailer';
+import { montarEmail } from './email-layout.js';
 
 initializeApp();
 setGlobalOptions({ region: 'southamerica-west1', maxInstances: 2, memory: '256MiB' });
@@ -32,10 +33,12 @@ async function publicar(motivo) {
   else logger.info('publicação solicitada', motivo);
 }
 
-async function email(para, assunto, texto) {
+/** Envia e-mail com o layout da marca (HTML + texto). `msg` segue montarEmail(). */
+async function email(para, assunto, msg) {
   if (!para) return logger.warn('sem destinatário para', assunto);
+  const { html, text } = montarEmail(msg);
   const t = nodemailer.createTransport({ host: 'ip-45-79-0-64.cloudezapp.io', port: 465, secure: true, auth: { user: REMETENTE, pass: SMTP_SENHA.value() } });
-  await t.sendMail({ from: `LoHagoYo.cl <${REMETENTE}>`, to: para, subject: assunto, text: `${texto}\n\n—\nLoHagoYo.cl · ${SITE}` });
+  await t.sendMail({ from: `LoHagoYo <${REMETENTE}>`, to: para, subject: assunto, html, text });
   logger.info('e-mail enviado', assunto);
 }
 
@@ -60,7 +63,11 @@ export const aoMudarPublicado = onDocumentWritten({ document: 'publicados/{id}',
   if (antes?.suspenso && depois && !depois.suspenso) {
     const { primeiro } = await nomeDoPerfil(ev.params.id);
     await email(await emailDoProfissional(ev.params.id), 'Tu página volvió a estar publicada',
-      `Hola ${primeiro}:\n\nLa verificación de tu página terminó y ya está publicada de nuevo:\n${SITE}/${depois.perfil?.slug ?? ''}/`);
+      {
+        titulo: 'Tu página está publicada de nuevo',
+        texto: [`Hola ${primeiro}:`, 'La verificación de tu página terminó y ya está en línea otra vez.'],
+        botao: { texto: 'Ver mi página', url: `${SITE}/${depois.perfil?.slug ?? ''}/` },
+      });
   }
 });
 
@@ -78,14 +85,23 @@ export const aoMudarAvaliacao = onDocumentWritten(
       const pr = await db().doc(`avaliacoesPrivado/${id}`).get();
       const { nome } = await nomeDoPerfil(depois.perfilId);
       await email(pr.get('email'), `Confirma tu opinión sobre ${nome}`,
-        `Hola ${depois.nome}:\n\nGracias por tu opinión sobre ${nome}. Para confirmarla y publicarla, abre este enlace:\n\n${SITE}/api/confirmar?id=${id}&t=${pr.get('token')}\n\nSi no fuiste tú, ignora este correo.`);
+        {
+          titulo: 'Confirma tu opinión',
+          texto: [`Hola ${depois.nome}:`, `Gracias por tu opinión sobre **${nome}**. Para confirmarla y publicarla, toca el botón.`],
+          botao: { texto: 'Confirmar mi opinión', url: `${SITE}/api/confirmar?id=${id}&t=${pr.get('token')}` },
+          nota: 'Si no fuiste tú, ignora este correo.',
+        });
     }
 
     // enviada ao profissional para conversar antes de publicar
     if (depois?.status === 'en_contestacion' && antes?.status !== 'en_contestacion') {
       const { primeiro } = await nomeDoPerfil(depois.perfilId);
-      await email(await emailDoProfissional(depois.perfilId), 'Tienes una opinión pendiente en LoHagoYo.cl',
-        `Hola ${primeiro}:\n\nRecibiste una opinión de un cliente (${depois.nota} de 5). Antes de que se publique, puedes responderla.\n\nEntra a tu panel para verla y responder:\n${SITE}/panel/`);
+      await email(await emailDoProfissional(depois.perfilId), 'Tienes una opinión pendiente en LoHagoYo',
+        {
+          titulo: 'Tienes una opinión pendiente',
+          texto: [`Hola ${primeiro}:`, `Recibiste una opinión de un cliente (**${depois.nota} de 5**). Antes de que se publique, puedes responderla.`],
+          botao: { texto: 'Ver y responder', url: `${SITE}/panel/` },
+        });
     }
 
     // o que aparece no site mudou?
@@ -140,9 +156,22 @@ async function verificarBloqueio(perfilId) {
   logger.warn('perfil em auditoria', perfilId, motivo);
   const { nome, primeiro } = await nomeDoPerfil(perfilId);
   await email(REMETENTE, `Auditoría automática: ${nome}`,
-    `${nome} salió del aire automáticamente (${motivo}).\n\nDecide en el panel, pestaña Profesionales > En auditoría:\n${SITE}/panel/admin/`);
+    {
+      titulo: 'Auditoría automática',
+      texto: [`**${nome}** salió del aire automáticamente (${motivo}).`, 'Decide en el panel, pestaña Profesionales > En auditoría.'],
+      botao: { texto: 'Abrir auditoría', url: `${SITE}/panel/admin/` },
+    });
   await email(await emailDoProfissional(perfilId), 'Tu página está en verificación',
-    `Hola ${primeiro}:\n\nEntre las últimas opiniones de tu página hay ${mas} de ${NOTA_MA} estrellas o menos. Según las Normas de calidad (${SITE}/normas/), quedó fuera del aire mientras se hace una revisión.\n\nPuedes ver las opiniones y responderlas en tu panel:\n${SITE}/panel/\n\nRecibirás un aviso cuando haya una decisión.`);
+    {
+      titulo: 'Tu página está en verificación',
+      texto: [
+        `Hola ${primeiro}:`,
+        `Entre las últimas opiniones de tu página hay **${mas} opiniones de ${NOTA_MA} estrellas o menos**. Según las Normas de calidad, quedó fuera del aire mientras se hace una revisión.`,
+        'Puedes ver las opiniones y responderlas en tu panel. Recibirás un aviso cuando haya una decisión.',
+      ],
+      botao: { texto: 'Ver opiniones y responder', url: `${SITE}/panel/` },
+      links: [{ texto: 'Leer las Normas de calidad', url: `${SITE}/normas/` }],
+    });
 }
 
 // Link do e-mail: confirma a avaliação e ela é PUBLICADA na hora (regra: publicação automática;
@@ -171,11 +200,21 @@ export const aoNovaMensagem = onDocumentCreated(
     if (!m || !av.exists) return;
     const { nome, primeiro } = await nomeDoPerfil(av.get('perfilId'));
     if (m.autor === 'admin') {
-      await email(await emailDoProfissional(av.get('perfilId')), 'Nuevo mensaje en tu panel de LoHagoYo.cl',
-        `Hola ${primeiro}:\n\nTienes un nuevo mensaje sobre una opinión de un cliente:\n\n"${m.texto}"\n\nResponde en tu panel: ${SITE}/panel/`);
+      await email(await emailDoProfissional(av.get('perfilId')), 'Nuevo mensaje en tu panel de LoHagoYo',
+        {
+          titulo: 'Tienes un nuevo mensaje',
+          texto: [`Hola ${primeiro}:`, 'Hay un nuevo mensaje sobre una opinión de un cliente:'],
+          citacao: m.texto,
+          botao: { texto: 'Responder en mi panel', url: `${SITE}/panel/` },
+        });
     } else {
       await email(REMETENTE, `Respuesta de ${nome} sobre una opinión`,
-        `${nome} respondió:\n\n"${m.texto}"\n\nVer en el panel: ${SITE}/panel/admin/`);
+        {
+          titulo: `Respuesta de ${nome}`,
+          texto: [`**${nome}** respondió sobre una opinión:`],
+          citacao: m.texto,
+          botao: { texto: 'Ver en el panel', url: `${SITE}/panel/admin/` },
+        });
     }
   },
 );

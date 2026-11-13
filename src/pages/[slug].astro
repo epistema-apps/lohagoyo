@@ -2,7 +2,7 @@
 // Site próprio de cada profissional: parece a página dele na internet.
 // Referências: editorial claro, tipografia grande com ponto final, colagem de fotos
 // com cantos arredondados, faixa de dados e serviços numerados.
-// O portal LoHagoYo.cl aparece só, discreto, no rodapé.
+// O portal LoHagoYo aparece só, discreto, no rodapé.
 import Base from '../layouts/Base.astro';
 import { dados } from '../dados';
 import { foto } from '../dados/fotos';
@@ -289,15 +289,15 @@ const jsonLd = {
     <footer class="wrap pe">
       <p>© {marca} · {zona}, Chile</p>
       <div class="pe-dir">
-        <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo.cl">
+        <a class="plataforma" href="/" title="Página creada gratis con LoHagoYo">
           <span>Página creada con</span>
-          <img src="/marca/logo.svg?v=esmeralda" alt="LoHagoYo.cl" width="84" height="18" loading="lazy" />
+          <img src="/marca/logo.svg?v=yo" alt="LoHagoYo" width="78" height="18" loading="lazy" />
         </a>
         <a class="acesso" href="/normas/">Normas</a>
         <a class="acesso" href="/terminos/">Términos</a>
         <a class="acesso" href="/panel/">Acceso</a>
       </div>
-      <p class="pe-aviso">Página gestionada por {marca}, único responsable de sus servicios, precios e información. LoHagoYo.cl es una plataforma independiente de difusión: no presta ni intermedia estos servicios ni responde por ellos.</p>
+      <p class="pe-aviso">Página gestionada por {marca}, único responsable de sus servicios, precios e información. LoHagoYo es una plataforma independiente de difusión: no presta ni intermedia estos servicios ni responde por ellos.</p>
     </footer>
 
   </div>
@@ -489,7 +489,7 @@ const jsonLd = {
   .acesso:hover { opacity: 1; color: var(--ink); }
   .plataforma { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; opacity: 0.8; }
   .plataforma:hover { opacity: 1; }
-  .plataforma img { width: 84px; height: auto; }
+  .plataforma img { width: 78px; height: auto; }
 
   /* ícone de WhatsApp no topo (celular) */
   .wa-icone { display: none; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--fundo-escuro); color: #fff; position: relative; }

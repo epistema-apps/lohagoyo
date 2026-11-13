@@ -11,7 +11,7 @@ const banco = Object.entries(FOTOS)
   .filter(([id]) => !id.startsWith('general'))
   .map(([id, f]) => ({ id, src: f.src, thumb: f.thumb, alt: f.alt, categoria: id.replace(/-\d+$/, '') }));
 ---
-<Base titulo="Administración" descricao="Administración de LoHagoYo.cl." noindex>
+<Base titulo="Administración" descricao="Administración de LoHagoYo." noindex>
   <section class="wrap pn-pagina" style="max-width:960px">
     <Admin client:only="react" categorias={categorias} comunas={comunas} banco={banco} />
   </section>

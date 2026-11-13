@@ -63,10 +63,14 @@ def compor(destino, foto, sobretitulo, titulo, rodape, ponto=True):
     # assinatura discreta
     f_ass = fonte(F_TIT, 26)
     marca = 'LoHagoYo'
-    lx = W - 80 - d.textlength(marca + '.cl', font=f_ass)
-    d.text((lx, H - 94), 'LoHago', font=f_ass, fill=(255, 255, 255))
+    q = round(f_ass.size * 0.18)  # ponto quadrado do logo
+    lx = W - 80 - d.textlength(marca, font=f_ass) - q - 3
+    base = H - 66
+    d.text((lx, base), 'LoHago', font=f_ass, fill=(255, 255, 255), anchor='ls')
     lx2 = lx + d.textlength('LoHago', font=f_ass)
-    d.text((lx2, H - 94), 'Yo.cl', font=f_ass, fill=ESMERALDA_CLARO)
+    d.text((lx2, base), 'Yo', font=f_ass, fill=ESMERALDA_CLARO, anchor='ls')
+    px = lx2 + d.textlength('Yo', font=f_ass) + 3
+    d.rectangle((px, base - q, px + q - 1, base - 1), fill=ESMERALDA_CLARO)
     os.makedirs(os.path.dirname(destino), exist_ok=True)
     im.save(destino, 'JPEG', quality=84, optimize=True, progressive=True)
 

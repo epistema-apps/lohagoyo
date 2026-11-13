@@ -1,4 +1,4 @@
-// Fotos livres (Unsplash License) selecionadas para o LoHagoYo.cl.
+// Fotos livres (Unsplash License) selecionadas para o LoHagoYo.
 // Gerado de docs/fotos/selecao.tsv. Originais em data/originais/ (fora do git).
 export interface FotoServico { src: string; thumb: string; alt: string; autor: string; url: string }
 

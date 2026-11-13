@@ -1,4 +1,4 @@
-// Cores da tarjeta, todas da paleta LoHagoYo.cl (sóbria: grafito, piedra, esmeralda).
+// Cores da tarjeta, todas da paleta LoHagoYo (sóbria: grafito, piedra, esmeralda).
 import type { PapelLogo } from '../../marca/logo-dados';
 
 export const PALETA = {

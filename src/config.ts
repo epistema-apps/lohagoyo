@@ -9,8 +9,8 @@ export const CONTATO = {
 };
 
 export function linkCadastro(): string {
-  const msg = 'Hola, quiero crear mi página gratis en LoHagoYo.cl. Ofrezco el servicio de: ';
+  const msg = 'Hola, quiero crear mi página gratis en LoHagoYo. Ofrezco el servicio de: ';
   return CONTATO.whatsapp
     ? `https://wa.me/${CONTATO.whatsapp}?text=${encodeURIComponent(msg)}`
-    : `mailto:${CONTATO.email}?subject=${encodeURIComponent('Quiero mi página en LoHagoYo.cl')}&body=${encodeURIComponent(msg)}`;
+    : `mailto:${CONTATO.email}?subject=${encodeURIComponent('Quiero mi página en LoHagoYo')}&body=${encodeURIComponent(msg)}`;
 }

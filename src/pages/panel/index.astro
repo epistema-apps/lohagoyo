@@ -11,7 +11,7 @@ const banco = Object.entries(FOTOS)
   .filter(([id]) => !id.startsWith('general'))
   .map(([id, f]) => ({ id, src: f.src, thumb: f.thumb, alt: f.alt, categoria: id.replace(/-\d+$/, '') }));
 ---
-<Base titulo="Tu panel" descricao="Crea y edita tu página en LoHagoYo.cl." noindex>
+<Base titulo="Tu panel" descricao="Crea y edita tu página en LoHagoYo." noindex>
   <section class="wrap pn-pagina">
     <Painel client:only="react" categorias={categorias} comunas={comunas} banco={banco} />
   </section>

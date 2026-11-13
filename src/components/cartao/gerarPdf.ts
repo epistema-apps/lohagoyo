@@ -85,8 +85,8 @@ export async function gerarPdfCartao(
   carregar: CarregarFonte = carregarPorFetch,
 ): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  doc.setTitle(`Tarjeta ${dados.nome} — LoHagoYo.cl`);
-  doc.setCreator('LoHagoYo.cl');
+  doc.setTitle(`Tarjeta ${dados.nome} — LoHagoYo`);
+  doc.setCreator('LoHagoYo');
   const f = await embutirFontes(doc, carregar);
   const medir: Medir = (fonte, txt, tam) => f[fonte].widthOfTextAtSize(txt, tam);
 
@@ -116,7 +116,7 @@ export async function gerarPdfCartao(
       page.drawLine({ start: { x: 4 * MM, y: gy }, end: { x: x0 - 2 * MM, y: gy }, thickness: 0.4, color: guia });
       page.drawLine({ start: { x: x0 + cols * W + 2 * MM, y: gy }, end: { x: A4[0] - 4 * MM, y: gy }, thickness: 0.4, color: guia });
     }
-    page.drawText('Imprime al 100% (tamaño real) y corta siguiendo las guías grises.  LoHagoYo.cl', {
+    page.drawText('Imprime al 100% (tamaño real) y corta siguiendo las guías grises.  LoHagoYo', {
       x: x0, y: 8 * MM, size: 7, font: f.reg, color: rgb(0.5, 0.5, 0.5),
     });
   }

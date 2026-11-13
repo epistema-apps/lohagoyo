@@ -18,9 +18,9 @@ interface Props { categorias: { id: string; nome: string; sugeridos: string[] }[
 
 const VERSAO_TERMOS = '2026-11-12d';
 const TEXTO_ASISTIDO =
-  'Registro asistido: confirmo que el profesional leyó y aceptó los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo.cl, incluida su responsabilidad total por su página y sus servicios, y autorizó a publicar estos datos y fotos.';
+  'Registro asistido: confirmo que el profesional leyó y aceptó los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo, incluida su responsabilidad total por su página y sus servicios, y autorizó a publicar estos datos y fotos.';
 const TEXTO_CONSENTIMIENTO =
-  'Acepto los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo.cl, incluida la auditoría automática: si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, mi página sale del aire hasta que se revise. Declaro que mis datos y mi RUT son verdaderos y que soy el titular y único responsable de mi página, de los datos personales que en ella se tratan, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo.cl no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo.cl frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
+  'Acepto los Términos y Condiciones, la Política de Privacidad y las Normas de calidad de LoHagoYo, incluida la auditoría automática: si 2 de las últimas 10 opiniones son de 1 o 2 estrellas, mi página sale del aire hasta que se revise. Declaro que mis datos y mi RUT son verdaderos y que soy el titular y único responsable de mi página, de los datos personales que en ella se tratan, de toda la información y fotos que publico y de los servicios que presto, y que tengo la gestión total de ellos. LoHagoYo no participa en mis trabajos ni responde por ningún daño derivado de ellos: respondo yo por cualquier daño que cause a clientes o terceros y mantendré indemne a LoHagoYo frente a cualquier reclamo. Autorizo a publicar los datos y fotos que ingresé (nombre, dirección, servicios, comunas, contacto y fotos) y puedo modificarlos o pedir su eliminación en cualquier momento.';
 
 export default function Painel(props: Props) {
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
@@ -132,7 +132,7 @@ const PUBLICOS: { id: Publico; nome: string }[] = [
 const PAGOS = ['Transferencia', 'Efectivo', 'Tarjeta'];
 const STATUS: Record<Perfil['status'], string> = {
   borrador: 'Borrador: todavía no enviada', pendiente: 'En verificación: tu página (o tus cambios) se publica al completarse la verificación',
-  aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo.cl',
+  aprobado: 'Publicada', pausado: 'Pausada: no aparece en LoHagoYo',
   bloqueado: 'En auditoría: 2 de las últimas 10 opiniones de tu página son de 1 o 2 estrellas y está fuera del aire hasta que se revise. Responde las opiniones más abajo (ver Normas de calidad).',
 };
 
@@ -458,7 +458,7 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
       </Secao>
 
       {/* 6. Fotos da página */}
-      <Secao n="06" titulo="Fotos de tu página" ajuda="Sube tus fotos o elige del banco de LoHagoYo.cl. La portada es la foto grande del inicio.">
+      <Secao n="06" titulo="Fotos de tu página" ajuda="Sube tus fotos o elige del banco de LoHagoYo. La portada es la foto grande del inicio.">
         <FotoCampo
           rotulo="Portada" valor={perfil.capa ?? ''} banco={banco} categoria={categoriaPrincipal}
           aoSubir={async (f) => { const u = await foto('capa', f); if (u) set('capa', u); }}
@@ -701,7 +701,7 @@ function Opinioes({ uid }: { uid: string }) {
                 </Campo>
                 <div className="pn-form-acoes">
                   <button className="btn btn-ghost btn-sm" onClick={async () => { await responderAvaliacao(a.id, resposta[a.id] ?? a.resposta ?? '', a.contestacao ?? ''); setOk('Respuesta guardada.'); }}>Guardar respuesta</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setAberta(aberta === a.id ? null : a.id)}>{aberta === a.id ? 'Cerrar conversación' : 'Conversar con LoHagoYo.cl'}</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setAberta(aberta === a.id ? null : a.id)}>{aberta === a.id ? 'Cerrar conversación' : 'Conversar con LoHagoYo'}</button>
                 </div>
                 {aberta === a.id && <Conversa avaliacaoId={a.id} autor="profissional" autorUid={uid} />}
               </>

@@ -1,5 +1,5 @@
 // Formulário público de avaliação. Fica "por confirmar" até a pessoa clicar no link do e-mail;
-// depois passa pela moderação de LoHagoYo.cl antes de aparecer.
+// depois passa pela moderação de LoHagoYo antes de aparecer.
 import { useState } from 'react';
 
 export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto = false }: { perfilId: string; nome: string; aberto?: boolean }) {

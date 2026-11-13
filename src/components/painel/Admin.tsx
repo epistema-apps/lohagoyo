@@ -121,7 +121,7 @@ export default function Admin(props: PropsPainel) {
             const nome = p.marca || p.nomePublico;
             const email = item.privado?.email;
             const wa = p.contatos.whatsapp
-              ? `https://wa.me/${p.contatos.whatsapp}?text=${encodeURIComponent(`Hola ${p.nomePublico.split(' ')[0]}, te escribo de LoHagoYo.cl por tu página.`)}`
+              ? `https://wa.me/${p.contatos.whatsapp}?text=${encodeURIComponent(`Hola ${p.nomePublico.split(' ')[0]}, te escribo de LoHagoYo por tu página.`)}`
               : null;
             return (
               <article key={p.id} className="md-item">

@@ -1,7 +1,7 @@
 // Desenho da tarjeta como lista de comandos (coordenadas em pontos, origem no canto
 // superior esquerdo da área de corte). O mesmo desenho vira PDF (gerarPdf) e prévia SVG (render-svg).
 // Estilo editorial, igual ao site do profissional: marca com ponto esmeralda, sobretítulo com traço,
-// muito respiro e o logo LoHagoYo.cl discreto.
+// muito respiro e o logo LoHagoYo discreto.
 import QRCode from 'qrcode';
 import { LOGO } from '../../marca/logo-dados';
 import { LOGO_ESCURO, TEMAS, type CoresLogo, type TemaCartao, type TemaId } from './temas';

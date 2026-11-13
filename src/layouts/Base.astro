@@ -16,7 +16,7 @@ interface Props {
 const { titulo, descricao, imagem, jsonLd, noindex = false, moldura = true, tituloExato = false, corTema = '#2e3033' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const og = imagem ? new URL(imagem, Astro.site).href : new URL('/og.jpg', Astro.site).href;
-const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${titulo} · LoHagoYo.cl`;
+const tituloCompleto = tituloExato || titulo === 'LoHagoYo' ? titulo : `${titulo} · LoHagoYo`;
 ---
 <!doctype html>
 <html lang="es-CL">
@@ -28,7 +28,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={moldura ? 'LoHagoYo.cl' : titulo.split(' · ')[0]} />
+    <meta property="og:site_name" content={moldura ? 'LoHagoYo' : titulo.split(' · ')[0]} />
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descricao.slice(0, 155)} />
     <meta property="og:url" content={canonical} />
@@ -38,7 +38,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
     <meta property="og:locale" content="es_CL" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content={corTema} />
-    <link rel="icon" href="/favicon.svg?v=esmeralda" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg?v=yo" type="image/svg+xml" />
     <link rel="preload" href="/fonts/plus-jakarta-sans-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/atkinson-hyperlegible-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
@@ -48,7 +48,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
     <header class="topo">
       <div class="wrap topo-in">
         <a href="/" class="logo">
-          <img src="/marca/logo.svg?v=esmeralda" alt="LoHagoYo.cl" width="168" height="35" />
+          <img src="/marca/logo.svg?v=yo" alt="LoHagoYo" width="156" height="35" />
         </a>
         <nav class="nav">
           <a href="/#resultados">Profesionales</a>
@@ -62,9 +62,9 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
     {moldura && (
     <footer class="rodape">
       <div class="wrap">
-        <p class="rodape-marca"><img src="/marca/logo-negativo.svg?v=esmeralda" alt="LoHagoYo.cl" width="190" height="40" loading="lazy" /></p>
+        <p class="rodape-marca"><img src="/marca/logo-negativo.svg?v=yo" alt="LoHagoYo" width="178" height="40" loading="lazy" /></p>
         <p>Plataforma gratuita para profesionales independientes.</p>
-        <p class="rodape-aviso">LoHagoYo.cl es una plataforma independiente de difusión, gestionada por sus propios usuarios. No presta ni intermedia los servicios publicados: cada profesional es el único responsable de sus servicios, precios, información y de los acuerdos que haga con sus clientes. Las opiniones son de quienes las escriben.</p>
+        <p class="rodape-aviso">LoHagoYo es una plataforma independiente de difusión, gestionada por sus propios usuarios. No presta ni intermedia los servicios publicados: cada profesional es el único responsable de sus servicios, precios, información y de los acuerdos que haga con sus clientes. Las opiniones son de quienes las escriben.</p>
         <p class="rodape-links">
           <a href="/sumate/">Ofrece tu servicio</a> · <a href="/panel/">Acceso profesionales</a> · <a href="/normas/">Normas de calidad</a> · <a href="/terminos/">Términos</a> · <a href="/privacidad/">Privacidad</a> · <a href="/creditos/">Créditos de fotos</a>
         </p>
@@ -84,8 +84,8 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
   }
   .topo-in { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 12px; }
   .logo { display: block; line-height: 0; }
-  .logo img { width: 168px; height: auto; }
-  @media (max-width: 380px) { .logo img { width: 140px; } }
+  .logo img { width: 156px; height: auto; }
+  @media (max-width: 380px) { .logo img { width: 130px; } }
   .nav { display: flex; align-items: center; gap: 16px; }
   .nav > a:not(.btn) { color: var(--ink); text-decoration: none; font-weight: 700; }
   .btn-sm { min-height: 40px; padding: 0.45em 1em; font-size: 0.92rem; }
@@ -95,7 +95,7 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
   @media (max-width: 480px) {
     .nav > a:not(.btn):not(.entrar) { display: none; }
     .nav { gap: 12px; }
-    .logo img { width: 128px; }
+    .logo img { width: 120px; }
     .btn-sm { padding: 0.45em 0.85em; font-size: 0.86rem; }
   }
   main.com-moldura { padding-bottom: 64px; }
@@ -104,5 +104,5 @@ const tituloCompleto = tituloExato || titulo === 'LoHagoYo.cl' ? titulo : `${tit
   .rodape a { color: #fff; }
   .rodape-marca { margin-bottom: 0.8em; line-height: 0; }
   .rodape-aviso { font-size: 0.8rem; line-height: 1.5; color: #9a9c9f; max-width: 720px; }
-  .rodape-marca img { width: 190px; height: auto; }
+  .rodape-marca img { width: 178px; height: auto; }
 </style>
