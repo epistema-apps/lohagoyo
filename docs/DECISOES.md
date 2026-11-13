@@ -110,4 +110,4 @@ Fundo **coletivo e discreto** (financiar cartões/kits). **Nenhum perfil mostra 
 - Visitante não grava mais no Firestore: a opinião passa pela função `enviarOpiniao` (servidor). Regras fecham `avaliacoes`/`avaliacoesPrivado` (só moderador) e `denuncias` (sem formulário público).
 - Limites: 1 opinião por e-mail por profissional; até 3 por e-mail em 24 h; teto de 40 e-mails de confirmação por hora; e-mails descartáveis recusados; campo-isca e tempo mínimo de 4 s (robô recebe "ok" falso e é descartado).
 - Fluxo mantido: ao confirmar pelo e-mail, a opinião é publicada direto.
-- App Check (reCAPTCHA Enterprise, invisível) pronto no código: liga com `RECAPTCHA_SITE_KEY` em `src/dados/config-firebase.ts` + `APP_CHECK=1` em `functions/.env`. A chave é criada pelo responsável no console.
+- App Check (reCAPTCHA Enterprise, invisível) LIGADO em 2026-11-12: chave do site em `src/dados/config-firebase.ts`, exigência na função via `APP_CHECK=1` em `functions/.env` (não é segredo, fica no git). Firestore e Storage ainda sem exigir App Check (o painel funciona sem).
