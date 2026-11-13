@@ -10,4 +10,4 @@ export const CONFIG_FIREBASE = {
 
 // Chave do site reCAPTCHA Enterprise para o App Check (pública, não é segredo).
 // Vazia = App Check desligado. Ao preencher, ligar também APP_CHECK=1 em functions/.env.
-export const RECAPTCHA_SITE_KEY = '';
+export const RECAPTCHA_SITE_KEY = '6LdooB0uAAAAAPBmD5m-_AAUsjMOch0gEaHCgxWi';
