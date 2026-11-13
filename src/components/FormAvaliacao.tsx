@@ -45,7 +45,7 @@ export default function FormAvaliacao({ perfilId, nome: nomeProfissional, aberto
           <h3>¿Trabajaste con {nomeProfissional}<span className="fa-ponto">?</span></h3>
           <p>Cuenta cómo fue. Tu opinión ayuda a otros vecinos a elegir y a {nomeProfissional} a seguir creciendo.</p>
         </div>
-        <button type="button" className="btn fa-botao" onClick={() => { aberturaEm.current = Date.now(); setAbrir(true); }}>Dejar mi opinión <span aria-hidden="true">★</span></button>
+        <button type="button" className="btn fa-botao" onClick={() => { aberturaEm.current = Date.now(); setAbrir(true); void import('../dados/opiniao').then((m) => m.prepararOpiniao()); }}>Dejar mi opinión <span aria-hidden="true">★</span></button>
       </div>
     );
   }
