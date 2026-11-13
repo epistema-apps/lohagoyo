@@ -105,3 +105,9 @@ Fundo **coletivo e discreto** (financiar cartões/kits). **Nenhum perfil mostra 
 - Regra pública em `/normas/` (link no rodapé, Súmate, Términos, painel e aceite `2026-11-12c`): **2 opiniões de 1–2 estrelas entre as 10 mais recentes** confirmadas desde a última auditoria (`perfis.auditadoEm`), a página sai do ar automaticamente (function `verificarBloqueio`), fica um aviso neutro `/en-verificacion/` no endereço (sem nome nem motivo, noindex), o profissional recebe e-mail e pode responder no painel; o admin decide na aba "En auditoría". "Volver a publicar" grava `auditadoEm` e zera a contagem; o profissional é avisado por e-mail.
 - Único ponto em que o site admite revisão humana (exigência da Ley 21.719 contra decisões só automatizadas com efeito significativo).
 - Tom do site: "você faz, o sistema publica"; nunca "nós".
+
+## 2026-11-12 — Proteção contra robôs nas opiniões
+- Visitante não grava mais no Firestore: a opinião passa pela função `enviarOpiniao` (servidor). Regras fecham `avaliacoes`/`avaliacoesPrivado` (só moderador) e `denuncias` (sem formulário público).
+- Limites: 1 opinião por e-mail por profissional; até 3 por e-mail em 24 h; teto de 40 e-mails de confirmação por hora; e-mails descartáveis recusados; campo-isca e tempo mínimo de 4 s (robô recebe "ok" falso e é descartado).
+- Fluxo mantido: ao confirmar pelo e-mail, a opinião é publicada direto.
+- App Check (reCAPTCHA Enterprise, invisível) pronto no código: liga com `RECAPTCHA_SITE_KEY` em `src/dados/config-firebase.ts` + `APP_CHECK=1` em `functions/.env`. A chave é criada pelo responsável no console.
