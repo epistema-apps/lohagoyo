@@ -30,3 +30,5 @@ public/og/*.jpg
 public/f/
 
 functions/node_modules/
+
+functions/.secret.local

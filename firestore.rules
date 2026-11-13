@@ -121,13 +121,8 @@ service cloud.firestore {
       allow read: if resource.data.status == 'aprobada'
         || moderador()
         || (eu(resource.data.perfilId) && resource.data.status in ['en_contestacion', 'aprobada']);
-      allow create: if (novo().keys().hasOnly(['perfilId', 'nome', 'nota', 'texto', 'status', 'criadoEm'])
-          && novo().status == 'por_confirmar'
-          && preenchido(novo().nome, 60) && texto(novo().texto, 1000)
-          && novo().nota is int && novo().nota >= 1 && novo().nota <= 5
-          && publicado(novo().perfilId)
-          && existsAfter(/databases/$(database)/documents/avaliacoesPrivado/$(id)))
-        || moderador(); // o administrador também pode inserir
+      // Visitantes enviam pela função enviarOpiniao (servidor, com limites contra abuso).
+      allow create: if moderador(); // o administrador também pode inserir
       allow update: if moderador()
         || (eu(resource.data.perfilId) && resource.data.status == 'en_contestacion'
           && novo().diff(resource.data).affectedKeys().hasOnly(['resposta', 'contestacao', 'respondidoEm'])
@@ -149,10 +144,7 @@ service cloud.firestore {
 
     // E-mail e token de quem avalia: nunca públicos.
     match /avaliacoesPrivado/{id} {
-      allow create: if novo().keys().hasOnly(['email', 'token', 'criadoEm'])
-        && preenchido(novo().email, 120) && novo().email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
-        && preenchido(novo().token, 64)
-        && existsAfter(/databases/$(database)/documents/avaliacoes/$(id));
+      allow create: if false; // só a função enviarOpiniao grava
       allow read, update, delete: if moderador();
     }
 
@@ -165,8 +157,7 @@ service cloud.firestore {
     }
 
     match /denuncias/{id} {
-      allow create: if novo().keys().hasOnly(['perfilId', 'motivo', 'criadoEm'])
-        && texto(novo().perfilId, 128) && texto(novo().motivo, 1000);
+      allow create: if false; // sem formulário público; denúncias chegam por e-mail
       allow read, update, delete: if moderador();
     }
   }

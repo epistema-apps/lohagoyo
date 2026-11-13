@@ -6,6 +6,7 @@ import {
   updateProfile, type Auth,
 } from 'firebase/auth';
 import { CONFIG_FIREBASE } from '../dados/config-firebase';
+import { ligarAppCheck } from '../dados/app-check';
 
 export interface Usuario { uid: string; email: string | null; nome: string | null }
 
@@ -14,7 +15,10 @@ let _app: FirebaseApp | null = null;
 let _auth: Auth | null = null;
 
 export function app(): FirebaseApp {
-  if (!_app) _app = getApps().length ? getApp() : initializeApp(EMULADOR ? { ...CONFIG_FIREBASE, projectId: 'demo-lohagoyo' } : CONFIG_FIREBASE);
+  if (!_app) {
+    _app = getApps().length ? getApp() : initializeApp(EMULADOR ? { ...CONFIG_FIREBASE, projectId: 'demo-lohagoyo' } : CONFIG_FIREBASE);
+    void ligarAppCheck(_app);
+  }
   return _app;
 }
 export const emulador = () => EMULADOR;

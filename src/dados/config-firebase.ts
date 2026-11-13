@@ -7,3 +7,7 @@ export const CONFIG_FIREBASE = {
   "authDomain": "lohagoyo-prod.firebaseapp.com",
   "messagingSenderId": "600929690300"
 };
+
+// Chave do site reCAPTCHA Enterprise para o App Check (pública, não é segredo).
+// Vazia = App Check desligado. Ao preencher, ligar também APP_CHECK=1 em functions/.env.
+export const RECAPTCHA_SITE_KEY = '';

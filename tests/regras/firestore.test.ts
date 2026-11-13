@@ -134,15 +134,12 @@ describe('avaliações', () => {
   };
   beforeEach(async () => { await semRegras((d) => setDoc(doc(d, `publicados/${ANA}`), { perfil: perfil(ANA), servicos: [] })); });
 
-  it('visitante avalia perfil publicado (com e-mail privado); não avalia não publicado', async () => {
-    await assertSucceeds(enviar(db(), 'a1', nova(ANA)));
-    await assertFails(enviar(db(), 'a2', nova(BETO)));
-  });
-  it('não entra já aprovada, nota fora de 1-5, sem e-mail válido ou sem a parte privada', async () => {
-    await assertFails(enviar(db(), 'a3', nova(ANA, { status: 'aprobada' })));
-    await assertFails(enviar(db(), 'a4', nova(ANA, { nota: 7 })));
-    await assertFails(enviar(db(), 'a5', nova(ANA), 'sem-arroba'));
-    await assertFails(setDoc(doc(db(), 'avaliacoes/a6'), nova(ANA)));
+  it('ninguém grava opinião direto no banco (só pela função do servidor); o moderador pode inserir', async () => {
+    await assertFails(enviar(db(), 'a1', nova(ANA)));
+    await assertFails(enviar(db(ANA), 'a2', nova(ANA)));
+    await assertFails(setDoc(doc(db(), 'avaliacoes/a3'), nova(ANA)));
+    await assertFails(setDoc(doc(db(), 'avaliacoesPrivado/a4'), { email: 'c@ejemplo.test', token: 't', criadoEm: 'x' }));
+    await assertSucceeds(setDoc(doc(db(MOD), 'avaliacoes/a5'), nova(ANA, { status: 'aprobada' })));
   });
   it('e-mail de quem avalia: só o moderador lê', async () => {
     await semRegras((d) => setDoc(doc(d, 'avaliacoesPrivado/p1'), { email: 'c@ejemplo.test', token: 't', criadoEm: 'x' }));
@@ -226,11 +223,12 @@ describe('dados privados, consentimentos, denúncias e config', () => {
     await assertFails(setDoc(doc(db(ANA), `profissionais/${ANA}`), { nomeCompleto: 'Ana Ejemplo Soto', email: '', rut: '11.111.111-1' }));
     await assertFails(getDoc(doc(db(BETO), `profissionais/${ANA}`)));
   });
-  it('consentimento só se cria; denúncia aberta, lida só pelo moderador; config protegida', async () => {
+  it('consentimento só se cria; denúncia fechada ao público, lida só pelo moderador; config protegida', async () => {
     const ref = doc(db(ANA), 'consentimentos/c1');
     await assertSucceeds(setDoc(ref, { uid: ANA, versao: '2026-11', texto: 'acepto', criadoEm: 'x' }));
     await assertFails(updateDoc(ref, { versao: 'outra' }));
-    await assertSucceeds(setDoc(doc(db(), 'denuncias/d1'), { perfilId: ANA, motivo: 'spam', criadoEm: 'x' }));
+    await assertFails(setDoc(doc(db(), 'denuncias/d1'), { perfilId: ANA, motivo: 'spam', criadoEm: 'x' }));
+    await semRegras((d) => setDoc(doc(d, 'denuncias/d1'), { perfilId: ANA, motivo: 'spam', criadoEm: 'x' }));
     await assertFails(getDoc(doc(db(ANA), 'denuncias/d1')));
     await assertSucceeds(getDoc(doc(db(MOD), 'denuncias/d1')));
     await assertFails(getDoc(doc(db(ANA), 'config/moderadores')));

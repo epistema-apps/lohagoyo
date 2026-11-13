@@ -7,7 +7,8 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { defineSecret } from 'firebase-functions/params';
 import { onDocumentCreated, onDocumentWritten } from 'firebase-functions/v2/firestore';
-import { onRequest } from 'firebase-functions/v2/https';
+import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
+import { randomBytes } from 'node:crypto';
 import { logger, setGlobalOptions } from 'firebase-functions/v2';
 import nodemailer from 'nodemailer';
 import { montarEmail } from './email-layout.js';
@@ -173,6 +174,68 @@ async function verificarBloqueio(perfilId) {
       links: [{ texto: 'Leer las Normas de calidad', url: `${SITE}/normas/` }],
     });
 }
+
+// ---------- envio de opinião (servidor) ----------
+// O visitante não grava mais direto no banco: tudo passa por aqui, com limites contra robôs e abuso.
+// App Check (reCAPTCHA Enterprise, invisível) é exigido quando APP_CHECK=1 em functions/.env.
+
+const DESCARTAVEIS = new Set([
+  'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'guerrillamail.net', 'sharklasers.com', 'yopmail.com',
+  'tempmail.com', 'temp-mail.org', 'temp-mail.io', 'tempmail.net', 'throwawaymail.com', 'trashmail.com', 'getnada.com',
+  'nada.email', 'dispostable.com', 'maildrop.cc', 'mintemail.com', 'fakeinbox.com', 'emailondeck.com', 'mohmal.com',
+  'mailnesia.com', 'mytemp.email', 'tempail.com', 'burnermail.io', 'spamgourmet.com', 'inboxkitten.com', 'mailpoof.com',
+  'tempr.email', 'discard.email', 'luxusmail.org', 'moakt.com', 'emltmp.com', 'tmpmail.org', 'tmpmail.net', '1secmail.com',
+  'linshiyouxiang.net', 'byom.de', 'trash-mail.com', 'mail.tm', 'internxt.com', 'dropmail.me', 'minuteinbox.com',
+]);
+const LIM_EMAIL_DIA = 3;      // opiniões por e-mail em 24 h
+const LIM_GLOBAL_HORA = 40;   // e-mails de confirmação por hora (teto de segurança)
+const TEMPO_MINIMO_MS = 4000; // formulário enviado rápido demais = robô
+
+export const enviarOpiniao = onCall(
+  { enforceAppCheck: process.env.APP_CHECK === '1', maxInstances: 2 },
+  async (req) => {
+    const d = req.data ?? {};
+    const recusa = (msg) => { throw new HttpsError('failed-precondition', msg); };
+    const perfilId = String(d.perfilId ?? '');
+    const nome = String(d.nome ?? '').trim();
+    const email = String(d.email ?? '').trim().toLowerCase();
+    const texto = String(d.texto ?? '').trim();
+    const nota = Number(d.nota);
+
+    // robôs: campo invisível preenchido ou envio instantâneo → finge sucesso e descarta
+    if (d.site || Number(d.ms) < TEMPO_MINIMO_MS) {
+      logger.warn('opinião descartada (robô)', { perfilId, ms: d.ms, site: !!d.site });
+      return { ok: true };
+    }
+    if (!perfilId || perfilId.length > 128 || !nome || nome.length > 60 || texto.length > 1000
+      || !Number.isInteger(nota) || nota < 1 || nota > 5
+      || email.length > 120 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) recusa('Revisa los datos del formulario.');
+    if (DESCARTAVEIS.has(email.split('@')[1])) recusa('Usa un correo personal (no temporal).');
+
+    const pub = await db().doc(`publicados/${perfilId}`).get();
+    if (!pub.exists || pub.get('suspenso')) recusa('Esta página no recibe opiniones en este momento.');
+
+    const agoraMs = Date.now();
+    const doMesmo = await db().collection('avaliacoesPrivado').where('email', '==', email).get();
+    if (doMesmo.docs.some((x) => x.get('perfilId') === perfilId)) recusa('Ya enviaste una opinión sobre este profesional con este correo.');
+    const ultimoDia = new Date(agoraMs - 864e5).toISOString();
+    if (doMesmo.docs.filter((x) => (x.get('criadoEm') ?? '') >= ultimoDia).length >= LIM_EMAIL_DIA) recusa('Enviaste varias opiniones hoy. Inténtalo mañana.');
+    const ultimaHora = new Date(agoraMs - 36e5).toISOString();
+    const naHora = await db().collection('avaliacoesPrivado').where('criadoEm', '>=', ultimaHora).count().get();
+    if (naHora.data().count >= LIM_GLOBAL_HORA) {
+      logger.error('limite global de opiniões por hora atingido');
+      recusa('Hay muchas opiniones en este momento. Inténtalo en una hora.');
+    }
+
+    const t = new Date(agoraMs).toISOString();
+    const ref = db().collection('avaliacoes').doc();
+    const b = db().batch();
+    b.set(ref, { perfilId, nome, nota, texto, status: 'por_confirmar', criadoEm: t });
+    b.set(db().doc(`avaliacoesPrivado/${ref.id}`), { email, token: randomBytes(24).toString('hex'), criadoEm: t, perfilId });
+    await b.commit(); // o e-mail de confirmação sai pelo gatilho aoMudarAvaliacao
+    return { ok: true };
+  },
+);
 
 // Link do e-mail: confirma a avaliação e ela é PUBLICADA na hora (regra: publicação automática;
 // o controle é o bloqueio por avaliações ruins).

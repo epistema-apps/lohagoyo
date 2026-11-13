@@ -204,18 +204,6 @@ export async function marcarParaRevisao(uid: string): Promise<void> {
 
 // ---------- avaliações ----------
 
-const token = () => Array.from(crypto.getRandomValues(new Uint8Array(20)), (b) => b.toString(16).padStart(2, '0')).join('');
-
-/** Visitante deixa uma avaliação. Fica "por confirmar" até clicar no link do e-mail. */
-export async function enviarAvaliacao(a: { perfilId: string; nome: string; email: string; nota: number; texto: string }): Promise<void> {
-  const ref = doc(collection(db(), 'avaliacoes'));
-  const t = agora();
-  const b = writeBatch(db());
-  b.set(ref, { perfilId: a.perfilId, nome: a.nome.trim(), nota: a.nota, texto: a.texto.trim(), status: 'por_confirmar', criadoEm: t });
-  b.set(doc(db(), 'avaliacoesPrivado', ref.id), { email: a.email.trim().toLowerCase(), token: token(), criadoEm: t });
-  await b.commit();
-}
-
 export type AvaliacaoAdmin = Avaliacao & { email?: string };
 
 export async function listarAvaliacoesAdmin(): Promise<AvaliacaoAdmin[]> {
