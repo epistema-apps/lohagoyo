@@ -237,6 +237,59 @@ export const enviarOpiniao = onCall(
   },
 );
 
+// ---------- acesso do profissional (cadastro assistido) ----------
+// O cadastro assistido cria o perfil com um id próprio ("lhy…") e nenhuma conta de login.
+// Esta função (só administrador) cria a conta com uid = id do perfil e o e-mail do cadastro,
+// gera o link para criar a senha, envia por e-mail e devolve o link (para mandar por WhatsApp).
+
+async function ehModerador(auth) {
+  if (!auth) return false;
+  if (auth.token?.mod === true) return true;
+  const c = await db().doc('config/moderadores').get();
+  return (c.get('uids') ?? []).includes(auth.uid);
+}
+
+export const enviarAcesso = onCall({ secrets: [SMTP_SENHA], maxInstances: 2 }, async (req) => {
+  if (!(await ehModerador(req.auth))) throw new HttpsError('permission-denied', 'Solo administración.');
+  const perfilId = String(req.data?.perfilId ?? '');
+  if (!perfilId) throw new HttpsError('invalid-argument', 'Falta el perfil.');
+  const pr = await db().doc(`profissionais/${perfilId}`).get();
+  const emailPr = String(pr.get('email') ?? '').trim().toLowerCase();
+  if (!emailPr) throw new HttpsError('failed-precondition', 'El profesional no tiene correo registrado. Agrégalo en Editar > Contacto/privado.');
+
+  const auth = getAuth();
+  let user = await auth.getUser(perfilId).catch(() => null);
+  if (user && (user.email ?? '').toLowerCase() !== emailPr) {
+    user = await auth.updateUser(perfilId, { email: emailPr });
+  }
+  if (!user) {
+    const outro = await auth.getUserByEmail(emailPr).catch(() => null);
+    if (outro) {
+      throw new HttpsError('already-exists', `Ya existe otra cuenta con ${emailPr} (creada aparte). Para no perder la página, avisa a soporte técnico antes de seguir.`);
+    }
+    const { nome } = await nomeDoPerfil(perfilId);
+    user = await auth.createUser({ uid: perfilId, email: emailPr, displayName: String(pr.get('nomeCompleto') || nome).slice(0, 80) });
+    logger.info('conta criada para perfil assistido', perfilId);
+  }
+
+  const bruto = await auth.generatePasswordResetLink(emailPr, { url: `${SITE}/panel/` });
+  const u = new URL(bruto);
+  const link = `${SITE}/__/auth/action${u.search}${u.search.includes('lang=') ? '' : '&lang=es'}`;
+  const { primeiro } = await nomeDoPerfil(perfilId);
+  await email(emailPr, 'Crea tu contraseña de LoHagoYo', {
+    titulo: 'Tu acceso a LoHagoYo',
+    texto: [
+      `Hola ${primeiro}:`,
+      'Tu página ya está creada. Para entrar a tu panel y editarla cuando quieras, crea tu contraseña con el botón.',
+      `Tu usuario es **${emailPr}**.`,
+    ],
+    botao: { texto: 'Crear mi contraseña', url: link },
+    links: [{ texto: 'Entrar a mi panel', url: `${SITE}/panel/` }],
+    nota: 'El enlace vence en unas horas. Si vence, en el panel usa "¿Olvidaste tu contraseña?".',
+  });
+  return { ok: true, email: emailPr, link };
+});
+
 // Link do e-mail: confirma a avaliação e ela é PUBLICADA na hora (regra: publicação automática;
 // o controle é o bloqueio por avaliações ruins).
 export const confirmarAvaliacao = onRequest(async (req, res) => {

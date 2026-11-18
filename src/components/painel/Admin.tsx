@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { atualizarPermissoes, observarUsuario, sair, type Usuario } from '../../auth';
-import { despublicarPerfil, idsPublicados, listarParaModerar, novoIdAssistido, publicarPerfil, souModerador, type Privado } from '../../dados/painel';
+import { despublicarPerfil, enviarAcessoProfissional, idsPublicados, listarParaModerar, novoIdAssistido, publicarPerfil, souModerador, type Privado } from '../../dados/painel';
 import AdminAvaliacoes from './AdminAvaliacoes';
 import { textoPreco, textoPublico } from '../../dominio/formato';
 import { formatarRut } from '../../dominio/rut';
@@ -21,6 +21,16 @@ export default function Admin(props: PropsPainel) {
   const [itens, setItens] = useState<Item[] | null>(null);
   const [filtro, setFiltro] = useState<Filtro>('pendiente');
   const [aberto, setAberto] = useState<string | null>(null);
+  const [acesso, setAcesso] = useState<Record<string, { estado: 'enviando' | 'ok' | 'erro'; email?: string; link?: string; erro?: string }>>({});
+  async function darAcesso(id: string) {
+    setAcesso((a) => ({ ...a, [id]: { estado: 'enviando' } }));
+    try {
+      const r = await enviarAcessoProfissional(id);
+      setAcesso((a) => ({ ...a, [id]: { estado: 'ok', ...r } }));
+    } catch (e) {
+      setAcesso((a) => ({ ...a, [id]: { estado: 'erro', erro: e instanceof Error ? e.message : 'No se pudo enviar el acceso.' } }));
+    }
+  }
   const [aviso, setAviso] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
   const [aba, setAba] = useState<'perfis' | 'avaliacoes'>('perfis');
@@ -148,7 +158,19 @@ export default function Admin(props: PropsPainel) {
                     {aberto === p.id ? 'Ocultar' : 'Ver detalles'}
                   </button>
                   {p.status === 'aprobado' && <a className="btn btn-ghost btn-sm" href={`/${p.slug}/`} target="_blank" rel="noopener">Ver página</a>}
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={acesso[p.id]?.estado === 'enviando'} onClick={() => darAcesso(p.id)}>
+                    {acesso[p.id]?.estado === 'enviando' ? 'Enviando…' : 'Enviar acceso'}
+                  </button>
                 </div>
+                {acesso[p.id] && acesso[p.id].estado !== 'enviando' && (
+                  <div className={`md-acesso ${acesso[p.id].estado}`} role="status">
+                    {acesso[p.id].estado === 'ok' ? (<>
+                      <p>✓ Se envió a <strong>{acesso[p.id].email}</strong> el correo para crear la contraseña. También puedes mandarle este enlace por WhatsApp:</p>
+                      <input readOnly value={acesso[p.id].link} onFocus={(e) => e.currentTarget.select()} />
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigator.clipboard?.writeText(acesso[p.id].link ?? '')}>Copiar enlace</button>
+                    </>) : <p>{acesso[p.id].erro}</p>}
+                  </div>
+                )}
 
                 {aberto === p.id && (
                   <div className="md-detalhes">

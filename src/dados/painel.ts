@@ -126,6 +126,18 @@ export const novoIdAssistido = () => 'lhy' + Array.from(crypto.getRandomValues(n
 
 // ---------- moderação ----------
 
+/** Cria (se faltar) a conta de login do profissional de um cadastro assistido e envia o link para criar a senha. */
+export async function enviarAcessoProfissional(perfilId: string): Promise<{ email: string; link: string }> {
+  const { getFunctions, httpsCallable } = await import('firebase/functions');
+  try {
+    const r = await httpsCallable<{ perfilId: string }, { email: string; link: string }>(getFunctions(app(), 'southamerica-west1'), 'enviarAcesso')({ perfilId });
+    return r.data;
+  } catch (e) {
+    const m = (e as { message?: string }).message ?? '';
+    throw new Error(m.replace(/\s*\[\d+\]\s*$/, '') || 'No se pudo enviar el acceso.');
+  }
+}
+
 export async function souModerador(): Promise<boolean> {
   try {
     await getDoc(doc(db(), 'config', 'moderadores'));

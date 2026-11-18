@@ -150,3 +150,11 @@
 .pn-modelo:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .pn-esquema { width: 100%; max-width: 160px; aspect-ratio: 120 / 150; border-radius: 10px; display: block; }
 @media (max-width: 560px) { .pn-modelo { grid-template-columns: 84px 1fr; column-gap: 14px; } .pn-esquema { grid-row: span 2; } }
+
+/* acesso do profissional (admin) */
+.md-acesso { margin-top: 10px; padding: 12px 14px; border-radius: 12px; display: grid; gap: 8px; font-size: .9rem; }
+.md-acesso p { margin: 0; }
+.md-acesso.ok { background: var(--accent-soft); color: #14422f; }
+.md-acesso.erro { background: #fdecec; color: #8a1c1c; }
+.md-acesso input { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: .8rem ui-monospace, monospace; background: #fff; }
+.md-acesso .btn { justify-self: start; }
