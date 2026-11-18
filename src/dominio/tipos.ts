@@ -15,6 +15,14 @@ export type Publico = 'casas' | 'edificios' | 'empresas';
 
 export type Layout = 'claro' | 'foto' | 'compacto';
 
+/** Modelos da página do profissional (o id fica em Perfil.layout). */
+export const MODELOS_PAGINA: { id: Layout; nome: string; descricao: string }[] = [
+  { id: 'foto', nome: 'Editorial', descricao: 'Collage de fotos, datos destacados y servicios numerados.' },
+  { id: 'claro', nome: 'Portada', descricao: 'Tu foto de portada a pantalla completa, con impacto. Servicios en tarjetas.' },
+  { id: 'compacto', nome: 'Directa', descricao: 'Una columna con tu foto y los botones de contacto primero. Ideal para celular.' },
+];
+export const modeloPagina = (l: unknown): Layout => (MODELOS_PAGINA.some((m) => m.id === l) ? (l as Layout) : 'foto');
+
 export interface Categoria {
   id: Id; // slug, ex.: 'piscinas'
   nome: string; // 'Piscinas'

@@ -10,7 +10,7 @@ import { textoPreco } from '../../dominio/formato';
 import { gerarSlug, slugValido } from '../../dominio/slug';
 import { LINK_CORREOS, sugerirCodigoPostal } from '../../dados/codigo-postal';
 import { formatarRut, normalizarRut, rutValido } from '../../dominio/rut';
-import { textoEndereco, type Avaliacao, type Perfil, type Publico, type Servico, type TipoPreco } from '../../dominio/tipos';
+import { MODELOS_PAGINA, modeloPagina, textoEndereco, type Avaliacao, type Layout, type Perfil, type Publico, type Servico, type TipoPreco } from '../../dominio/tipos';
 
 export type { Props as PropsPainel };
 export interface FotoBanco { id: string; src: string; thumb: string; alt: string; categoria: string }
@@ -478,8 +478,24 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
 
  {!admin && perfil.status !== 'borrador' && <Opinioes uid={alvo} />}
 
- {/* 7. Tarjeta */}
-      <Secao n="07" titulo="Tu tarjeta de presentación" ajuda="Elige el diseño. Aparece al final de tu página para que la descarguen o compartan, y puedes imprimirla.">
+      {/* 7. Modelo da página */}
+      <Secao n="07" titulo="Diseño de tu página" ajuda="Elige cómo se ve tu página. Puedes cambiarlo cuando quieras; tus datos no cambian.">
+        <div className="pn-modelos" role="radiogroup" aria-label="Diseño de tu página">
+          {MODELOS_PAGINA.map((m) => {
+            const ativo = modeloPagina(perfil.layout) === m.id;
+            return (
+              <button key={m.id} type="button" role="radio" aria-checked={ativo} className={`pn-modelo${ativo ? ' ativo' : ''}`} onClick={() => set('layout', m.id)}>
+                <EsquemaModelo id={m.id} />
+                <strong>{m.nome}</strong>
+                <span>{m.descricao}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Secao>
+
+ {/* 8. Tarjeta */}
+      <Secao n="08" titulo="Tu tarjeta de presentación" ajuda="Elige el diseño. Aparece al final de tu página para que la descarguen o compartan, y puedes imprimirla.">
         <GeradorCartao
           inicial={perfil.cartao}
           aoEscolher={(c) => { if (c.estrutura !== perfil.cartao?.estrutura || c.tema !== perfil.cartao?.tema) setPerfil((p) => (p ? { ...p, cartao: c } : p)); }}
@@ -497,8 +513,8 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         />
       </Secao>
 
-      {/* 8. Enviar */}
-      <Secao n="08" titulo={admin ? 'Guardar y publicar' : 'Enviar para publicar'}>
+      {/* 9. Enviar */}
+      <Secao n="09" titulo={admin ? 'Guardar y publicar' : 'Enviar para publicar'}>
         {pendencias.length > 0 && (
           <ul className="pn-pendencias">{pendencias.map((p) => <li key={p}>{p}</li>)}</ul>
         )}
@@ -525,6 +541,47 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
 }
 
 // ---------------- peças ----------------
+
+/** Miniatura esquemática de cada modelo de página (só formas, sem dados). */
+export function EsquemaModelo({ id }: { id: Layout }) {
+  const escuro = '#2E3033', verde = '#5CC497', cinza = '#D9D9D6', claro = '#F1F1EF';
+  return (
+    <svg className="pn-esquema" viewBox="0 0 120 150" aria-hidden="true">
+      <rect width="120" height="150" fill={id === 'compacto' ? '#E6E6E4' : '#fff'} />
+      <rect x="0" y="0" width="120" height="12" fill={id === 'compacto' ? '#E6E6E4' : '#fff'} />
+      <rect x="8" y="4" width="30" height="4" rx="2" fill={escuro} />
+      {id === 'foto' && (<>
+        <rect x="8" y="22" width="44" height="9" rx="2" fill={escuro} />
+        <rect x="8" y="35" width="34" height="4" rx="2" fill={cinza} />
+        <rect x="8" y="46" width="30" height="8" rx="4" fill={escuro} />
+        <rect x="62" y="18" width="50" height="50" rx="8" fill={cinza} />
+        <rect x="56" y="48" width="24" height="24" rx="5" fill={escuro} stroke="#fff" strokeWidth="2" />
+        <rect x="8" y="80" width="104" height="16" rx="4" fill="#fff" stroke={cinza} />
+        {[0, 1, 2].map((i) => <rect key={i} x="8" y={104 + i * 14} width="104" height="1" fill={cinza} />)}
+        {[0, 1, 2].map((i) => <rect key={i} x="8" y={108 + i * 14} width="8" height="4" rx="1" fill={verde} />)}
+      </>)}
+      {id === 'claro' && (<>
+        <rect x="0" y="12" width="120" height="78" fill="#6E7570" />
+        <rect x="0" y="50" width="120" height="40" fill={escuro} opacity=".75" />
+        <rect x="8" y="56" width="60" height="10" rx="2" fill="#fff" />
+        <rect x="8" y="70" width="34" height="8" rx="4" fill={verde} />
+        <rect x="8" y="98" width="50" height="40" rx="6" fill="#fff" stroke={cinza} />
+        <rect x="62" y="98" width="50" height="40" rx="6" fill="#fff" stroke={cinza} />
+        <rect x="14" y="104" width="10" height="6" rx="1" fill={verde} />
+        <rect x="68" y="104" width="10" height="6" rx="1" fill={verde} />
+      </>)}
+      {id === 'compacto' && (<>
+        <circle cx="60" cy="32" r="13" fill={escuro} stroke="#fff" strokeWidth="2" />
+        <rect x="30" y="52" width="60" height="8" rx="2" fill={escuro} />
+        <rect x="22" y="66" width="76" height="9" rx="4.5" fill={escuro} />
+        <rect x="22" y="79" width="76" height="9" rx="4.5" fill="#fff" />
+        <rect x="14" y="96" width="92" height="22" rx="5" fill={cinza} />
+        <rect x="14" y="123" width="92" height="20" rx="5" fill="#fff" />
+      </>)}
+      <rect x="0.5" y="0.5" width="119" height="149" fill="none" stroke={claro} />
+    </svg>
+  );
+}
 
 function Secao({ n, titulo, ajuda, children }: { n: string; titulo: string; ajuda?: string; children: React.ReactNode }) {
   return (

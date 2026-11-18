@@ -7,11 +7,11 @@ import Base from '../layouts/Base.astro';
 import { dados } from '../dados';
 import { foto } from '../dados/fotos';
 import { linkWhatsApp, textoMateriais, textoPreco, textoPublico } from '../dominio/formato';
-import { textoEndereco, textoEnderecoCompleto, type Perfil } from '../dominio/tipos';
+import { modeloPagina, textoEndereco, textoEnderecoCompleto, type Perfil } from '../dominio/tipos';
 import FormAvaliacao from '../components/FormAvaliacao';
 import { readFile } from 'node:fs/promises';
 import AcoesCartao from '../components/cartao/AcoesCartao';
-import { desenharCartao, type DadosCartao, type EstruturaId } from '../components/cartao/desenho';
+import { desenharCartao, estruturaValida, type DadosCartao, type EstruturaId } from '../components/cartao/desenho';
 import { cartaoSvg } from '../components/cartao/render-svg';
 import { criarMedidor } from '../components/cartao/gerarPdf';
 import type { TemaId } from '../components/cartao/temas';
@@ -49,9 +49,12 @@ const capa = perfil.capa ?? perfil.fotos[0] ?? fotoCat;
 const extras = perfil.fotos.filter((f) => f !== capa);
 const iniciais = perfil.nomePublico.split(' ').filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toUpperCase();
 const n2 = (i: number) => String(i + 1).padStart(2, '0');
+// Modelo de página escolhido no painel: 'foto' = Editorial, 'claro' = Portada, 'compacto' = Directa.
+const modelo = modeloPagina(perfil.layout);
+const notaTxt = avaliacoes.length ? `${mediaTxt} · ${avaliacoes.length} ${avaliacoes.length === 1 ? 'opinión' : 'opiniones'}` : '';
 
 // Tarjeta escolhida no painel (padrão: Editorial Blanco), desenhada no build com as fontes reais.
-const estruturaCartao = (perfil.cartao?.estrutura ?? 'editorial') as EstruturaId;
+const estruturaCartao: EstruturaId = estruturaValida(perfil.cartao?.estrutura) ? perfil.cartao!.estrutura as EstruturaId : 'editorial';
 const temaCartao = (perfil.cartao?.tema ?? 'blanco') as TemaId;
 const dadosCartao: DadosCartao = {
   marca, nome: perfil.nomePublico, oficio: perfil.oficio,
@@ -98,7 +101,7 @@ const jsonLd = {
   jsonLd={jsonLd}
   moldura={false}
 >
-  <div class="sitio">
+  <div class={`sitio m-${modelo}`}>
     <header class="cab">
       <div class="wrap cab-in">
         <a href="#inicio" class="marca">{marca}<span class="ponto">.</span></a>
@@ -119,7 +122,8 @@ const jsonLd = {
       </div>
     </header>
 
-    <!-- Portada -->
+    <!-- Portada (modelo Editorial) -->
+    {modelo === 'foto' && (
     <section class="hero" id="inicio">
       <div class="wrap hero-in">
         <div class="hero-txt">
@@ -147,13 +151,58 @@ const jsonLd = {
         </div>
       </div>
     </section>
+    )}
 
-    <!-- Faixa de dados -->
-    <section class="wrap">
+    <!-- Portada (modelo Portada): foto a tela cheia -->
+    {modelo === 'claro' && (
+      <section class={`hero-p${capa ? '' : ' sem-foto'}`} id="inicio">
+        {capa && <img class="hp-fundo" src={capa} alt={`${perfil.oficio}, ${marca}`} fetchpriority="high" width="1600" height="1000" />}
+        <div class="wrap hp-in">
+          <p class="sobretitulo claro"><span class="traco"></span>{perfil.oficio}</p>
+          <h1>{marca}<span class="ponto">.</span></h1>
+          {perfil.lema && <p class="lema">{perfil.lema}</p>}
+          <div class="acoes">
+            {wa && <a class="btn btn-branco" href={wa} target="_blank" rel="noopener">Escríbeme por WhatsApp</a>}
+            <a class="link-seta claro" href="#servicios"><span aria-hidden="true">→</span> Ver servicios</a>
+          </div>
+          <div class="hp-pessoa">
+            {perfil.retrato
+              ? <img src={perfil.retrato} alt={`Foto de ${perfil.nomePublico}`} width="112" height="112" />
+              : <span aria-hidden="true">{iniciais}</span>}
+            <p><strong>{perfil.nomePublico}</strong>{notaTxt ? <a href="#opiniones"><span class="av-estrelas">★</span> {notaTxt}</a> : <small>{perfil.comunas.join(' · ')}</small>}</p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- Portada (modelo Directa): uma coluna, contato primeiro -->
+    {modelo === 'compacto' && (
+      <section class="hero-d" id="inicio">
+        <div class="wrap hd-in">
+          {perfil.retrato
+            ? <img class="hd-retrato" src={perfil.retrato} alt={`Foto de ${perfil.nomePublico}`} width="240" height="240" fetchpriority="high" />
+            : <span class="hd-retrato hd-iniciais" aria-hidden="true">{iniciais}</span>}
+          <p class="sobretitulo hd-sobre">{perfil.oficio}</p>
+          <h1>{marca}<span class="ponto">.</span></h1>
+          {perfil.lema && <p class="lema">{perfil.lema}</p>}
+          {notaTxt && <a class="hd-nota" href="#opiniones"><span class="av-estrelas">★</span> {notaTxt}</a>}
+          <div class="hd-botoes">
+            {wa && <a class="btn btn-escuro" href={wa} target="_blank" rel="noopener">Escríbeme por WhatsApp</a>}
+            {tel && <a class="btn btn-linha" href={`tel:${tel}`}>Llamar</a>}
+            <a class="btn btn-linha" href="#servicios">Ver servicios</a>
+          </div>
+          <p class="hd-zona">{perfil.comunas.join(' · ')}</p>
+        </div>
+        {capa && <div class="wrap"><img class="hd-capa" src={capa} alt={`${perfil.oficio}, ${marca}`} width="1200" height="700" /></div>}
+      </section>
+    )}
+
+    <!-- Faixa de dados (não aparece no modelo Directa) -->
+    {modelo !== 'compacto' && <section class="wrap">
       <dl class="fatos">
         {fatos.map((f) => <div><dt>{f.rotulo}</dt><dd>{f.valor}</dd></div>)}
       </dl>
-    </section>
+    </section>}
 
     <!-- Serviços -->
     <section class="wrap bloco" id="servicios">
@@ -496,4 +545,63 @@ const jsonLd = {
   .wa-icone::after { content: ''; position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; background: #25d366; border: 2px solid #fff; }
   .wa-icone:hover { background: var(--fundo-escuro-hover); }
   @media (max-width: 820px) { .cab .btn-sm { display: none; } .wa-icone { display: grid; } .cab-in { gap: 10px; } }
+  /* ===== modelo Portada ===== */
+  .hero-p { position: relative; min-height: min(86vh, 760px); display: flex; align-items: flex-end; background: var(--fundo-escuro); color: #fff; overflow: hidden; }
+  .hp-fundo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.85); }
+  .hero-p::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(30, 31, 33, 0.25) 0%, rgba(30, 31, 33, 0.55) 45%, rgba(30, 31, 33, 0.92) 100%); }
+  .hero-p.sem-foto::after { display: none; }
+  .hp-in { position: relative; z-index: 1; width: 100%; padding-top: 120px; padding-bottom: clamp(88px, 10vw, 128px); }
+  .hero-p h1 { color: #fff; font-size: clamp(3rem, 10vw, 7.2rem); line-height: 0.95; letter-spacing: -0.055em; margin: 0 0 0.25em; max-width: 12ch; }
+  .hero-p .ponto { color: var(--sol); }
+  .hero-p .lema { color: rgba(255, 255, 255, 0.82); }
+  .link-seta.claro { color: #fff; }
+  .hp-pessoa { display: flex; align-items: center; gap: 14px; margin-top: 36px; }
+  .hp-pessoa img, .hp-pessoa > span { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; object-position: center 30%; border: 2px solid rgba(255, 255, 255, 0.85); flex: none; }
+  .hp-pessoa > span { display: grid; place-items: center; background: var(--grafite-medio); font: 700 1.1rem var(--font-head); }
+  .hp-pessoa p { margin: 0; display: flex; flex-direction: column; font-size: 0.9rem; }
+  .hp-pessoa a, .hp-pessoa small { color: rgba(255, 255, 255, 0.78); text-decoration: none; font-size: 0.86rem; }
+  .hp-pessoa .av-estrelas { color: var(--sol); }
+  .m-claro .servicos { border-top: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+  .m-claro .servico { grid-template-columns: 1fr; gap: 12px; padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: #fff; transition: box-shadow 0.2s ease; }
+  .m-claro .servico:hover { box-shadow: 0 18px 40px rgba(26, 25, 24, 0.08); }
+  .m-claro .num { font-size: 2.4rem; line-height: 1; padding: 0; letter-spacing: -0.04em; }
+  .m-claro .s-detalhes { grid-template-columns: 1fr; }
+  .m-claro .s-lado { text-align: left; align-items: flex-start; border-top: 1px solid var(--line); padding-top: 16px; }
+  .m-claro #servicios { scroll-margin-top: 80px; }
+
+  /* ===== modelo Directa ===== */
+  .m-compacto { background: var(--grafite-claro); }
+  .m-compacto .wrap { max-width: 760px; }
+  .m-compacto .cab { background: rgba(230, 230, 228, 0.92); }
+  .hero-d { padding: clamp(36px, 8vw, 64px) 0 0; }
+  .hd-in { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .hd-retrato { width: 128px; height: 128px; border-radius: 50%; object-fit: cover; object-position: center 30%; border: 4px solid #fff; box-shadow: 0 14px 34px rgba(26, 25, 24, 0.14); margin-bottom: 22px; }
+  .hd-iniciais { display: grid; place-items: center; background: var(--fundo-escuro); color: #fff; font: 700 2.6rem var(--font-head); letter-spacing: -0.04em; }
+  .hd-sobre { justify-content: center; margin-bottom: 10px; }
+  .hero-d h1 { font-size: clamp(2.6rem, 9vw, 4.4rem); line-height: 0.98; letter-spacing: -0.055em; margin: 0 0 0.25em; }
+  .hero-d .lema { margin: 0 auto 1.2em; }
+  .hd-nota { color: var(--ink); font-weight: 700; text-decoration: none; margin-bottom: 18px; }
+  .hd-botoes { display: grid; gap: 10px; width: 100%; max-width: 420px; margin-top: 14px; }
+  .hd-botoes .btn { width: 100%; }
+  .btn-linha { background: #fff; color: var(--ink); border-color: var(--line); }
+  .btn-linha:hover { border-color: var(--ink); }
+  .hd-zona { margin: 18px 0 0; font-size: 0.86rem; color: var(--muted); }
+  .hd-capa { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 24px; margin-top: 40px; filter: saturate(0.85); }
+  .m-compacto .bloco { padding-top: clamp(56px, 9vw, 88px); }
+  .m-compacto .titulo h2, .m-compacto .sobre h2, .m-compacto .contacto h2, .m-compacto .op-cab h2, .m-compacto .tarjeta h2 { font-size: clamp(1.9rem, 6vw, 2.6rem); }
+  .m-compacto .servicos { border-top: 0; display: grid; gap: 12px; }
+  .m-compacto .servico { grid-template-columns: 1fr; gap: 10px; padding: 22px; border: 0; border-radius: 20px; background: #fff; }
+  .m-compacto .num { display: none; }
+  .m-compacto .s-detalhes { grid-template-columns: 1fr; }
+  .m-compacto .s-lado { text-align: left; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+  .m-compacto .s-mat { margin: 0; }
+  .m-compacto .sobre { grid-template-columns: 1fr; gap: 0; }
+  .m-compacto .sobre .retrato { display: none; }
+  .m-compacto .tarjeta { grid-template-columns: 1fr; }
+  .m-compacto .tarjeta-mesa { background: #fff; order: -1; }
+  .m-compacto .op-lista { grid-template-columns: 1fr; }
+  .m-compacto .op-lista li { background: #fff; border: 0; }
+  .m-compacto .op-resposta { background: var(--grafite-claro); }
+  .m-compacto :global(.fa-cta), .m-compacto :global(.fa) { background: #fff; }
+  .m-compacto .contacto { grid-template-columns: 1fr; }
 </style>

@@ -20,13 +20,24 @@ export type Cmd =
   | { t: 'texto'; x: number; y: number; txt: string; fonte: Fonte; tam: number; cor: string }
   | { t: 'path'; d: string; x: number; y: number; escala: number; cor: string };
 
-export type EstruturaId = 'editorial' | 'dividida' | 'franja' | 'punto';
+export type EstruturaId =
+  | 'editorial' | 'dividida' | 'franja' | 'punto'
+  | 'centrada' | 'lateral' | 'marco' | 'bloque' | 'inicial' | 'cabecera' | 'linea' | 'esquina';
 export const ESTRUTURAS: { id: EstruturaId; nome: string }[] = [
   { id: 'editorial', nome: 'Editorial' },
   { id: 'dividida', nome: 'Dividida' },
   { id: 'franja', nome: 'Franja' },
   { id: 'punto', nome: 'Punto' },
+  { id: 'centrada', nome: 'Centrada' },
+  { id: 'lateral', nome: 'Lateral' },
+  { id: 'marco', nome: 'Marco' },
+  { id: 'bloque', nome: 'Bloque' },
+  { id: 'inicial', nome: 'Inicial' },
+  { id: 'cabecera', nome: 'Cabecera' },
+  { id: 'linea', nome: 'Línea' },
+  { id: 'esquina', nome: 'Esquina' },
 ];
+export const estruturaValida = (id: unknown): id is EstruturaId => ESTRUTURAS.some((e) => e.id === id);
 
 export interface DadosCartao {
   marca: string; // 'Pedro Piscinas'
@@ -143,6 +154,36 @@ function qr(url: string, x: number, y: number, tam: number, placa = true): Cmd[]
   ];
 }
 
+
+/** Texto alinhado à direita (x = borda direita). */
+function textoDir(medir: Medir, txt: string, xDir: number, y: number, fonte: Fonte, max: number, larg: number, cor: string): Cmd {
+  const tam = caber(medir, fonte, txt, max, larg);
+  return { t: 'texto', x: xDir - medir(fonte, txt, tam), y, txt, fonte, tam, cor };
+}
+/** Texto centralizado em cx. */
+function textoCentro(medir: Medir, txt: string, cx: number, y: number, fonte: Fonte, max: number, larg: number, cor: string): Cmd {
+  const tam = caber(medir, fonte, txt, max, larg);
+  return { t: 'texto', x: cx - medir(fonte, txt, tam) / 2, y, txt, fonte, tam, cor };
+}
+/** Marca centralizada em uma linha, com ponto de acento. */
+function marcaCentro(medir: Medir, marca: string, cx: number, y: number, larg: number, cor: string, corPonto: string, max = 20): Cmd[] {
+  const tam = caber(medir, 'nome', marca + '.', max, larg);
+  const x = cx - medir('nome', marca + '.', tam) / 2;
+  return [
+    { t: 'texto', x, y, txt: marca, fonte: 'nome', tam, cor },
+    { t: 'texto', x: x + medir('nome', marca, tam) - tam * 0.06, y, txt: '.', fonte: 'nome', tam, cor: corPonto },
+  ];
+}
+/** Bloco de linhas empilhadas de baixo para cima (alinhamento à esquerda ou à direita). */
+function pilha(medir: Medir, linhas: { txt: string; fonte: Fonte; cor: string; max: number }[], x: number, yUltima: number, larg: number, dir = false, lh = 8.6): Cmd[] {
+  const ls = linhas.filter((l) => l.txt);
+  return ls.map((l, i) => {
+    const y = yUltima - (ls.length - 1 - i) * lh;
+    return dir ? textoDir(medir, l.txt, x, y, l.fonte, l.max, larg, l.cor)
+      : { t: 'texto' as const, x, y, txt: l.txt, fonte: l.fonte, tam: caber(medir, l.fonte, l.txt, l.max, larg), cor: l.cor };
+  });
+}
+
 const fundo = (cor: string, b: number): Cmd => ({ t: 'rect', x: -b, y: -b, w: W + 2 * b, h: H + 2 * b, cor });
 
 export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: DadosCartao, medir: Medir, b = SANGRIA): Cmd[] {
@@ -215,6 +256,154 @@ export function desenharCartao(estrutura: EstruturaId, temaId: TemaId, dados: Da
     cmds.push(...m.cmds);
     if (mostrarPessoa) cmds.push(pessoa(medir, d.nome, M, M + 16 + m.altura + 9, larg, tema.suave));
     cmds.push(...linhasContato(medir, d, M, H - M - 16, larg + 8, tema, false));
+  }
+
+  const claroSobrePainel = { texto: '#FFFFFF', suave: '#B4B6B9', acento: '#5CC497' };
+  const placa = tema.fundo !== '#FFFFFF';
+
+  if (estrutura === 'centrada') {
+    const lw = 40;
+    cmds.push(...logo((W - lw) / 2, M - 3, lw, tema.logo));
+    cmds.push(textoCentro(medir, d.oficio.toUpperCase(), W / 2, 44, 'neg', 5.6, W - 2 * M - 20, tema.suave));
+    cmds.push(...marcaCentro(medir, d.marca, W / 2, 66, W - 2 * M - 10, tema.texto, tema.acento));
+    cmds.push({ t: 'rect', x: W / 2 - 7, y: 73, w: 14, h: 0.8, cor: tema.acento });
+    if (mostrarPessoa) cmds.push(textoCentro(medir, d.nome, W / 2, 84, 'neg', 6.6, W - 2 * M, tema.suave));
+    const q = 30;
+    cmds.push(...qr(d.url, (W - q) / 2, H - M - q + 3, q, placa));
+    const col = (W - q) / 2 - M - 8;
+    cmds.push(...pilha(medir, [
+      { txt: d.telefone, fonte: 'nome', cor: tema.texto, max: 7.2 },
+      { txt: d.email, fonte: 'reg', cor: tema.texto, max: 6.2 },
+      { txt: d.endereco ?? '', fonte: 'reg', cor: tema.suave, max: 5.2 },
+    ], M, H - M, col));
+    cmds.push(...pilha(medir, [
+      { txt: d.comunas, fonte: 'reg', cor: tema.suave, max: 6.2 },
+      { txt: d.urlCurta, fonte: 'neg', cor: tema.acento, max: 6.2 },
+    ], W - M, H - M, col, true));
+  }
+
+  if (estrutura === 'lateral') {
+    const B = 16;
+    cmds.push({ t: 'rect', x: -b, y: -b, w: B + b, h: H + 2 * b, cor: tema.acento });
+    const x0 = B + M;
+    const lw = 40;
+    const larg = W - x0 - M;
+    cmds.push(...logo(W - M - lw, M - 1.5, lw, tema.logo));
+    cmds.push(...sobretitulo(medir, d.oficio, x0, M + 5, larg - lw - 10, tema.suave));
+    const m = blocoMarca(medir, d.marca, x0, M + 16, larg, tema.texto, tema.acento, 18);
+    cmds.push(...m.cmds);
+    if (mostrarPessoa) cmds.push(pessoa(medir, d.nome, x0, M + 16 + m.altura + 9, larg, tema.suave));
+    const q = 38;
+    cmds.push(...linhasContato(medir, d, x0, H - M, larg - q - 12, tema));
+    cmds.push(...qr(d.url, W - M - q, H - M - q, q, placa));
+  }
+
+  if (estrutura === 'marco') {
+    const I = 7;
+    cmds.push({ t: 'rect', x: I, y: I, w: W - 2 * I, h: H - 2 * I, cor: tema.acento, r: 4 });
+    cmds.push({ t: 'rect', x: I + 0.9, y: I + 0.9, w: W - 2 * I - 1.8, h: H - 2 * I - 1.8, cor: tema.fundo, r: 3.2 });
+    const lw = 42;
+    cmds.push({ t: 'rect', x: (W - lw) / 2 - 6, y: I - 3, w: lw + 12, h: 6, cor: tema.fundo });
+    cmds.push(...logo((W - lw) / 2, I - alturaLogo(lw) / 2 + 0.6, lw, tema.logo));
+    const x0 = M + 6;
+    cmds.push(textoCentro(medir, d.oficio.toUpperCase(), W / 2, 34, 'neg', 5.6, W - 2 * x0, tema.suave));
+    cmds.push(...marcaCentro(medir, d.marca, W / 2, 56, W - 2 * x0, tema.texto, tema.acento, 19));
+    if (mostrarPessoa) cmds.push(textoCentro(medir, d.nome, W / 2, 67, 'neg', 6.4, W - 2 * x0, tema.suave));
+    const q = 32;
+    cmds.push(...linhasContato(medir, d, x0, H - x0 + 2, W - 2 * x0 - q - 12, tema));
+    cmds.push(...qr(d.url, W - x0 - q, H - x0 - q + 2, q, placa));
+  }
+
+  if (estrutura === 'bloque') {
+    const P = 82;
+    cmds.push({ t: 'rect', x: -b, y: -b, w: W + 2 * b, h: P + b, cor: tema.painel });
+    const lw = 40;
+    const q = 40;
+    cmds.push(...logo(W - M - lw, M - 1.5, lw, LOGO_ESCURO));
+    cmds.push(...sobretitulo(medir, d.oficio, M, M + 5, W - 2 * M - lw - 10, claroSobrePainel.suave));
+    const m = blocoMarca(medir, d.marca, M, M + 16, W - 2 * M - q - 6, claroSobrePainel.texto, claroSobrePainel.acento, 18);
+    cmds.push(...m.cmds);
+    if (mostrarPessoa) cmds.push(pessoa(medir, d.nome, M, Math.min(M + 16 + m.altura + 9, P - 8), W - 2 * M - q - 10, claroSobrePainel.suave));
+    cmds.push(...qr(d.url, W - M - q, P - q / 2, q, true));
+    const col = (W - 2 * M - q - 14) / 2;
+    cmds.push(...pilha(medir, [
+      { txt: d.telefone, fonte: 'nome', cor: tema.texto, max: 7.2 },
+      { txt: d.email, fonte: 'reg', cor: tema.texto, max: 6.2 },
+      { txt: d.urlCurta, fonte: 'neg', cor: tema.acento, max: 6.2 },
+    ], M, H - M + 2, col + 6));
+    cmds.push(...pilha(medir, [
+      { txt: d.comunas, fonte: 'reg', cor: tema.suave, max: 6 },
+      { txt: d.endereco ?? '', fonte: 'reg', cor: tema.suave, max: 5.2 },
+    ], M + col + 12, H - M + 2, col - 6));
+  }
+
+  if (estrutura === 'inicial') {
+    const letra = (d.marca.match(/[A-Za-zÀ-ÿ0-9]/)?.[0] ?? 'Y').toUpperCase();
+    cmds.push({ t: 'texto', x: W - 112, y: H + 30, txt: letra, fonte: 'nome', tam: 190, cor: tema.circulo });
+    const q = 38;
+    const lw = 38;
+    cmds.push(...logo(W - M - lw, M - 1.5, lw, tema.logo));
+    const larg = W - 2 * M - 70;
+    cmds.push(...sobretitulo(medir, d.oficio, M, M + 5, larg, tema.suave));
+    const m = blocoMarca(medir, d.marca, M, M + 16, larg + 20, tema.texto, tema.acento, 18);
+    cmds.push(...m.cmds);
+    if (mostrarPessoa) cmds.push(pessoa(medir, d.nome, M, M + 16 + m.altura + 9, larg, tema.suave));
+    cmds.push(...linhasContato(medir, d, M, H - M, W - 2 * M - q - 14, tema));
+    cmds.push(...qr(d.url, W - M - q, H - M - q, q, true));
+  }
+
+  if (estrutura === 'cabecera') {
+    const F = 30;
+    cmds.push({ t: 'rect', x: -b, y: -b, w: W + 2 * b, h: F + b, cor: tema.painel });
+    const lw = 42;
+    cmds.push(...logo(M, F / 2 - alturaLogo(lw) / 2, lw, LOGO_ESCURO));
+    cmds.push(textoDir(medir, d.oficio.toUpperCase(), W - M, F / 2 + 2, 'neg', 5.6, W - 2 * M - lw - 16, claroSobrePainel.suave));
+    const q = 38;
+    const larg = W - 2 * M - q - 10;
+    const m = blocoMarca(medir, d.marca, M, F + 12, larg, tema.texto, tema.acento, 17);
+    cmds.push(...m.cmds);
+    if (mostrarPessoa) cmds.push(pessoa(medir, d.nome, M, F + 12 + m.altura + 8, larg, tema.suave));
+    cmds.push(...linhasContato(medir, d, M, H - M, larg - 4, tema));
+    cmds.push(...qr(d.url, W - M - q, H - M - q, q, placa));
+  }
+
+  if (estrutura === 'linea') {
+    const lw = 36;
+    cmds.push(...logo(W - M - lw, M - 1.5, lw, tema.logo));
+    const m = blocoMarca(medir, d.marca, M, M + 2, W - 2 * M - lw - 12, tema.texto, tema.acento, 21);
+    cmds.push(...m.cmds);
+    const yOf = M + 2 + m.altura + 9;
+    const of = d.oficio.toUpperCase() + (mostrarPessoa ? '  ·  ' + d.nome.toUpperCase() : '');
+    cmds.push({ t: 'texto', x: M, y: yOf, txt: of, fonte: 'neg', tam: caber(medir, 'neg', of, 5.8, W - 2 * M), cor: tema.acento });
+    const yL = Math.max(yOf + 9, 78);
+    cmds.push({ t: 'rect', x: M, y: yL, w: W - 2 * M, h: 0.7, cor: tema.texto });
+    const q = 34;
+    const col = (W - 2 * M - q - 16) / 2;
+    cmds.push(...pilha(medir, [
+      { txt: d.telefone, fonte: 'nome', cor: tema.texto, max: 7.2 },
+      { txt: d.email, fonte: 'reg', cor: tema.texto, max: 6.2 },
+      { txt: d.urlCurta, fonte: 'neg', cor: tema.acento, max: 6.2 },
+    ], M, H - M, col + 4));
+    cmds.push(...pilha(medir, [
+      { txt: d.comunas, fonte: 'reg', cor: tema.suave, max: 6 },
+      { txt: d.endereco ?? '', fonte: 'reg', cor: tema.suave, max: 5.2 },
+    ], M + col + 10, H - M, col - 2));
+    cmds.push(...qr(d.url, W - M - q, H - M - q, q, placa));
+  }
+
+  if (estrutura === 'esquina') {
+    const R = 84;
+    cmds.push({ t: 'circ', cx: W + 6, cy: -6, r: R, cor: tema.painel });
+    const q = 40;
+    cmds.push(...qr(d.url, W - M - q + 2, M - 4, q, true));
+    const lw = 40;
+    cmds.push(...logo(W - M - lw, H - M - alturaLogo(lw) + 1, lw, tema.logo));
+    const larg = W - 2 * M - 76;
+    cmds.push(...sobretitulo(medir, d.oficio, M, M + 5, larg, tema.suave));
+    const m = blocoMarca(medir, d.marca, M, M + 16, larg + 6, tema.texto, tema.acento, 18);
+    cmds.push(...m.cmds);
+    if (mostrarPessoa) cmds.push(pessoa(medir, d.nome, M, M + 16 + m.altura + 9, larg, tema.suave));
+    cmds.push(...linhasContato(medir, d, M, H - M, W - 2 * M - lw - 14, tema));
   }
 
   return cmds;
