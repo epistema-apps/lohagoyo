@@ -254,8 +254,11 @@ export const enviarAcesso = onCall({ secrets: [SMTP_SENHA], maxInstances: 2 }, a
   const perfilId = String(req.data?.perfilId ?? '');
   if (!perfilId) throw new HttpsError('invalid-argument', 'Falta el perfil.');
   const pr = await db().doc(`profissionais/${perfilId}`).get();
-  const emailPr = String(pr.get('email') ?? '').trim().toLowerCase();
-  if (!emailPr) throw new HttpsError('failed-precondition', 'El profesional no tiene correo registrado. Agrégalo en Editar > Contacto/privado.');
+  // e-mail de acesso: o privado do cadastro; se vazio, o de contato da página
+  const perfil = await db().doc(`perfis/${perfilId}`).get();
+  const emailPr = String(pr.get('email') || perfil.get('contatos.email') || '').trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailPr)) throw new HttpsError('failed-precondition', 'El profesional no tiene correo registrado. Agrégalo en Editar > Contacto y guarda antes de enviar el acceso.');
+  if (!pr.get('email')) await db().doc(`profissionais/${perfilId}`).set({ email: emailPr }, { merge: true });
 
   const auth = getAuth();
   let user = await auth.getUser(perfilId).catch(() => null);
