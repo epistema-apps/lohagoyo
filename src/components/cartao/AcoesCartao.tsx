@@ -1,6 +1,6 @@
 // Ações no fim da página do profissional: compartilhar a página, compartilhar a tarjeta (imagem)
 // e baixar o PDF para imprimir.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DadosCartao, EstruturaId } from './desenho';
 import type { TemaId } from './temas';
 
@@ -31,23 +31,45 @@ export default function AcoesCartao({ dados, estrutura, tema }: { dados: DadosCa
     }
   }
 
+  // A imagem é preparada antes do toque: no celular o "compartir" só abre se for chamado
+  // logo após o toque (se esperar gerar a imagem, o navegador recusa em silêncio).
+  const png = useRef<Promise<File> | null>(null);
+  const pronto = useRef<File | null>(null);
+  function prepararPng(): Promise<File> {
+    png.current ??= import('./imagem')
+      .then(({ gerarPngCartao }) => gerarPngCartao(dados, estrutura, tema))
+      .then((b) => (pronto.current = new File([b], `tarjeta-${base}.png`, { type: 'image/png' })))
+      .catch((e) => { png.current = null; throw e; });
+    return png.current;
+  }
+  useEffect(() => {
+    const id = setTimeout(() => { prepararPng().catch(() => {}); }, 600);
+    return () => clearTimeout(id);
+  }, []);
+
   async function compartilharTarjeta() {
-    setEstado('Preparando la tarjeta…');
-    try {
-      const { gerarPngCartao } = await import('./imagem');
-      const png = await gerarPngCartao(dados, estrutura, tema);
-      const arquivo = new File([png], `tarjeta-${base}.png`, { type: 'image/png' });
-      if (navigator.canShare?.({ files: [arquivo] })) {
-        setEstado('');
-        try { await navigator.share({ files: [arquivo], title: dados.marca, text: `${texto} · ${dados.url}` }); } catch { /* cancelado */ }
+    let arquivo = pronto.current;
+    if (!arquivo) {
+      setEstado('Preparando la tarjeta…');
+      try { arquivo = await prepararPng(); } catch (e) {
+        console.error(e);
+        setEstado('No se pudo preparar la tarjeta. Inténtalo de nuevo.');
         return;
       }
-      baixar(png, arquivo.name);
-      setEstado('Tarjeta descargada como imagen. Envíala por WhatsApp o donde quieras.');
-    } catch (e) {
-      console.error(e);
-      setEstado('No se pudo preparar la tarjeta. Inténtalo de nuevo.');
     }
+    if (navigator.canShare?.({ files: [arquivo] })) {
+      try {
+        await navigator.share({ files: [arquivo], title: dados.marca, text: `${texto} · ${dados.url}` });
+        setEstado('');
+      } catch (e) {
+        if ((e as Error)?.name === 'AbortError') { setEstado(''); return; } // a pessoa cancelou
+        // tempo do toque expirou (a imagem demorou): já está pronta, basta tocar de novo
+        setEstado('La tarjeta está lista. Toca "Compartir tarjeta" otra vez.');
+      }
+      return;
+    }
+    baixar(arquivo, arquivo.name);
+    setEstado('Tarjeta descargada como imagen. Envíala por WhatsApp o donde quieras.');
   }
 
   async function baixarPdf() {
