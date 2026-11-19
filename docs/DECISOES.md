@@ -111,3 +111,6 @@ Fundo **coletivo e discreto** (financiar cartões/kits). **Nenhum perfil mostra 
 - Limites: 1 opinião por e-mail por profissional; até 3 por e-mail em 24 h; teto de 40 e-mails de confirmação por hora; e-mails descartáveis recusados; campo-isca e tempo mínimo de 4 s (robô recebe "ok" falso e é descartado).
 - Fluxo mantido: ao confirmar pelo e-mail, a opinião é publicada direto.
 - App Check (reCAPTCHA Enterprise, invisível) LIGADO em 2026-11-12: chave do site em `src/dados/config-firebase.ts`, exigência na função via `APP_CHECK=1` em `functions/.env` (não é segredo, fica no git). Firestore e Storage ainda sem exigir App Check (o painel funciona sem).
+
+## 2026-11-18 — Mudança só de aparência publica na hora
+- Se o profissional muda apenas o modelo da página (`layout`) e/ou a tarjeta (`cartao`) de uma página já publicada, a função `aoMudarPerfil` atualiza `publicados` e volta o status para `aprobado`, sem verificação. Qualquer outra diferença (textos, fotos, contatos, serviços) continua esperando aprovação.

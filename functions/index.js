@@ -72,6 +72,51 @@ export const aoMudarPublicado = onDocumentWritten({ document: 'publicados/{id}',
   }
 });
 
+// ---------- mudança só de aparência: publica na hora ----------
+// Se o profissional mudou apenas o modelo da página (layout) e/ou a tarjeta (cartao) de uma página
+// já publicada, não precisa de verificação: atualiza a versão publicada e volta o status para aprobado.
+// Qualquer outra diferença (textos, fotos, contatos, serviços) segue esperando a aprovação.
+const APARENCIA = ['layout', 'cartao'];
+const IGNORAR = new Set([...APARENCIA, 'status', 'atualizadoEm', 'criadoEm', 'aprovadoPor', 'aprovadoEm']);
+const estavel = (v) => {
+  if (Array.isArray(v)) return `[${v.map(estavel).join(',')}]`;
+  if (v && typeof v === 'object') return `{${Object.keys(v).filter((k) => v[k] !== undefined && v[k] !== null && v[k] !== '').sort().map((k) => `${JSON.stringify(k)}:${estavel(v[k])}`).join(',')}}`;
+  return JSON.stringify(v);
+};
+const semCampos = (o, ign) => Object.fromEntries(Object.entries(o ?? {}).filter(([k]) => !ign.has(k)));
+const IGN_SERV = new Set(['atualizadoEm', 'criadoEm']);
+const chaveServicos = (lista) => estavel([...(lista ?? [])].map((x) => semCampos(x, IGN_SERV)).sort((a, b) => String(a.id).localeCompare(String(b.id))));
+
+export const aoMudarPerfil = onDocumentWritten({ document: 'perfis/{uid}' }, async (ev) => {
+  const depois = ev.data?.after?.data();
+  if (!depois || !['pendiente', 'aprobado'].includes(depois.status)) return;
+  const uid = ev.params.uid;
+  const pubRef = db().doc(`publicados/${uid}`);
+  const pub = await pubRef.get();
+  if (!pub.exists || pub.get('suspenso')) return;
+  const noAr = pub.get('perfil') ?? {};
+  if (estavel(semCampos(depois, IGNORAR)) !== estavel(semCampos(noAr, IGNORAR))) return; // mudou conteúdo
+  const sv = await db().collection('servicos').where('perfilId', '==', uid).get();
+  const atuais = sv.docs.map((d) => ({ ...d.data(), id: d.id })).filter((x) => x.ativo !== false);
+  if (chaveServicos(atuais) !== chaveServicos(pub.get('servicos'))) return; // mudou serviços
+
+  const mudouAparencia = APARENCIA.some((k) => estavel(depois[k] ?? null) !== estavel(noAr[k] ?? null));
+  const t = new Date().toISOString();
+  const b = db().batch();
+  if (mudouAparencia) {
+    b.update(pubRef, {
+      'perfil.layout': depois.layout ?? 'foto',
+      'perfil.cartao': depois.cartao ?? { estrutura: 'editorial', tema: 'blanco' },
+      'perfil.atualizadoEm': t,
+      publicadoEm: t,
+    });
+  }
+  if (depois.status !== 'aprobado') b.update(ev.data.after.ref, { status: 'aprobado', atualizadoEm: t });
+  if (!mudouAparencia && depois.status === 'aprobado') return;
+  await b.commit();
+  logger.info('aparência publicada sem verificação', uid, { mudouAparencia });
+});
+
 // ---------- avaliações ----------
 
 export const aoMudarAvaliacao = onDocumentWritten(

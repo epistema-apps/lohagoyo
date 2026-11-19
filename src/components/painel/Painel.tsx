@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { criarConta, emulador, entrarComGoogle, entrarComSenha, mensagemErro, observarUsuario, recuperarSenha, sair, type Usuario } from '../../auth';
 import {
-  apagarServico, carregarMeusDados, enviarParaRevisao, marcarParaRevisao, publicarPerfil, minhasAvaliacoes, responderAvaliacao,
+  apagarServico, carregarMeusDados, enviarParaRevisao, marcarParaRevisao, publicadoNaHora, publicarPerfil, minhasAvaliacoes, responderAvaliacao,
   salvarPerfil, salvarPrivado, salvarServico, slugDisponivel, subirFoto, type NomeFoto, type Privado,
 } from '../../dados/painel';
 import Conversa from './Conversa';
@@ -244,7 +244,11 @@ export function Editor({ usuario, categorias, comunas, banco, uidAlvo, admin = f
         setMsg({ tipo: 'ok', t: '✓ Guardado y publicado. La página se está actualizando y estará en línea en unos minutos.' });
         return;
       }
-      setMsg({ tipo: 'ok', t: '✓ ¡Listo! Tu página está en verificación y se publica al completarse.' });
+      if (await publicadoNaHora(alvo)) {
+        setMsg({ tipo: 'ok', t: '✓ ¡Listo! El cambio de diseño se publicó. Tu página estará actualizada en unos minutos.' });
+        return;
+      }
+      setMsg({ tipo: 'ok', t: '✓ ¡Listo! Tu página está en verificación y se publica al completarse. Los cambios solo de diseño (página y tarjeta) se publican al tiro.' });
     } catch {
       setMsg({ tipo: 'erro', t: admin ? 'Se guardó, pero no se pudo publicar. Inténtalo de nuevo.' : 'No se pudo enviar. Inténtalo de nuevo.' });
     } finally {

@@ -208,6 +208,17 @@ export async function idsPublicados(): Promise<Set<string>> {
   return new Set(s.docs.map((d) => d.id));
 }
 
+/** Espera alguns segundos para ver se o servidor publicou na hora (mudança só de aparência). */
+export async function publicadoNaHora(uid: string, ms = 9000): Promise<boolean> {
+  const fim = Date.now() + ms;
+  while (Date.now() < fim) {
+    await new Promise((r) => setTimeout(r, 1500));
+    const p = await getDoc(doc(db(), 'perfis', uid));
+    if (p.exists() && p.data().status === 'aprobado') return true;
+  }
+  return false;
+}
+
 /** Profissional mexeu num perfil já aprovado: volta para revisão (o site segue com a versão anterior). */
 export async function marcarParaRevisao(uid: string): Promise<void> {
   const p = await getDoc(doc(db(), 'perfis', uid));
